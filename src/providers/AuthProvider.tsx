@@ -2,7 +2,12 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '../lib/supabase/client'
+import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
+
+// Inline supabase client to avoid module resolution issues
+function createClient() {
+  return createBrowserSupabaseClient()
+}
 import type {
   AuthContextType,
   AuthState,
