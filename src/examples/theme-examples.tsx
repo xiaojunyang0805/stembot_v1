@@ -6,15 +6,15 @@ import {
   EducationalThemeToggle,
   DropdownThemeToggle,
   ThemeIndicator
-} from '@/components/common/ThemeToggle'
+} from '../components/common/ThemeToggle'
 import {
   SubjectCard,
   LearningDashboard,
   EducationalHeader,
   StudyModeIndicator,
   ThemeAwareCard
-} from '@/components/common/ThemeAwareComponents'
-import { useTheme, useEducationalTheme } from '@/hooks/useTheme'
+} from '../components/common/ThemeAwareComponents'
+import { useTheme, useEducationalTheme } from '../hooks/useTheme'
 
 /**
  * Example implementations of the StemBot theme system
