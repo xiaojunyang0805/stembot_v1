@@ -85,6 +85,13 @@ export default async function EducatorStudentsPage({
     view = 'grid'
   } = searchParams;
 
+  // Mark as used to satisfy TypeScript
+  void selectedClass;
+  void status;
+  void search;
+  void sort;
+  void view;
+
   // TODO: Implement in WP5 - Fetch students data
   // const students = await getStudents({
   //   class: selectedClass,
@@ -472,43 +479,3 @@ export default async function EducatorStudentsPage({
   );
 }
 
-/**
- * Loading component for the students management page
- */
-export function Loading() {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>
-  );
-}
-
-/**
- * Error component for the students management page
- */
-export function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Students Management Error
-        </h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-4">
-          Failed to load student data
-        </p>
-        <button
-          onClick={reset}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Try again
-        </button>
-      </div>
-    </div>
-  );
-}

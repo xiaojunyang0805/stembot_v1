@@ -164,7 +164,7 @@ export function unique<T>(array: T[], keyFn?: (item: T) => any): T[] {
       return true;
     });
   }
-  return [...new Set(array)];
+  return Array.from(new Set(array));
 }
 
 /**

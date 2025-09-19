@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>StemBot Design System Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Load Inter font */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap');
+
+        body { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+
+        /* Custom CSS Variables */
+        :root {
+            --color-math: #2563eb;
+            --color-science: #16a34a;
+            --color-coding: #9333ea;
+            --color-warning: #ea580c;
+            --color-success: #22c55e;
+            --color-error: #ef4444;
+            --color-info: #3b82f6;
+            --color-privacy: #8b5cf6;
+        }
+
+        /* Component Styles */
+        .btn-primary {
+            background-color: var(--color-math);
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            font-weight: 600;
+            font-size: 0.875rem;
+            transition: all 150ms cubic-bezier(0.4, 0, 0.2, 1);
+            border: none;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary:hover {
+            background-color: #1d4ed8;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.3);
+        }
+
+        .card {
+            background-color: white;
+            border-radius: 0.75rem;
+            box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+            border: 1px solid #e5e7eb;
+            padding: 1.5rem;
+            transition: all 250ms cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            transform: translateY(-1px);
+        }
+
+        .lesson-card {
+            position: relative;
+            overflow: hidden;
+        }
+
+        .lesson-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--color-math), var(--color-science), var(--color-coding));
+        }
+
+        .subject-card-math {
+            border-left: 4px solid var(--color-math);
+        }
+
+        .subject-card-science {
+            border-left: 4px solid var(--color-science);
+        }
+
+        .subject-card-coding {
+            border-left: 4px solid var(--color-coding);
+        }
+
+        .message-bubble-user {
+            background-color: var(--color-math);
+            color: white;
+            border-radius: 1rem 1rem 0.25rem 1rem;
+            padding: 0.75rem 1rem;
+            max-width: 20rem;
+            margin-left: auto;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .message-bubble-ai {
+            background-color: #f1f5f9;
+            color: #334155;
+            border-radius: 1rem 1rem 1rem 0.25rem;
+            padding: 0.75rem 1rem;
+            max-width: 20rem;
+            border: 1px solid #e2e8f0;
+            font-size: 0.875rem;
+            line-height: 1.4;
+        }
+
+        .progress-bar {
+            width: 100%;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+            height: 0.5rem;
+        }
+
+        .progress-fill {
+            height: 100%;
+            transition: all 0.5s ease-out;
+            border-radius: 9999px;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.25rem 0.75rem;
+        }
+    </style>
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-7xl">
+        <!-- Header -->
+        <header class="mb-12 text-center">
+            <h1 class="text-4xl font-bold text-gray-900 mb-4">StemBot Design System</h1>
+            <p class="text-lg text-gray-600">Comprehensive UI components for educational excellence</p>
+        </header>
+
+        <!-- Brand Colors Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">🎨 Brand Colors</h2>
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="card">
+                    <div class="w-full h-16 rounded-lg mb-4" style="background-color: var(--color-math);"></div>
+                    <h3 class="font-semibold text-gray-900">Math Blue</h3>
+                    <p class="text-sm text-gray-600 font-mono">#2563eb</p>
+                </div>
+                <div class="card">
+                    <div class="w-full h-16 rounded-lg mb-4" style="background-color: var(--color-science);"></div>
+                    <h3 class="font-semibold text-gray-900">Science Green</h3>
+                    <p class="text-sm text-gray-600 font-mono">#16a34a</p>
+                </div>
+                <div class="card">
+                    <div class="w-full h-16 rounded-lg mb-4" style="background-color: var(--color-coding);"></div>
+                    <h3 class="font-semibold text-gray-900">Coding Purple</h3>
+                    <p class="text-sm text-gray-600 font-mono">#9333ea</p>
+                </div>
+                <div class="card">
+                    <div class="w-full h-16 rounded-lg mb-4" style="background-color: var(--color-warning);"></div>
+                    <h3 class="font-semibold text-gray-900">Warning Orange</h3>
+                    <p class="text-sm text-gray-600 font-mono">#ea580c</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Buttons Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">🔲 Buttons</h2>
+            <div class="card">
+                <div class="flex flex-wrap gap-4">
+                    <button class="btn-primary">Primary Button</button>
+                    <button class="bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-150">Secondary</button>
+                    <button class="border-2 border-blue-600 text-blue-600 hover:bg-blue-50 font-semibold py-3 px-6 rounded-lg transition-all duration-150">Outline</button>
+                    <button class="text-blue-600 hover:text-blue-700 font-semibold py-3 px-6 transition-all duration-150">Ghost</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Cards Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">📇 Cards</h2>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="card lesson-card subject-card-math">
+                    <h3 class="text-lg font-semibold mb-2" style="color: var(--color-math);">Mathematics</h3>
+                    <p class="text-gray-600 mb-4">Learn algebra, geometry, and calculus with interactive lessons.</p>
+                    <div class="progress-bar mb-4">
+                        <div class="progress-fill" style="background-color: var(--color-math); width: 75%;"></div>
+                    </div>
+                    <button class="btn-primary w-full">Continue Learning</button>
+                </div>
+
+                <div class="card lesson-card subject-card-science">
+                    <h3 class="text-lg font-semibold mb-2" style="color: var(--color-science);">Science</h3>
+                    <p class="text-gray-600 mb-4">Explore physics, chemistry, and biology through experiments.</p>
+                    <div class="progress-bar mb-4">
+                        <div class="progress-fill" style="background-color: var(--color-science); width: 45%;"></div>
+                    </div>
+                    <button class="btn-primary w-full" style="background-color: var(--color-science);">Start Learning</button>
+                </div>
+
+                <div class="card lesson-card subject-card-coding">
+                    <h3 class="text-lg font-semibold mb-2" style="color: var(--color-coding);">Programming</h3>
+                    <p class="text-gray-600 mb-4">Master coding concepts with hands-on projects.</p>
+                    <div class="progress-bar mb-4">
+                        <div class="progress-fill" style="background-color: var(--color-coding); width: 90%;"></div>
+                    </div>
+                    <button class="btn-primary w-full" style="background-color: var(--color-coding);">Continue Coding</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Chat Interface Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">💬 Chat Interface</h2>
+            <div class="card">
+                <div class="space-y-4 max-w-2xl">
+                    <div class="message-bubble-ai">
+                        Hi! I'm your AI tutor. What would you like to learn today?
+                    </div>
+                    <div class="message-bubble-user">
+                        Can you help me understand quadratic equations?
+                    </div>
+                    <div class="message-bubble-ai">
+                        Absolutely! Let's start with the basic form: ax² + bx + c = 0. Would you like to see an example?
+                    </div>
+                    <div class="message-bubble-user">
+                        Yes, please show me an example!
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Status & Badges Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">🏆 Status & Badges</h2>
+            <div class="card">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="font-semibold mb-4 text-gray-900">Achievement Badges</h3>
+                        <div class="flex flex-wrap gap-2">
+                            <span class="badge text-white" style="background-color: var(--color-success);">Completed</span>
+                            <span class="badge text-white" style="background-color: var(--color-warning);">In Progress</span>
+                            <span class="badge text-white" style="background-color: var(--color-error);">Failed</span>
+                            <span class="badge text-white" style="background-color: var(--color-info);">New</span>
+                            <span class="badge text-white" style="background-color: var(--color-privacy);">🔒 Private</span>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold mb-4 text-gray-900">Progress Indicators</h3>
+                        <div class="space-y-3">
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Mathematics</span>
+                                    <span>75%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="background-color: var(--color-math); width: 75%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Science</span>
+                                    <span>45%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="background-color: var(--color-science); width: 45%;"></div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="flex justify-between text-sm mb-1">
+                                    <span>Programming</span>
+                                    <span>90%</span>
+                                </div>
+                                <div class="progress-bar">
+                                    <div class="progress-fill" style="background-color: var(--color-coding); width: 90%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Typography Section -->
+        <section class="mb-12">
+            <h2 class="text-2xl font-bold text-gray-900 mb-6">📝 Typography</h2>
+            <div class="card">
+                <div class="space-y-4">
+                    <h1 class="text-4xl font-bold text-gray-900">Hero Heading (4xl)</h1>
+                    <h2 class="text-3xl font-bold text-gray-900">Main Heading (3xl)</h2>
+                    <h3 class="text-2xl font-semibold text-gray-900">Section Heading (2xl)</h3>
+                    <h4 class="text-xl font-semibold text-gray-900">Subsection Heading (xl)</h4>
+                    <p class="text-base text-gray-700">Body text with proper line height and spacing for optimal readability in educational contexts.</p>
+                    <p class="text-sm text-gray-600">Small text for captions and secondary information.</p>
+                    <code class="font-mono text-sm bg-gray-100 px-2 py-1 rounded">Code snippet in JetBrains Mono</code>
+                </div>
+            </div>
+        </section>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-600 mt-16 pt-8 border-t border-gray-200">
+            <p>StemBot Design System - Educational excellence through thoughtful design</p>
+        </footer>
+    </div>
+</body>
+</html>

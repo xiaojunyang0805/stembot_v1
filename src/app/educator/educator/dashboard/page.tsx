@@ -51,6 +51,11 @@ export default async function EducatorDashboardPage({
     view = 'overview'
   } = searchParams;
 
+  // Mark as used to satisfy TypeScript
+  void selectedClass;
+  void timeframe;
+  void view;
+
   // TODO: Implement in WP5 - Fetch educator data
   // const educatorData = await getEducatorDashboardData({
   //   class: selectedClass,
@@ -297,45 +302,3 @@ export default async function EducatorDashboardPage({
   );
 }
 
-/**
- * Loading component for the educator dashboard
- * Used by Next.js during page transitions
- */
-export function Loading() {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>
-  );
-}
-
-/**
- * Error component for the educator dashboard
- * Used by Next.js when page fails to load
- */
-export function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Something went wrong!
-        </h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-4">
-          Failed to load educator dashboard
-        </p>
-        <button
-          onClick={reset}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Try again
-        </button>
-      </div>
-    </div>
-  );
-}

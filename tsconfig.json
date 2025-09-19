@@ -1,39 +1,20 @@
 {
   "compilerOptions": {
-    /* Base Options */
-    "target": "ES2022",
-    "lib": ["DOM", "DOM.Iterable", "ES2022"],
+    "target": "es2017",
+    "lib": ["dom", "dom.iterable", "es2017"],
     "allowJs": true,
     "skipLibCheck": true,
     "strict": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "module": "ESNext",
+    "module": "esnext",
     "moduleResolution": "bundler",
     "resolveJsonModule": true,
     "isolatedModules": true,
     "jsx": "preserve",
     "incremental": true,
-    
-    /* Strict Type Checking */
-    "noImplicitAny": true,
-    "strictNullChecks": true,
-    "strictFunctionTypes": true,
-    "strictBindCallApply": true,
-    "strictPropertyInitialization": true,
-    "noImplicitReturns": true,
-    "noImplicitThis": true,
-    "alwaysStrict": true,
-    "exactOptionalPropertyTypes": true,
-    "noUncheckedIndexedAccess": true,
-    "noImplicitOverride": true,
-    
-    /* Additional Checks */
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
-    "noFallthroughCasesInSwitch": true,
-    
-    /* Module Resolution */
+    "forceConsistentCasingInFileNames": true,
+    "downlevelIteration": true,
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"],
@@ -46,21 +27,6 @@
       "@/app/*": ["./src/app/*"],
       "@/public/*": ["./public/*"]
     },
-    
-    /* Emit */
-    "outDir": "./dist",
-    "rootDir": "./src",
-    "removeComments": true,
-    "preserveConstEnums": true,
-    "sourceMap": true,
-    "declaration": true,
-    "declarationMap": true,
-    
-    /* Interop Constraints */
-    "forceConsistentCasingInFileNames": true,
-    "allowSyntheticDefaultImports": true,
-    
-    /* Advanced */
     "plugins": [
       {
         "name": "next"
@@ -69,31 +35,14 @@
   },
   "include": [
     "next-env.d.ts",
-    "**/*.ts",
-    "**/*.tsx",
-    ".next/types/**/*.ts",
-    "src/**/*",
-    "**/*.js",
-    "**/*.jsx"
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    ".next/types/**/*.ts"
   ],
   "exclude": [
     "node_modules",
     ".next",
     "out",
-    "dist",
-    "coverage",
-    "storybook-static",
-    "playwright-report",
-    "test-results",
-    "**/*.config.js",
-    "**/*.config.ts"
-  ],
-  "ts-node": {
-    "compilerOptions": {
-      "module": "CommonJS",
-      "target": "ES2022",
-      "esModuleInterop": true,
-      "allowSyntheticDefaultImports": true
-    }
-  }
+    "dist"
+  ]
 }

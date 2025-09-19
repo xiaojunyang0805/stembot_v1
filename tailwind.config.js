@@ -137,23 +137,47 @@ module.exports = {
           200: '#bbf7d0',
           300: '#86efac',
           400: '#4ade80',
-          500: '#22c55e',
+          500: '#22c55e', // Success green
           600: '#16a34a',
           700: '#15803d',
           800: '#166534',
           900: '#14532d',
         },
+        error: {
+          50: '#fef2f2',
+          100: '#fee2e2',
+          200: '#fecaca',
+          300: '#fca5a5',
+          400: '#f87171',
+          500: '#ef4444', // Error red
+          600: '#dc2626',
+          700: '#b91c1c',
+          800: '#991b1b',
+          900: '#7f1d1d',
+        },
         info: {
-          50: '#f0f9ff',
-          100: '#e0f2fe',
-          200: '#bae6fd',
-          300: '#7dd3fc',
-          400: '#38bdf8',
-          500: '#0ea5e9',
-          600: '#0284c7',
-          700: '#0369a1',
-          800: '#075985',
-          900: '#0c4a6e',
+          50: '#eff6ff',
+          100: '#dbeafe',
+          200: '#bfdbfe',
+          300: '#93c5fd',
+          400: '#60a5fa',
+          500: '#3b82f6', // Info blue
+          600: '#2563eb',
+          700: '#1d4ed8',
+          800: '#1e40af',
+          900: '#1e3a8a',
+        },
+        privacy: {
+          50: '#faf5ff',
+          100: '#f3e8ff',
+          200: '#e9d5ff',
+          300: '#d8b4fe',
+          400: '#c084fc',
+          500: '#8b5cf6', // Privacy violet
+          600: '#7c3aed',
+          700: '#6d28d9',
+          800: '#5b21b6',
+          900: '#4c1d95',
         },
         // Gamification Colors
         badge: {
@@ -192,24 +216,51 @@ module.exports = {
         ],
       },
       fontSize: {
-        xs: ['0.75rem', { lineHeight: '1rem' }],
-        sm: ['0.875rem', { lineHeight: '1.25rem' }],
-        base: ['1rem', { lineHeight: '1.5rem' }],
-        lg: ['1.125rem', { lineHeight: '1.75rem' }],
-        xl: ['1.25rem', { lineHeight: '1.75rem' }],
-        '2xl': ['1.5rem', { lineHeight: '2rem' }],
-        '3xl': ['1.875rem', { lineHeight: '2.25rem' }],
-        '4xl': ['2.25rem', { lineHeight: '2.5rem' }],
-        '5xl': ['3rem', { lineHeight: '1' }],
-        '6xl': ['3.75rem', { lineHeight: '1' }],
-        '7xl': ['4.5rem', { lineHeight: '1' }],
-        '8xl': ['6rem', { lineHeight: '1' }],
-        '9xl': ['8rem', { lineHeight: '1' }],
+        xs: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.025em' }],
+        sm: ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.0125em' }],
+        base: ['1rem', { lineHeight: '1.5rem', letterSpacing: '0' }],
+        lg: ['1.125rem', { lineHeight: '1.75rem', letterSpacing: '-0.0125em' }],
+        xl: ['1.25rem', { lineHeight: '1.75rem', letterSpacing: '-0.025em' }],
+        '2xl': ['1.5rem', { lineHeight: '2rem', letterSpacing: '-0.025em' }],
+        '3xl': ['1.875rem', { lineHeight: '2.25rem', letterSpacing: '-0.025em' }],
+        '4xl': ['2.25rem', { lineHeight: '2.5rem', letterSpacing: '-0.025em' }],
+        '5xl': ['3rem', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
+        '6xl': ['3.75rem', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
+        '7xl': ['4.5rem', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
+        '8xl': ['6rem', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
+        '9xl': ['8rem', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
+        // Educational specific sizes
+        caption: ['0.625rem', { lineHeight: '0.875rem', letterSpacing: '0.05em' }],
+        overline: ['0.625rem', { lineHeight: '1rem', letterSpacing: '0.1em' }],
+        button: ['0.875rem', { lineHeight: '1.25rem', letterSpacing: '0.025em' }],
+        label: ['0.75rem', { lineHeight: '1rem', letterSpacing: '0.025em' }],
+        hero: ['3.5rem', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
+        display: ['4rem', { lineHeight: '1.1', letterSpacing: '-0.025em' }],
       },
       spacing: {
-        '18': '4.5rem',
-        '88': '22rem',
-        '128': '32rem',
+        // Extended spacing scale following 8px grid
+        '15': '3.75rem',   // 60px
+        '18': '4.5rem',    // 72px
+        '22': '5.5rem',    // 88px
+        '26': '6.5rem',    // 104px
+        '30': '7.5rem',    // 120px
+        '34': '8.5rem',    // 136px
+        '38': '9.5rem',    // 152px
+        '42': '10.5rem',   // 168px
+        '46': '11.5rem',   // 184px
+        '50': '12.5rem',   // 200px
+        '88': '22rem',     // 352px
+        '128': '32rem',    // 512px
+        '144': '36rem',    // 576px
+        '160': '40rem',    // 640px
+        '192': '48rem',    // 768px
+        '224': '56rem',    // 896px
+        '256': '64rem',    // 1024px
+        // Educational specific spacing
+        'lesson': '3rem',     // Standard lesson spacing
+        'section': '2rem',    // Section spacing
+        'component': '1.5rem', // Component spacing
+        'element': '1rem',    // Element spacing
       },
       keyframes: {
         'accordion-down': {
@@ -326,6 +377,27 @@ module.exports = {
         'card': '3 / 2',
         'video': '16 / 9',
         'golden': '1.618 / 1',
+        'lesson': '4 / 3',
+        'avatar': '1 / 1',
+        'banner': '5 / 2',
+      },
+      transitionDuration: {
+        '50': '50ms',
+        '150': '150ms',
+        '250': '250ms',
+        '350': '350ms',
+        '400': '400ms',
+        '600': '600ms',
+        '800': '800ms',
+        '1200': '1200ms',
+      },
+      transitionTimingFunction: {
+        'smooth': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'smooth-in': 'cubic-bezier(0.4, 0, 1, 1)',
+        'smooth-out': 'cubic-bezier(0, 0, 0.2, 1)',
+        'smooth-in-out': 'cubic-bezier(0.4, 0, 0.2, 1)',
+        'bounce-soft': 'cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        'educational': 'cubic-bezier(0.25, 0.46, 0.45, 0.94)',
       },
       typography: {
         DEFAULT: {

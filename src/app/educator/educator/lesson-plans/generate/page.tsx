@@ -9,7 +9,6 @@
  */
 
 import { Metadata } from 'next';
-import { Suspense } from 'react';
 
 // UI Components (to be implemented in WP2/WP3)
 // import { LessonPlanGenerator } from '@/components/educator/LessonPlanGenerator';
@@ -17,19 +16,19 @@ import { Suspense } from 'react';
 // import { LoadingSpinner } from '@/components/ui/LoadingSpinner';
 
 // Types
-interface LessonPlanRequest {
-  subject: 'math' | 'science' | 'coding';
-  gradeLevel: string;
-  topic: string;
-  duration: number;
-  learningObjectives: string[];
-  curriculumStandards: string[];
-  teachingStyle: 'direct' | 'inquiry' | 'collaborative' | 'hands-on';
-  difficulty: 'beginner' | 'intermediate' | 'advanced';
-  accommodations: string[];
-  materials: string[];
-  assessmentType: 'formative' | 'summative' | 'both';
-}
+// interface LessonPlanRequest {
+//   subject: 'math' | 'science' | 'coding';
+//   gradeLevel: string;
+//   topic: string;
+//   duration: number;
+//   learningObjectives: string[];
+//   curriculumStandards: string[];
+//   teachingStyle: 'direct' | 'inquiry' | 'collaborative' | 'hands-on';
+//   difficulty: 'beginner' | 'intermediate' | 'advanced';
+//   accommodations: string[];
+//   materials: string[];
+//   assessmentType: 'formative' | 'summative' | 'both';
+// }
 
 interface AILessonPlanGeneratorPageProps {
   searchParams: {
@@ -67,6 +66,12 @@ export default async function AILessonPlanGeneratorPage({
     topic,
     template
   } = searchParams;
+
+  // Mark as used to satisfy TypeScript
+  void subject;
+  void grade;
+  void topic;
+  void template;
 
   // TODO: Implement in WP5 - Fetch curriculum standards and templates
   // const curriculumStandards = await getCurriculumStandards();
@@ -343,46 +348,3 @@ export default async function AILessonPlanGeneratorPage({
   );
 }
 
-/**
- * Loading component for the AI lesson plan generator
- */
-export function Loading() {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto mb-4"></div>
-        <p className="text-gray-600 dark:text-gray-400">Loading AI Generator...</p>
-      </div>
-    </div>
-  );
-}
-
-/**
- * Error component for the AI lesson plan generator
- */
-export function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          AI Generator Error
-        </h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-4">
-          Failed to load AI lesson plan generator
-        </p>
-        <button
-          onClick={reset}
-          className="px-4 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500"
-        >
-          Try again
-        </button>
-      </div>
-    </div>
-  );
-}

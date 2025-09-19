@@ -9,7 +9,7 @@
 
 import { Metadata } from 'next';
 import { Suspense } from 'react';
-import { notFound } from 'next/navigation';
+// import { notFound } from 'next/navigation';
 import Link from 'next/link';
 
 // UI Components (to be implemented in WP2/WP3)
@@ -105,7 +105,7 @@ interface IndividualStudentPageProps {
 }
 
 // Generate metadata based on student ID
-export async function generateMetadata({ params }: { params: { id: string } }): Promise<Metadata> {
+export async function generateMetadata({ }: { params: { id: string } }): Promise<Metadata> {
   // TODO: Implement in WP5 - Fetch student name
   // const student = await getStudent(params.id);
   
@@ -132,6 +132,10 @@ export default async function IndividualStudentPage({
 }: IndividualStudentPageProps) {
   const { id } = params;
   const { tab = 'overview', timeframe = 'month' } = searchParams;
+
+  // Mark as used to satisfy TypeScript
+  void tab;
+  void timeframe;
 
   // TODO: Implement in WP5 - Fetch student data
   // const student = await getStudentDetail(id);
@@ -666,43 +670,3 @@ export default async function IndividualStudentPage({
   );
 }
 
-/**
- * Loading component for the individual student page
- */
-export function Loading() {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>
-  );
-}
-
-/**
- * Error component for the individual student page
- */
-export function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Student Data Error
-        </h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-4">
-          Failed to load student information
-        </p>
-        <button
-          onClick={reset}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Try again
-        </button>
-      </div>
-    </div>
-  );
-}

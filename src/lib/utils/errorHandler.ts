@@ -573,7 +573,7 @@ export class ErrorMetrics {
     const cutoff = new Date(now.getTime() - (hours * 60 * 60 * 1000));
     
     let totalErrors = 0;
-    for (const [timeKey, errors] of this.errorsByTime) {
+    for (const [timeKey, errors] of Array.from(this.errorsByTime.entries())) {
       const time = new Date(timeKey);
       if (time >= cutoff) {
         totalErrors += errors.length;

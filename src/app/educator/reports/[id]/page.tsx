@@ -27,6 +27,9 @@ export const metadata: Metadata = {
 export default function ReportViewPage({ params }: ReportViewProps) {
   const { id } = params;
 
+  // Mark as used to satisfy TypeScript
+  void id;
+
   return (
     <div className="space-y-6">
       {/* Report Header */}

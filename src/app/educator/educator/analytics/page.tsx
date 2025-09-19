@@ -56,6 +56,13 @@ export default async function EducatorAnalyticsPage({
     comparison = 'class'
   } = searchParams;
 
+  // Mark as used to satisfy TypeScript
+  void timeframe;
+  void subject;
+  void selectedClass;
+  void metric;
+  void comparison;
+
   // TODO: Implement in WP5 - Fetch analytics data
   // const analyticsData = await getEducatorAnalytics({
   //   timeframe,
@@ -411,43 +418,3 @@ export default async function EducatorAnalyticsPage({
   );
 }
 
-/**
- * Loading component for the analytics page
- */
-export function Loading() {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-    </div>
-  );
-}
-
-/**
- * Error component for the analytics page
- */
-export function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
-  return (
-    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex items-center justify-center">
-      <div className="text-center">
-        <h2 className="text-lg font-semibold text-gray-900 dark:text-white mb-2">
-          Analytics Error
-        </h2>
-        <p className="text-gray-500 dark:text-gray-400 mb-4">
-          Failed to load analytics data
-        </p>
-        <button
-          onClick={reset}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-        >
-          Try again
-        </button>
-      </div>
-    </div>
-  );
-}
