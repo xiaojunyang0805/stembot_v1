@@ -12,6 +12,10 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },
+  // Force Vercel to use latest commit
+  env: {
+    BUILD_DATE: new Date().toISOString(),
+  },
 };
 
 module.exports = nextConfig;
