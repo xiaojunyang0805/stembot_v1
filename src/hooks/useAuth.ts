@@ -1,13 +1,13 @@
 'use client'
 
 import { useCallback } from 'react'
-import { useAuthContext } from '@/providers/AuthProvider'
+import { useAuthContext } from '../providers/AuthProvider'
 import type {
   AuthContextType,
   LoginCredentials,
   RegisterData,
   UserRole,
-} from '@/types/auth'
+} from '../types/auth'
 
 export interface UseAuthReturn extends AuthContextType {
   isAuthenticated: boolean

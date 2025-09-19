@@ -1,7 +1,7 @@
 'use client'
 
-import { useAuth } from '@/hooks/useAuth'
-import type { AuthGuardProps } from '@/types/auth'
+import { useAuth } from '../../hooks/useAuth'
+import type { AuthGuardProps } from '../../types/auth'
 
 export default function AuthGuard({
   children,

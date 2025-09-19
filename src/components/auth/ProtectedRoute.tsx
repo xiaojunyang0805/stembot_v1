@@ -2,8 +2,8 @@
 
 import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { useAuth } from '@/hooks/useAuth'
-import type { RouteProtectionProps } from '@/types/auth'
+import { useAuth } from '../../hooks/useAuth'
+import type { RouteProtectionProps } from '../../types/auth'
 
 interface LoadingSpinnerProps {
   size?: 'sm' | 'md' | 'lg'

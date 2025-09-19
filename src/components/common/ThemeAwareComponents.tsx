@@ -1,8 +1,8 @@
 'use client'
 
 import * as React from 'react'
-import { useTheme, useThemeStyles, useEducationalTheme } from '@/hooks/useTheme'
-import { cn } from '@/lib/utils'
+import { useTheme, useThemeStyles, useEducationalTheme } from '../../hooks/useTheme'
+import { cn } from '../../lib/utils'
 import { Book, Users, Code, Lightbulb, Target, Award } from 'lucide-react'
 
 /**

@@ -1,5 +1,5 @@
 import type { User, Session } from '@supabase/supabase-js'
-import type { AuthUser, UserRole, UserProfile, AuthError } from '@/types/auth'
+import type { AuthUser, UserRole, UserProfile, AuthError } from '../../types/auth'
 
 export function createAuthError(message: string, code?: string, status?: number): AuthError {
   const error = new Error(message) as AuthError
