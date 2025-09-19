@@ -1,7 +1,6 @@
 import { createMiddlewareSupabaseClient } from '@supabase/auth-helpers-nextjs'
 import { NextResponse } from 'next/server'
 import type { NextRequest } from 'next/server'
-import { Database } from '@/types/supabase'
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({
@@ -10,7 +9,7 @@ export async function updateSession(request: NextRequest) {
     },
   })
 
-  const supabase = createMiddlewareSupabaseClient<Database>({
+  const supabase = createMiddlewareSupabaseClient({
     req: request,
     res: response,
   })
@@ -117,7 +116,7 @@ export async function handleAuthMiddleware(request: NextRequest) {
     return response
   }
 
-  const supabase = createMiddlewareSupabaseClient<Database>({
+  const supabase = createMiddlewareSupabaseClient({
     req: request,
     res: response,
   })
