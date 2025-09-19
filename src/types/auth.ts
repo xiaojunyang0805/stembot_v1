@@ -1,9 +1,41 @@
 import type { User, Session } from '@supabase/supabase-js'
-import type { Database } from './supabase'
 
-export type UserProfile = Database['public']['Tables']['user_profiles']['Row']
-export type UserProfileInsert = Database['public']['Tables']['user_profiles']['Insert']
-export type UserProfileUpdate = Database['public']['Tables']['user_profiles']['Update']
+export type UserRole = 'student' | 'educator' | 'admin'
+
+export interface UserPreferences {
+  theme?: 'light' | 'dark' | 'system'
+  language?: string
+  notifications?: {
+    email: boolean
+    push: boolean
+    marketing: boolean
+  }
+  privacy?: {
+    shareProgress: boolean
+    showProfile: boolean
+  }
+}
+
+export interface UserProfile {
+  id: string
+  email: string
+  first_name?: string
+  last_name?: string
+  display_name?: string
+  role: UserRole
+  grade?: string
+  school?: string
+  avatar_url?: string
+  preferences?: UserPreferences
+  last_seen_at?: string
+  is_active?: boolean
+  email_verified?: boolean
+  created_at: string
+  updated_at: string
+}
+
+export type UserProfileInsert = Omit<UserProfile, 'created_at' | 'updated_at'>
+export type UserProfileUpdate = Partial<Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>>
 
 export interface AuthUser extends User {
   profile?: UserProfile | null
@@ -39,22 +71,6 @@ export interface UserSignUpData {
   grade?: string | undefined
   school?: string | undefined
   preferences?: UserPreferences
-}
-
-export type UserRole = 'student' | 'educator' | 'admin'
-
-export interface UserPreferences {
-  theme?: 'light' | 'dark' | 'system'
-  language?: string
-  notifications?: {
-    email: boolean
-    push: boolean
-    marketing: boolean
-  }
-  privacy?: {
-    shareProgress: boolean
-    showProfile: boolean
-  }
 }
 
 export interface AuthError extends Error {
