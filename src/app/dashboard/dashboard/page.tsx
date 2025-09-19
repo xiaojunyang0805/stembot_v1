@@ -1,9 +1,9 @@
-// src/app/(dashboard)/dashboard/page.tsx
+// src/app/dashboard/dashboard/page.tsx
 /**
  * Main dashboard page
  * Shows user overview, recent projects, activity feed, and quick actions
- * Located at: src/app/(dashboard)/dashboard/page.tsx
- * URL: /dashboard (route group doesn't affect URL)
+ * Located at: src/app/dashboard/dashboard/page.tsx
+ * URL: /dashboard/dashboard
  */
 
 import type { Metadata } from 'next';
@@ -16,82 +16,53 @@ export const metadata: Metadata = {
 
 export default function DashboardPage() {
   return (
-    <div className="space-y-6">
-      {/* Welcome Section */}
-      <div className="bg-white p-6 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-4">
+    <div className="max-w-7xl mx-auto p-6 space-y-6">
+      {/* Welcome Hero Card */}
+      <div className="bg-gradient-to-r from-blue-50 to-blue-100 border border-blue-200 rounded-xl p-6 shadow-sm">
+        <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900 mb-2">
-              Welcome back, Alex! 🎯
-            </h1>
-            <p className="text-gray-600">Ready to continue your STEM learning journey?</p>
+            <h1 className="text-2xl font-bold text-gray-900">Welcome back, Alex!</h1>
+            <p className="text-gray-600 mt-1">Ready to continue learning?</p>
           </div>
           <div className="text-right">
-            <div className="text-sm text-gray-600 mb-1">Learning streak</div>
-            <div className="text-2xl font-bold text-orange-600">7 🔥</div>
-            <div className="text-xs text-gray-500">days in a row</div>
-          </div>
-        </div>
-        
-        {/* TODO: Replace with PrivacyBanner component */}
-        <div className="p-4 bg-violet-50 rounded-lg border border-violet-200">
-          <div className="flex items-center">
-            <span className="text-violet-600 mr-2">🔒</span>
-            <div>
-              <p className="text-sm font-semibold text-violet-800">Privacy First</p>
-              <p className="text-sm text-violet-700">All AI processing stays local • Offline Mode Active</p>
+            <div className="flex items-center gap-2 text-orange-600">
+              <span className="text-2xl">🔥</span>
+              <span className="font-bold text-xl">7 days</span>
             </div>
+            <p className="text-sm text-gray-500">Learning streak</p>
           </div>
         </div>
       </div>
 
-      {/* Quick Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-blue-100 rounded-lg mr-3">
-              <span className="text-blue-600 text-xl">📁</span>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">12</div>
-              <div className="text-sm text-gray-600">Active Projects</div>
-            </div>
+      {/* Privacy Status Card */}
+      <div className="bg-violet-50 border border-violet-200 rounded-lg p-4">
+        <div className="flex items-center gap-3">
+          <span className="text-violet-600 text-xl">🔒</span>
+          <div>
+            <p className="font-medium text-violet-900">Privacy: All AI processing stays local</p>
+            <p className="text-sm text-violet-600">✅ Offline Mode Active</p>
           </div>
         </div>
-        
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-green-100 rounded-lg mr-3">
-              <span className="text-green-600 text-xl">✅</span>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">234</div>
-              <div className="text-sm text-gray-600">Problems Solved</div>
-            </div>
+      </div>
+
+      {/* Quick Overview Card */}
+      <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+        <h2 className="text-lg font-semibold text-gray-900 mb-4">Quick Overview</h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="text-center p-4 bg-gray-50 rounded-lg">
+            <div className="text-2xl mb-2">📁</div>
+            <div className="text-xl font-bold text-gray-900">12</div>
+            <div className="text-sm text-gray-500">Active Projects</div>
           </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-yellow-100 rounded-lg mr-3">
-              <span className="text-yellow-600 text-xl">🏆</span>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">9</div>
-              <div className="text-sm text-gray-600">Badges Earned</div>
-            </div>
+          <div className="text-center p-4 bg-gray-50 rounded-lg">
+            <div className="text-2xl mb-2">⭐</div>
+            <div className="text-xl font-bold text-gray-900">5</div>
+            <div className="text-sm text-gray-500">Badges Earned</div>
           </div>
-        </div>
-        
-        <div className="bg-white p-4 rounded-xl shadow-sm">
-          <div className="flex items-center">
-            <div className="p-2 bg-purple-100 rounded-lg mr-3">
-              <span className="text-purple-600 text-xl">⏱</span>
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-gray-900">47h</div>
-              <div className="text-sm text-gray-600">Study Time</div>
-            </div>
+          <div className="text-center p-4 bg-gray-50 rounded-lg">
+            <div className="text-2xl mb-2">🎯</div>
+            <div className="text-xl font-bold text-gray-900">85%</div>
+            <div className="text-sm text-gray-500">Avg Progress</div>
           </div>
         </div>
       </div>

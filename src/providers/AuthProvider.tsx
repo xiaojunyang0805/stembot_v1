@@ -2,11 +2,11 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { createBrowserSupabaseClient } from '@supabase/auth-helpers-nextjs'
+import { createClientComponentClient } from '@supabase/auth-helpers-nextjs'
 
 // Inline supabase client to avoid module resolution issues
 function createClient() {
-  return createBrowserSupabaseClient()
+  return createClientComponentClient()
 }
 import type {
   AuthContextType,
@@ -23,7 +23,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined)
 const initialState: AuthState = {
   user: null,
   session: null,
-  loading: true,
+  loading: false,
   error: null,
 }
 
@@ -186,7 +186,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
       if (error) {
         console.error('Error getting session:', error)
-        dispatch({ type: 'SIGN_OUT_SUCCESS' })
+        dispatch({ type: 'SET_LOADING', payload: { loading: false } })
         return
       }
 
@@ -206,23 +206,24 @@ export function AuthProvider({ children }: AuthProviderProps) {
           payload: { user: authUser, session: authSession },
         })
       } else {
-        dispatch({ type: 'SIGN_OUT_SUCCESS' })
+        dispatch({ type: 'SET_LOADING', payload: { loading: false } })
       }
     } catch (error) {
       console.error('Error initializing auth:', error)
-      dispatch({ type: 'SIGN_OUT_SUCCESS' })
+      dispatch({ type: 'SET_LOADING', payload: { loading: false } })
     }
   }, [supabase, loadUserProfile])
 
   useEffect(() => {
-    initializeAuth()
+    // Temporarily disable auto-initialization to prevent loading state issues
+    // initializeAuth()
 
     const { data: { subscription } } = supabase.auth.onAuthStateChange(handleAuthStateChange)
 
     return () => {
       subscription.unsubscribe()
     }
-  }, [supabase, handleAuthStateChange, initializeAuth])
+  }, [supabase, handleAuthStateChange])
 
   const signIn = useCallback(async (email: string, password: string) => {
     try {

@@ -18,8 +18,8 @@
   "extends": [
     "next/core-web-vitals",
     "eslint:recommended",
-    "@typescript-eslint/recommended",
-    "@typescript-eslint/recommended-requiring-type-checking",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:@typescript-eslint/recommended-requiring-type-checking",
     "prettier"
   ],
   "plugins": [
@@ -132,7 +132,7 @@
   "overrides": [
     {
       "files": ["**/*.test.ts", "**/*.test.tsx", "**/*.spec.ts", "**/*.spec.tsx"],
-      "extends": ["@testing-library/react"],
+      "extends": ["plugin:testing-library/react"],
       "rules": {
         "@typescript-eslint/unbound-method": "off",
         "@typescript-eslint/no-non-null-assertion": "off"
