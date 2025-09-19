@@ -11,8 +11,8 @@
 import type { Metadata } from 'next';
 import { Inter } from 'next/font/google';
 import './globals.css';
-import { ThemeProvider, ThemeErrorBoundary } from '@/providers/ThemeProvider';
-import { AuthProvider } from '@/providers/AuthProvider';
+import { ThemeProvider, ThemeErrorBoundary } from '../providers/ThemeProvider';
+import { AuthProvider } from '../providers/AuthProvider';
 
 const inter = Inter({ subsets: ['latin'] });
 
