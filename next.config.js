@@ -15,6 +15,7 @@ const nextConfig = {
   // Force Vercel to use latest commit
   env: {
     BUILD_DATE: new Date().toISOString(),
+    FORCE_REFRESH: 'v2',
   },
 };
 
