@@ -2,7 +2,7 @@
 
 import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
 import { useRouter } from 'next/navigation'
-import { createClient } from '@/lib/supabase/client'
+import { createClient } from '../lib/supabase/client'
 import type {
   AuthContextType,
   AuthState,
@@ -11,7 +11,7 @@ import type {
   AuthUser,
   AuthSession,
   UserProfileUpdate
-} from '@/types/auth'
+} from '../types/auth'
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
