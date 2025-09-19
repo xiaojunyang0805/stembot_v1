@@ -174,25 +174,9 @@ const nextConfig = {
     ];
   },
 
-  /* Redirects Configuration */
+  /* Redirects Configuration - Temporarily disabled for deployment debugging */
   async redirects() {
-    return [
-      {
-        source: '/dashboard',
-        destination: '/dashboard/dashboard',
-        permanent: false,
-      },
-      {
-        source: '/login',
-        destination: '/auth/login',
-        permanent: false,
-      },
-      {
-        source: '/register',
-        destination: '/auth/register',
-        permanent: false,
-      },
-    ];
+    return [];
   },
 
   /* Webpack Configuration */
