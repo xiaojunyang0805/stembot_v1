@@ -1,50 +1,173 @@
-// src/app/auth/forgot-password/page.tsx
 /**
- * Password reset page
- * Handles password reset email sending
+ * Forgot Password Page
+ *
+ * Password reset request page with consistent styling matching login and registration pages
+ * Uses inline CSS for immediate compatibility and professional appearance
  */
-import type { Metadata } from 'next';
-import Link from 'next/link';
 
-export const metadata: Metadata = {
-  title: 'Forgot Password - StemBot',
-  description: 'Reset your StemBot password',
-};
+'use client'
+
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
+
+import ForgotPasswordForm from '../../../components/auth/ForgotPasswordForm';
 
 export default function ForgotPasswordPage() {
+  const router = useRouter();
+
+  useEffect(() => {
+    document.title = 'Reset Password - StemBot';
+  }, []);
+
+  const handleBackToLogin = () => {
+    router.push('/auth/login');
+  };
+
   return (
-    <div className="bg-white p-8 rounded-xl shadow-lg">
-      <h2 className="text-2xl font-bold text-center mb-6">Reset Password</h2>
-      <p className="text-gray-600 text-center mb-8">
-        Enter your email and we&apos;ll send you a reset link
-      </p>
-      
-      {/* TODO: Replace with PasswordResetForm component */}
-      <form className="space-y-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
-            📧 Email
-          </label>
-          <input 
-            type="email" 
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            placeholder="Enter your email"
-          />
+    <div style={{
+      minHeight: '100vh',
+      background: 'linear-gradient(to bottom right, #dbeafe, #f0f9ff)',
+      display: 'flex',
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: '24px'
+    }}>
+      <div style={{
+        backgroundColor: 'white',
+        borderRadius: '12px',
+        boxShadow: '0 10px 25px rgba(0, 0, 0, 0.1)',
+        padding: '40px',
+        width: '100%',
+        maxWidth: '400px'
+      }}>
+        {/* Header */}
+        <div style={{textAlign: 'center', marginBottom: '32px'}}>
+          <h1 style={{
+            fontSize: '24px',
+            fontWeight: 'bold',
+            color: '#2563eb',
+            marginBottom: '8px'
+          }}>
+            StemBot
+          </h1>
+          <h2 style={{
+            fontSize: '28px',
+            fontWeight: 'bold',
+            color: '#111827',
+            marginBottom: '8px'
+          }}>
+            Reset Password
+          </h2>
+          <p style={{
+            color: '#6b7280',
+            fontSize: '16px',
+            margin: 0
+          }}>
+            Enter your email to receive a reset link
+          </p>
         </div>
-        <button 
-          type="submit"
-          className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition-colors"
-        >
-          Send Reset Link
-        </button>
-      </form>
-      
-      <p className="text-center mt-6 text-sm text-gray-600">
-        Remember your password?{' '}
-        <Link href="/auth/login" className="text-blue-600 hover:underline">
-          Sign In
-        </Link>
-      </p>
+
+        {/* Functional Forgot Password Form */}
+        <ForgotPasswordForm onBackToLogin={handleBackToLogin} />
+
+        {/* Privacy Banner */}
+        <div style={{
+          backgroundColor: '#f0f9ff',
+          border: '1px solid #bae6fd',
+          borderRadius: '8px',
+          padding: '12px',
+          marginTop: '24px',
+          marginBottom: '24px',
+          textAlign: 'center'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            gap: '8px',
+            fontSize: '14px',
+            color: '#0369a1'
+          }}>
+            <div style={{
+              width: '8px',
+              height: '8px',
+              backgroundColor: '#10b981',
+              borderRadius: '50%',
+              animation: 'pulse 2s infinite'
+            }}></div>
+            🔒 Privacy-First • Local AI Processing
+          </div>
+        </div>
+
+        {/* Language Switcher */}
+        <div style={{
+          display: 'flex',
+          justifyContent: 'center',
+          gap: '16px',
+          marginBottom: '24px'
+        }}>
+          <button style={{
+            padding: '8px 16px',
+            backgroundColor: '#2563eb',
+            color: 'white',
+            border: 'none',
+            borderRadius: '6px',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}>
+            🇺🇸 English
+          </button>
+          <button style={{
+            padding: '8px 16px',
+            backgroundColor: '#f3f4f6',
+            color: '#6b7280',
+            border: '1px solid #d1d5db',
+            borderRadius: '6px',
+            fontSize: '14px',
+            cursor: 'pointer'
+          }}>
+            🇳🇱 Nederlands
+          </button>
+        </div>
+
+        {/* Remember Password Link */}
+        <div style={{
+          textAlign: 'center',
+          fontSize: '14px',
+          color: '#6b7280'
+        }}>
+          Remember your password?{' '}
+          <button
+            onClick={handleBackToLogin}
+            style={{
+              background: 'none',
+              border: 'none',
+              color: '#2563eb',
+              textDecoration: 'none',
+              fontWeight: '500',
+              cursor: 'pointer'
+            }}
+            onMouseOver={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.textDecoration = 'underline';
+            }}
+            onMouseOut={(e) => {
+              const target = e.target as HTMLButtonElement;
+              target.style.textDecoration = 'none';
+            }}
+          >
+            Sign In
+          </button>
+        </div>
+
+        {/* CSS for animations */}
+        <style>{`
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+          }
+        `}</style>
+      </div>
     </div>
   );
 }
