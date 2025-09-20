@@ -15,7 +15,7 @@ import { useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-import { cn } from '@/lib/utils'
+import { cn } from '../../lib/utils'
 
 import { useAuthForm } from '../../hooks/useAuth'
 import { loginSchema } from '../../lib/utils/validation'
