@@ -45,7 +45,7 @@ export async function signInWithGoogle() {
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
     options: {
-      redirectTo: `${window.location.origin}/auth/callback`,
+      redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://stembotv1.vercel.app'}/auth/callback`,
     },
   })
 
@@ -66,7 +66,7 @@ export async function signOut() {
 
 export async function resetPassword(email: string) {
   const { data, error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: `${window.location.origin}/auth/reset-password`,
+    redirectTo: `${process.env.NEXT_PUBLIC_APP_URL || 'https://stembotv1.vercel.app'}/auth/reset-password`,
   })
 
   if (error) {
