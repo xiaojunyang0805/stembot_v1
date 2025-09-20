@@ -1,19 +1,14 @@
 /**
- * GoogleAuthButton Component
+ * GoogleAuthButton Component - Isolated Styling
  *
  * Google OAuth integration button with branded styling and loading states.
+ * Uses only inline styles to avoid conflicts with other components.
  * Follows Google's branding guidelines and provides accessible authentication.
- *
- * Location: src/components/auth/GoogleAuthButton.tsx
  */
 
 'use client'
 
 import * as React from 'react'
-
-import { cn } from '../../lib/utils'
-
-import { Button } from '../ui/Button'
 
 interface GoogleAuthButtonProps {
   onSignIn: () => Promise<void>
@@ -23,10 +18,14 @@ interface GoogleAuthButtonProps {
   text?: string
 }
 
-// Google Logo SVG Component
-const GoogleIcon = ({ className }: { className?: string }) => (
+// Google Logo SVG Component - Isolated
+const GoogleIcon = () => (
   <svg
-    className={cn("h-5 w-5", className)}
+    style={{
+      width: '20px',
+      height: '20px',
+      marginRight: '12px'
+    }}
     viewBox="0 0 24 24"
     aria-hidden="true"
   >
@@ -49,6 +48,19 @@ const GoogleIcon = ({ className }: { className?: string }) => (
   </svg>
 )
 
+// Loading Spinner Component
+const LoadingSpinner = () => (
+  <div style={{
+    width: '16px',
+    height: '16px',
+    border: '2px solid transparent',
+    borderTop: '2px solid #6b7280',
+    borderRadius: '50%',
+    animation: 'spin 1s linear infinite',
+    marginRight: '12px'
+  }} />
+)
+
 export function GoogleAuthButton({
   onSignIn,
   loading = false,
@@ -60,8 +72,8 @@ export function GoogleAuthButton({
 
   const handleClick = async () => {
     if (loading || disabled || isLoading) {
-return
-}
+      return
+    }
 
     try {
       setIsLoading(true)
@@ -75,27 +87,73 @@ return
   }
 
   const isDisabled = disabled || loading || isLoading
+  const showLoading = isLoading || loading
 
   return (
-    <Button
-      type="button"
-      variant="outline"
-      size="lg"
-      onClick={handleClick}
-      disabled={isDisabled}
-      loading={isLoading || loading}
-      className={cn(
-        "relative w-full border-gray-300 bg-white font-medium text-gray-700 transition-all duration-200 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-300 dark:hover:bg-gray-800",
-        "focus:ring-2 focus:ring-blue-500 focus:ring-offset-2",
-        "hover:shadow-md active:scale-[0.98]",
-        isDisabled && "cursor-not-allowed opacity-60",
-        className
-      )}
-      leftIcon={!isLoading && !loading ? <GoogleIcon /> : undefined}
-      aria-label={`${text} - Opens Google authentication in a new window`}
-    >
-      {text}
-    </Button>
+    <>
+      <style>{`
+        @keyframes spin {
+          0% { transform: rotate(0deg); }
+          100% { transform: rotate(360deg); }
+        }
+      `}</style>
+      <button
+        type="button"
+        onClick={handleClick}
+        disabled={isDisabled}
+        aria-label={`${text} - Opens Google authentication in a new window`}
+        style={{
+          width: '100%',
+          padding: '12px 16px',
+          border: '1px solid #d1d5db',
+          borderRadius: '8px',
+          backgroundColor: isDisabled ? '#f9fafb' : 'white',
+          color: isDisabled ? '#9ca3af' : '#374151',
+          fontSize: '16px',
+          fontWeight: '500',
+          fontFamily: 'inherit',
+          cursor: isDisabled ? 'not-allowed' : 'pointer',
+          transition: 'all 0.2s ease',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          outline: 'none',
+          boxSizing: 'border-box',
+          minHeight: '48px'
+        }}
+        onMouseEnter={(e) => {
+          if (!isDisabled) {
+            const target = e.target as HTMLButtonElement
+            target.style.setProperty('background-color', '#f9fafb')
+            target.style.setProperty('border-color', '#9ca3af')
+          }
+        }}
+        onMouseLeave={(e) => {
+          if (!isDisabled) {
+            const target = e.target as HTMLButtonElement
+            target.style.setProperty('background-color', 'white')
+            target.style.setProperty('border-color', '#d1d5db')
+          }
+        }}
+        onFocus={(e) => {
+          if (!isDisabled) {
+            const target = e.target as HTMLButtonElement
+            target.style.setProperty('border-color', '#2563eb')
+            target.style.setProperty('box-shadow', '0 0 0 3px rgba(37, 99, 235, 0.1)')
+          }
+        }}
+        onBlur={(e) => {
+          if (!isDisabled) {
+            const target = e.target as HTMLButtonElement
+            target.style.setProperty('border-color', '#d1d5db')
+            target.style.setProperty('box-shadow', 'none')
+          }
+        }}
+      >
+        {showLoading ? <LoadingSpinner /> : <GoogleIcon />}
+        {text}
+      </button>
+    </>
   )
 }
 

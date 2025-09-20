@@ -227,24 +227,6 @@ export function ForgotPasswordForm({ className, onBackToLogin }: ForgotPasswordF
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-        <h2 style={{
-          fontSize: '24px',
-          fontWeight: '700',
-          color: '#111827',
-          marginBottom: '8px'
-        }}>
-          Reset Your Password
-        </h2>
-        <p style={{
-          fontSize: '16px',
-          color: '#6b7280',
-          lineHeight: '1.5'
-        }}>
-          Enter your email address and we'll send you a link to reset your password.
-        </p>
-      </div>
 
       <form onSubmit={handleSubmit} style={{ marginBottom: '24px' }}>
         {/* Email Field */}

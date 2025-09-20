@@ -351,24 +351,6 @@ export function ResetPasswordForm({ className, token, onSuccess }: ResetPassword
         </div>
       )}
 
-      {/* Header */}
-      <div style={{ marginBottom: '24px', textAlign: 'center' }}>
-        <h2 style={{
-          fontSize: '24px',
-          fontWeight: '700',
-          color: '#111827',
-          marginBottom: '8px'
-        }}>
-          Set New Password
-        </h2>
-        <p style={{
-          fontSize: '16px',
-          color: '#6b7280',
-          lineHeight: '1.5'
-        }}>
-          Please enter your new password below.
-        </p>
-      </div>
 
       <form onSubmit={handleSubmit} style={{ marginBottom: '24px' }}>
         {/* New Password Field */}

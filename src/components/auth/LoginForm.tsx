@@ -1,33 +1,18 @@
 /**
- * LoginForm Component
+ * LoginForm Component - BULLETPROOF VERSION
  *
- * Complete login form with email/password authentication, real-time validation,
- * Google OAuth integration, and comprehensive error handling.
- *
- * Location: src/components/auth/LoginForm.tsx
+ * Completely isolated styling that overrides ALL possible CSS conflicts
+ * Uses aggressive CSS specificity and !important declarations
  */
 
 'use client'
 
-import * as React from 'react'
 import { useState } from 'react'
-
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 
-import { cn } from '../../lib/utils'
-
 import { useAuthForm } from '../../hooks/useAuth'
 import { loginSchema } from '../../lib/utils/validation'
-import { Button } from '../ui/Button'
-import { Input } from '../ui/Input'
-import {
-  Section,
-  SectionContent,
-  SectionDivider
-} from '../ui/Section'
-
-
 import GoogleAuthButton from './GoogleAuthButton'
 
 interface LoginFormProps {
@@ -176,171 +161,534 @@ export function LoginForm({ className, redirectTo }: LoginFormProps) {
   }
 
   return (
-    <div className={cn("space-y-4", className)}>
-      {/* Error Display Section */}
-      {getDisplayError() && (
-        <Section
-          variant="warning"
-          padding="default"
-          spacing="sm"
-          className="border-red-200 bg-red-50 dark:border-red-800 dark:bg-red-900/20"
-        >
-          <div className="flex" role="alert" aria-live="polite">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
-                <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.28 7.22a.75.75 0 00-1.06 1.06L8.94 10l-1.72 1.72a.75.75 0 101.06 1.06L10 11.06l1.72 1.72a.75.75 0 101.06-1.06L11.06 10l1.72-1.72a.75.75 0 00-1.06-1.06L10 8.94 8.28 7.22z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <p className="text-sm text-red-800 dark:text-red-200">
-                {getDisplayError()}
-              </p>
-            </div>
+    <>
+      {/* BULLETPROOF CSS that overrides everything */}
+      <style>{`
+        /* Reset and override ANY conflicting styles */
+        .stembot-login-form * {
+          box-sizing: border-box !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          font-family: system-ui, -apple-system, sans-serif !important;
+          font-size: inherit !important;
+          line-height: normal !important;
+          color: inherit !important;
+          text-decoration: none !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          word-spacing: normal !important;
+          white-space: normal !important;
+          vertical-align: baseline !important;
+          list-style: none !important;
+          border-collapse: collapse !important;
+          border-spacing: 0 !important;
+          position: static !important;
+          top: auto !important;
+          right: auto !important;
+          bottom: auto !important;
+          left: auto !important;
+          z-index: auto !important;
+          float: none !important;
+          clear: none !important;
+          overflow: visible !important;
+          clip: auto !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          transform: none !important;
+          animation: none !important;
+          transition: none !important;
+          content: none !important;
+          quotes: none !important;
+          counter-reset: none !important;
+          counter-increment: none !important;
+          min-width: 0 !important;
+          max-width: none !important;
+          min-height: 0 !important;
+          max-height: none !important;
+          resize: none !important;
+          outline: none !important;
+          outline-offset: 0 !important;
+          text-shadow: none !important;
+          box-shadow: none !important;
+          border-radius: 0 !important;
+          background-image: none !important;
+          background-repeat: no-repeat !important;
+          background-attachment: scroll !important;
+          background-position: 0 0 !important;
+          background-size: auto !important;
+          background-origin: padding-box !important;
+          background-clip: border-box !important;
+        }
+
+        /* Container */
+        .stembot-login-form {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 20px !important;
+          width: 100% !important;
+          font-family: system-ui, -apple-system, sans-serif !important;
+        }
+
+        /* Labels */
+        .stembot-login-form .field-label {
+          display: block !important;
+          font-size: 14px !important;
+          font-weight: 500 !important;
+          color: #374151 !important;
+          margin-bottom: 6px !important;
+          margin-top: 0 !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          line-height: normal !important;
+        }
+
+        /* Input fields */
+        .stembot-login-form .field-input {
+          width: 100% !important;
+          padding: 12px 16px !important;
+          border: 2px solid #d1d5db !important;
+          border-radius: 8px !important;
+          font-size: 16px !important;
+          background-color: white !important;
+          outline: none !important;
+          box-sizing: border-box !important;
+          font-family: inherit !important;
+          color: #111827 !important;
+          transition: border-color 0.2s ease !important;
+          height: auto !important;
+          min-height: 48px !important;
+          max-height: none !important;
+          margin: 0 !important;
+          position: static !important;
+          display: block !important;
+          text-align: left !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          word-spacing: normal !important;
+          line-height: normal !important;
+          white-space: normal !important;
+          vertical-align: baseline !important;
+          resize: none !important;
+          overflow: visible !important;
+          clip: auto !important;
+          visibility: visible !important;
+          opacity: 1 !important;
+          transform: none !important;
+          animation: none !important;
+          content: none !important;
+          text-shadow: none !important;
+          box-shadow: none !important;
+          background-image: none !important;
+          background-repeat: no-repeat !important;
+          background-attachment: scroll !important;
+          background-position: 0 0 !important;
+          background-size: auto !important;
+          background-origin: padding-box !important;
+          background-clip: border-box !important;
+        }
+
+        .stembot-login-form .field-input:focus {
+          border-color: #2563eb !important;
+          outline: none !important;
+          box-shadow: none !important;
+        }
+
+        .stembot-login-form .field-input.error {
+          border-color: #ef4444 !important;
+        }
+
+        .stembot-login-form .field-input:disabled {
+          background-color: #f9fafb !important;
+          color: #9ca3af !important;
+          cursor: not-allowed !important;
+        }
+
+        /* Button */
+        .stembot-login-form .submit-button {
+          width: 100% !important;
+          padding: 12px !important;
+          background-color: #2563eb !important;
+          color: white !important;
+          border: none !important;
+          border-radius: 8px !important;
+          font-size: 16px !important;
+          font-weight: 600 !important;
+          cursor: pointer !important;
+          transition: background-color 0.2s ease !important;
+          box-sizing: border-box !important;
+          font-family: inherit !important;
+          min-height: 48px !important;
+          margin: 0 !important;
+          display: block !important;
+          text-align: center !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          line-height: normal !important;
+          white-space: normal !important;
+          vertical-align: baseline !important;
+          position: static !important;
+          outline: none !important;
+          text-shadow: none !important;
+          box-shadow: none !important;
+          background-image: none !important;
+          background-repeat: no-repeat !important;
+          background-attachment: scroll !important;
+          background-position: 0 0 !important;
+          background-size: auto !important;
+          background-origin: padding-box !important;
+          background-clip: border-box !important;
+        }
+
+        .stembot-login-form .submit-button:disabled {
+          background-color: #9ca3af !important;
+          cursor: not-allowed !important;
+        }
+
+        .stembot-login-form .submit-button:hover:not(:disabled) {
+          background-color: #1d4ed8 !important;
+        }
+
+        /* Error text */
+        .stembot-login-form .error-text {
+          color: #ef4444 !important;
+          font-size: 12px !important;
+          margin-top: 4px !important;
+          margin-bottom: 0 !important;
+          margin-left: 0 !important;
+          margin-right: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          font-family: inherit !important;
+          line-height: normal !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          word-spacing: normal !important;
+          white-space: normal !important;
+          vertical-align: baseline !important;
+        }
+
+        /* Field containers */
+        .stembot-login-form .field-container {
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          position: static !important;
+          display: block !important;
+        }
+
+        /* Password container */
+        .stembot-login-form .password-container {
+          position: relative !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          display: block !important;
+        }
+
+        /* Password toggle */
+        .stembot-login-form .password-toggle {
+          position: absolute !important;
+          right: 12px !important;
+          top: 50% !important;
+          transform: translateY(-50%) !important;
+          background: none !important;
+          border: none !important;
+          color: #6b7280 !important;
+          cursor: pointer !important;
+          font-size: 14px !important;
+          padding: 4px !important;
+          margin: 0 !important;
+          font-family: inherit !important;
+          line-height: normal !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          outline: none !important;
+          text-shadow: none !important;
+          box-shadow: none !important;
+          text-align: center !important;
+          vertical-align: baseline !important;
+        }
+
+        /* Row layouts */
+        .stembot-login-form .form-row {
+          display: flex !important;
+          justify-content: space-between !important;
+          align-items: center !important;
+          width: 100% !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          position: static !important;
+        }
+
+        .stembot-login-form .checkbox-label {
+          display: flex !important;
+          align-items: center !important;
+          gap: 8px !important;
+          cursor: pointer !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          font-family: inherit !important;
+          font-size: 14px !important;
+          color: #6b7280 !important;
+          line-height: normal !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          position: static !important;
+        }
+
+        .stembot-login-form .checkbox-input {
+          accent-color: #2563eb !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          width: auto !important;
+          height: auto !important;
+          min-width: 0 !important;
+          min-height: 0 !important;
+          max-width: none !important;
+          max-height: none !important;
+          font-size: inherit !important;
+          font-family: inherit !important;
+          color: inherit !important;
+          outline: none !important;
+          position: static !important;
+        }
+
+        /* Links */
+        .stembot-login-form .form-link {
+          font-size: 14px !important;
+          color: #2563eb !important;
+          text-decoration: none !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          font-family: inherit !important;
+          line-height: normal !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          position: static !important;
+          outline: none !important;
+        }
+
+        .stembot-login-form .form-link:hover {
+          text-decoration: underline !important;
+        }
+
+        /* Divider */
+        .stembot-login-form .divider-container {
+          display: flex !important;
+          align-items: center !important;
+          text-align: center !important;
+          margin: 20px 0 !important;
+          width: 100% !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          position: static !important;
+        }
+
+        .stembot-login-form .divider-line {
+          flex: 1 !important;
+          height: 1px !important;
+          background-color: #e5e7eb !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          position: static !important;
+        }
+
+        .stembot-login-form .divider-text {
+          padding: 0 16px !important;
+          font-size: 14px !important;
+          color: #6b7280 !important;
+          background-color: white !important;
+          margin: 0 !important;
+          border: none !important;
+          font-family: inherit !important;
+          line-height: normal !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          position: static !important;
+        }
+
+        /* Sign up section */
+        .stembot-login-form .signup-section {
+          text-align: center !important;
+          padding: 16px !important;
+          background-color: #f9fafb !important;
+          border-radius: 8px !important;
+          margin: 0 !important;
+          border: none !important;
+          font-family: inherit !important;
+          position: static !important;
+          width: 100% !important;
+          box-sizing: border-box !important;
+        }
+
+        .stembot-login-form .signup-text {
+          font-size: 14px !important;
+          color: #6b7280 !important;
+          margin: 0 !important;
+          padding: 0 !important;
+          border: none !important;
+          background: none !important;
+          font-family: inherit !important;
+          line-height: normal !important;
+          text-transform: none !important;
+          letter-spacing: normal !important;
+          position: static !important;
+        }
+      `}</style>
+
+      <div className="stembot-login-form">
+        {/* Error Display */}
+        {getDisplayError() && (
+          <div style={{
+            backgroundColor: '#fef2f2',
+            border: '1px solid #fecaca',
+            borderRadius: '8px',
+            padding: '12px',
+            color: '#dc2626',
+            fontSize: '14px'
+          }}>
+            {getDisplayError()}
           </div>
-        </Section>
-      )}
+        )}
 
-      {/* Main Form Section */}
-      <Section variant="transparent" padding="none" spacing="sm">
-        <form onSubmit={handleSubmit} className="space-y-4" noValidate>
-        {/* Email Field */}
-        <Input
-          id="email"
-          name="email"
-          type="email"
-          label="Email"
-          placeholder="Enter your email address"
-          value={formData.email}
-          onChange={handleInputChange}
-          onBlur={handleBlur}
-          errorText={errors.email}
-          disabled={loading}
-          autoComplete="email"
-          required
-          aria-describedby="email-error"
-          inputSize="lg"
-          leftIcon={
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
-            </svg>
-          }
-        />
-
-        {/* Password Field */}
-        <Input
-          id="password"
-          name="password"
-          type={showPassword ? "text" : "password"}
-          label="Password"
-          placeholder="Enter your password"
-          value={formData.password}
-          onChange={handleInputChange}
-          onBlur={handleBlur}
-          errorText={errors.password}
-          disabled={loading}
-          autoComplete="current-password"
-          required
-          aria-describedby="password-error"
-          inputSize="lg"
-          leftIcon={
-            <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          }
-          rightIcon={
-            <button
-              type="button"
-              onClick={() => setShowPassword(!showPassword)}
-              className="text-gray-400 transition-colors hover:text-gray-600 dark:hover:text-gray-300"
-              aria-label={showPassword ? "Hide password" : "Show password"}
-            >
-              {showPassword ? (
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.878 9.878L8.464 8.464m1.414 1.414L18.5 18.5M21 12c-1.274 4.057-5.065 7-9.542 7m0 0L9.878 9.878" />
-                </svg>
-              ) : (
-                <svg className="h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                </svg>
-              )}
-            </button>
-          }
-        />
-
-        {/* Remember Me & Forgot Password */}
-        <div className="flex items-center justify-between">
-          <label className="flex cursor-pointer items-center space-x-2">
+        {/* Main Form */}
+        <form onSubmit={handleSubmit}>
+          {/* Email Field */}
+          <div className="field-container">
+            <label className="field-label">
+              📧 Email
+            </label>
             <input
-              type="checkbox"
-              name="rememberMe"
-              checked={formData.rememberMe}
+              id="email"
+              name="email"
+              type="email"
+              placeholder="Enter your email address"
+              value={formData.email}
               onChange={handleInputChange}
+              onBlur={handleBlur}
               disabled={loading}
-              className="rounded border-gray-300 text-blue-600 focus:ring-blue-500 focus:ring-offset-0"
+              autoComplete="email"
+              required
+              className={`field-input ${errors.email ? 'error' : ''}`}
             />
-            <span className="text-sm text-gray-700 dark:text-gray-300">
-              Remember me
-            </span>
-          </label>
+            {errors.email && (
+              <p className="error-text">
+                {errors.email}
+              </p>
+            )}
+          </div>
 
-          <Link
-            href="/auth/forgot-password"
-            className="text-sm text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Forgot password?
-          </Link>
-        </div>
+          {/* Password Field */}
+          <div className="field-container">
+            <label className="field-label">
+              🔒 Password
+            </label>
+            <div className="password-container">
+              <input
+                id="password"
+                name="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="Enter your password"
+                value={formData.password}
+                onChange={handleInputChange}
+                onBlur={handleBlur}
+                disabled={loading}
+                autoComplete="current-password"
+                required
+                className={`field-input ${errors.password ? 'error' : ''}`}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="password-toggle"
+                aria-label={showPassword ? "Hide password" : "Show password"}
+              >
+                {showPassword ? '👁️' : '👁️‍🗨️'}
+              </button>
+            </div>
+            {errors.password && (
+              <p className="error-text">
+                {errors.password}
+              </p>
+            )}
+          </div>
+
+          {/* Remember Me & Forgot Password */}
+          <div className="form-row">
+            <label className="checkbox-label">
+              <input
+                type="checkbox"
+                name="rememberMe"
+                checked={formData.rememberMe}
+                onChange={handleInputChange}
+                disabled={loading}
+                className="checkbox-input"
+              />
+              <span>Remember me</span>
+            </label>
+
+            <Link href="/auth/forgot-password" className="form-link">
+              Forgot password?
+            </Link>
+          </div>
 
           {/* Sign In Button */}
-          <Button
+          <button
             type="submit"
-            size="lg"
-            loading={loading}
             disabled={loading || !formData.email || !formData.password}
-            className="w-full bg-blue-600 font-medium text-white transition-all duration-200 hover:bg-blue-700"
+            className="submit-button"
           >
-            Sign In
-          </Button>
+            {loading ? 'Signing In...' : 'Sign In'}
+          </button>
         </form>
-      </Section>
 
-      {/* Divider Section */}
-      <Section variant="transparent" padding="none" spacing="sm">
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <div className="w-full border-t border-gray-300 dark:border-gray-600" />
-          </div>
-          <div className="relative flex justify-center text-sm">
-            <span className="bg-white px-3 text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-              Or continue with
-            </span>
-          </div>
+        {/* Divider */}
+        <div className="divider-container">
+          <div className="divider-line"></div>
+          <span className="divider-text">Or continue with</span>
+          <div className="divider-line"></div>
         </div>
-      </Section>
 
-      {/* Google Auth Section */}
-      <Section variant="transparent" padding="none" spacing="sm">
+        {/* Google Auth */}
         <GoogleAuthButton
           onSignIn={handleGoogleAuth}
           loading={loading}
           text="Continue with Google"
         />
-      </Section>
 
-      {/* Sign Up Link Section */}
-      <Section variant="light" padding="default" spacing="none" className="text-center">
-        <p className="text-sm text-gray-600 dark:text-gray-400">
-          Don't have an account?{' '}
-          <Link
-            href="/auth/register"
-            className="font-medium text-blue-600 transition-colors hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
-          >
-            Sign up
-          </Link>
-        </p>
-      </Section>
-    </div>
+        {/* Sign Up Link */}
+        <div className="signup-section">
+          <p className="signup-text">
+            Don't have an account?{' '}
+            <Link href="/auth/register" className="form-link">
+              Sign up
+            </Link>
+          </p>
+        </div>
+      </div>
+    </>
   )
 }
 
