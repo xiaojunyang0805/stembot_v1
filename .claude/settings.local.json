@@ -30,7 +30,8 @@
       "Bash(taskkill:*)",
       "Bash(git init:*)",
       "Bash(tree:*)",
-      "Bash(gh auth:*)"
+      "Bash(gh auth:*)",
+      "Bash(git remote set-url:*)"
     ],
     "deny": [],
     "ask": []
