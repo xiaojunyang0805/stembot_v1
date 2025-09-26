@@ -70,14 +70,25 @@ export function LoginForm({ className, redirectTo }: LoginFormProps) {
   const validateField = (name: string, value: string) => {
     try {
       if (name === 'email') {
-        loginSchema.shape.email.parse(value)
-        setErrors(prev => ({ ...prev, email: undefined }))
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!value) {
+          setErrors(prev => ({ ...prev, email: 'Email is required' }))
+        } else if (!emailPattern.test(value)) {
+          setErrors(prev => ({ ...prev, email: 'Please enter a valid email address' }))
+        } else {
+          setErrors(prev => ({ ...prev, email: undefined }))
+        }
       } else if (name === 'password') {
-        loginSchema.shape.password.parse(value)
-        setErrors(prev => ({ ...prev, password: undefined }))
+        if (!value) {
+          setErrors(prev => ({ ...prev, password: 'Password is required' }))
+        } else if (value.length < 6) {
+          setErrors(prev => ({ ...prev, password: 'Password must be at least 6 characters' }))
+        } else {
+          setErrors(prev => ({ ...prev, password: undefined }))
+        }
       }
     } catch (error: any) {
-      const errorMessage = error.errors?.[0]?.message || 'Invalid input'
+      const errorMessage = 'Invalid input'
       setErrors(prev => ({ ...prev, [name]: errorMessage }))
     }
   }
@@ -124,22 +135,41 @@ export function LoginForm({ className, redirectTo }: LoginFormProps) {
 
     // Validate all fields
     try {
-      const validatedData = loginSchema.parse(formData)
+      let hasErrors = false;
+      const fieldErrors: FormErrors = {};
+
+      // Email validation
+      if (!formData.email) {
+        fieldErrors.email = 'Email is required';
+        hasErrors = true;
+      } else {
+        const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailPattern.test(formData.email)) {
+          fieldErrors.email = 'Please enter a valid email address';
+          hasErrors = true;
+        }
+      }
+
+      // Password validation
+      if (!formData.password) {
+        fieldErrors.password = 'Password is required';
+        hasErrors = true;
+      } else if (formData.password.length < 6) {
+        fieldErrors.password = 'Password must be at least 6 characters';
+        hasErrors = true;
+      }
+
+      if (hasErrors) {
+        setErrors(fieldErrors);
+        return;
+      }
 
       await handleSignIn({
-        email: validatedData.email,
-        password: validatedData.password
+        email: formData.email,
+        password: formData.password
       })
     } catch (error: any) {
-      if (error.errors) {
-        // Zod validation errors
-        const fieldErrors: FormErrors = {}
-        error.errors.forEach((err: any) => {
-          const field = err.path[0]
-          fieldErrors[field as keyof FormErrors] = err.message
-        })
-        setErrors(fieldErrors)
-      }
+      console.error('Login error:', error);
     }
   }
 

@@ -1,5 +1,4 @@
-import type { User, Session } from '@supabase/supabase-js'
-
+// Mock types for UI-only components (no Supabase dependency)
 export type UserRole = 'researcher' | 'admin'
 
 export interface UserPreferences {
@@ -36,6 +35,30 @@ export interface UserProfile {
 
 export type UserProfileInsert = Omit<UserProfile, 'created_at' | 'updated_at'>
 export type UserProfileUpdate = Partial<Omit<UserProfile, 'id' | 'created_at' | 'updated_at'>>
+
+// Mock User type for UI-only components
+export interface User {
+  id: string
+  email: string
+  email_confirmed_at?: string
+  phone?: string
+  phone_confirmed_at?: string
+  created_at: string
+  updated_at: string
+  last_sign_in_at?: string
+  app_metadata?: Record<string, any>
+  user_metadata?: Record<string, any>
+}
+
+// Mock Session type for UI-only components
+export interface Session {
+  access_token: string
+  refresh_token: string
+  expires_in: number
+  expires_at?: number
+  token_type: string
+  user: User
+}
 
 export interface AuthUser extends User {
   profile?: UserProfile | null

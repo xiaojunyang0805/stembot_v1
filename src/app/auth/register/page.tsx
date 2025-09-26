@@ -12,11 +12,11 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 
 import RegisterForm from '../../../components/auth/RegisterForm';
-import { useAuthContext } from '../../../providers/AuthProvider';
+import { useAuth } from '../../../providers/AuthProvider';
 
 export default function RegisterPage() {
   const router = useRouter();
-  const { user, loading } = useAuthContext();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     document.title = 'Sign Up - StemBot';

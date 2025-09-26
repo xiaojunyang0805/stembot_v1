@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getIntegrationStatus } from '@/lib/integration';
+import { getIntegrationStatus, type IntegrationStatus as IntegrationStatusType } from '@/lib/integration';
 
 interface IntegrationStatusProps {
   showInProduction?: boolean;
@@ -17,17 +17,21 @@ export default function IntegrationStatus({
   showInProduction = false,
   className = ""
 }: IntegrationStatusProps) {
-  const [status, setStatus] = useState<any>(null);
+  const [status, setStatus] = useState<IntegrationStatusType | null>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    const integrationStatus = getIntegrationStatus();
-    setStatus(integrationStatus);
+    const loadStatus = async () => {
+      const integrationStatus = await getIntegrationStatus();
+      setStatus(integrationStatus);
 
-    // Only show in development or if explicitly enabled for production
-    setIsVisible(
-      integrationStatus.environment !== 'production' || showInProduction
-    );
+      // Only show in development or if explicitly enabled for production
+      setIsVisible(
+        integrationStatus.environment !== 'production' || showInProduction
+      );
+    };
+
+    loadStatus();
   }, [showInProduction]);
 
   if (!isVisible || !status) {
@@ -79,7 +83,19 @@ export default function IntegrationStatus({
  * Environment configuration helper component
  */
 export function IntegrationConfig() {
-  const status = getIntegrationStatus();
+  const [status, setStatus] = useState<IntegrationStatusType | null>(null);
+
+  useEffect(() => {
+    const loadStatus = async () => {
+      const integrationStatus = await getIntegrationStatus();
+      setStatus(integrationStatus);
+    };
+    loadStatus();
+  }, []);
+
+  if (!status) {
+    return <div>Loading integration status...</div>;
+  }
 
   return (
     <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">

@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
-import { createBrowserClient } from '@supabase/ssr'
+// Mock import for UI-only components
 
 interface Project {
   id: string
@@ -23,11 +23,7 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
   const [projects, setProjects] = useState<Project[]>([])
   const router = useRouter()
 
-  // Create supabase client inline to avoid module resolution issues
-  const supabase = createBrowserClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  )
+  // Mock supabase client for UI-only demo
 
   useEffect(() => {
     fetchProjects()
@@ -70,10 +66,8 @@ export const DashboardHeader: React.FC<DashboardHeaderProps> = ({
 
   const handleSignOut = async () => {
     try {
-      const { error } = await supabase.auth.signOut()
-      if (error) {
-        throw new Error(error.message)
-      }
+      // Mock sign out for UI-only demo
+      await new Promise(resolve => setTimeout(resolve, 500));
       router.push('/auth/login')
     } catch (error) {
       console.error('Error signing out:', error)

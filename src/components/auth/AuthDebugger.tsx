@@ -1,9 +1,9 @@
 'use client'
 
-import { useAuthContext } from '../../providers/AuthProvider'
+import { useAuth } from '../../providers/AuthProvider'
 
 export function AuthDebugger() {
-  const auth = useAuthContext()
+  const auth = useAuth()
 
   console.log('AuthDebugger render:', {
     loading: auth.loading,

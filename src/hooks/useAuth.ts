@@ -2,7 +2,7 @@
 
 import { useCallback } from 'react'
 
-import { useAuthContext } from '../providers/AuthProvider'
+import { useAuth as useAuthContext } from '../providers/AuthProvider'
 import type {
   AuthContextType,
   LoginCredentials,

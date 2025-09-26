@@ -13,11 +13,11 @@ import { useRouter } from 'next/navigation';
 
 import { AuthDebugger } from '../../../components/auth/AuthDebugger';
 import LoginForm from '../../../components/auth/LoginForm';
-import { useAuthContext } from '../../../providers/AuthProvider';
+import { useAuth } from '../../../providers/AuthProvider';
 
 export default function LoginPage() {
   const router = useRouter();
-  const { user, loading } = useAuthContext();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     document.title = 'Sign In - StemBot';

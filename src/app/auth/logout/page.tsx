@@ -2,7 +2,7 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { createBrowserClient } from '@supabase/ssr';
+// Mock import for UI-only components
 
 export default function LogoutPage() {
   const router = useRouter();
@@ -10,14 +10,9 @@ export default function LogoutPage() {
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        // Create Supabase client directly
-        const supabase = createBrowserClient(
-          process.env.NEXT_PUBLIC_SUPABASE_URL!,
-          process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-        );
-
-        await supabase.auth.signOut();
-        // Redirect to home page after successful logout
+        // Mock logout for UI-only demo
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        // Redirect to home page after mock logout
         router.push('/');
       } catch (error) {
         console.error('Error signing out:', error);

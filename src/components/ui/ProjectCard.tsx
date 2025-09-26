@@ -97,27 +97,27 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   const projectData = {
     id: project.id,
     title: project.title,
-    researchQuestion: project.question.refinedQuestion || project.question.originalQuestion,
-    field: project.field,
-    phase: project.stage,
-    progress: project.progress.overall,
-    startDate: project.createdAt,
-    targetDate: project.deadlines[0]?.dueDate,
-    lastActivity: project.updatedAt,
-    collaborators: project.collaboration?.collaborators.length || 0,
+    researchQuestion: project.question?.refinedQuestion || project.question?.originalQuestion || project.research_question || 'No research question',
+    field: project.field || 'General',
+    phase: project.stage || project.phase,
+    progress: typeof project.progress === 'number' ? project.progress : project.progress?.overall || 0,
+    startDate: project.createdAt || new Date(project.created_at),
+    targetDate: project.deadlines?.[0]?.dueDate,
+    lastActivity: project.updatedAt || new Date(project.updated_at),
+    collaborators: project.collaboration?.collaborators.length || project.collaborators?.length || 0,
     isStarred: false, // Default to false, can be enhanced later
     status: project.archivedAt ? 'archived' : 'active' as const,
     memoryContext: {
-      lastSession: project.sessionHistory[0]?.insights[0] || 'No recent activity',
-      nextSteps: project.sessionHistory[0]?.nextSteps || [],
-      insights: project.sessionHistory[0]?.insights || [],
+      lastSession: project.sessionHistory?.[0]?.insights?.[0] || 'No recent activity',
+      nextSteps: project.sessionHistory?.[0]?.nextSteps || [],
+      insights: project.sessionHistory?.[0]?.insights || [],
       confidence: 0.8, // Default confidence
     },
-    milestones: project.milestones.map(m => ({
+    milestones: project.milestones?.map((m: any) => ({
       phase: m.stage,
       completed: m.completed,
       dueDate: m.dueDate,
-    })),
+    })) || [],
   };
 
   const phaseConfig = {
@@ -189,7 +189,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
     },
   };
 
-  const currentPhase = phaseConfig[projectData.phase];
+  const currentPhase = phaseConfig[projectData.phase as keyof typeof phaseConfig];
   const PhaseIcon = currentPhase.icon;
 
   const getStatusColor = () => {
@@ -339,7 +339,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
-            <span>Started {projectData.startDate.toLocaleDateString()}</span>
+            <span>Started {projectData.startDate?.toLocaleDateString?.() || 'Unknown'}</span>
           </div>
           {projectData.collaborators > 1 && (
             <div className="flex items-center gap-1">
@@ -383,7 +383,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 Recent Insights
               </h4>
               <div className="space-y-1">
-                {projectData.memoryContext.insights.slice(0, 3).map((insight, index) => (
+                {projectData.memoryContext.insights.slice(0, 3).map((insight: any, index: number) => (
                   <div key={index} className="flex items-start gap-2">
                     <div className="h-1.5 w-1.5 rounded-full bg-memory-purple mt-2" />
                     <span className="text-xs text-academic-secondary">

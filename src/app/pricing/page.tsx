@@ -7,12 +7,12 @@
 
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { loadStripe } from '@stripe/stripe-js';
+import { loadStripe } from '../../lib/stripe';
 import { PricingCard } from '../../components/billing/PricingCard';
 import { PRICING, STRIPE_PRODUCTS } from '../../lib/stripe/config';
 import type { PricingTier } from '../../types/billing';
 
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe();
 
 export default function PricingPage() {
   const [currentTier, setCurrentTier] = useState<string>('free');
@@ -88,17 +88,9 @@ export default function PricingPage() {
         throw new Error(data.error || 'Failed to create checkout session');
       }
 
-      // Redirect to Stripe Checkout
-      const stripe = await stripePromise;
-      if (stripe) {
-        const { error } = await stripe.redirectToCheckout({
-          sessionId: data.sessionId,
-        });
-
-        if (error) {
-          throw new Error(error.message);
-        }
-      }
+      // Mock Stripe Checkout for UI demo
+      console.log('Mock subscription created for tier:', tierId);
+      alert('Subscription feature is in demo mode. In production, this would redirect to Stripe Checkout.');
     } catch (error: any) {
       console.error('Subscription error:', error);
       alert(error.message || 'Failed to start subscription process');
@@ -108,15 +100,15 @@ export default function PricingPage() {
   };
 
   const individualTiers = [
-    PRICING.FREE,
-    billingInterval === 'monthly' ? PRICING.PRO_MONTHLY : PRICING.PRO_ANNUAL,
-    PRICING.STUDENT_MONTHLY,
+    (PRICING as any).FREE || PRICING[0],
+    billingInterval === 'monthly' ? (PRICING as any).PRO_MONTHLY || PRICING[1] : (PRICING as any).PRO_ANNUAL || PRICING[2],
+    (PRICING as any).STUDENT_MONTHLY || PRICING[3],
   ];
 
   const institutionTiers = [
-    PRICING.DEPARTMENT_LICENSE,
-    PRICING.INSTITUTION_LICENSE,
-  ];
+    (PRICING as any).DEPARTMENT_LICENSE || PRICING[4],
+    (PRICING as any).INSTITUTION_LICENSE || PRICING[5],
+  ].filter(Boolean);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12">

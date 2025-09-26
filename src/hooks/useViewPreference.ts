@@ -17,7 +17,7 @@ export function useViewPreference(defaultView: ViewMode = 'grid') {
     try {
       const stored = localStorage.getItem(VIEW_PREFERENCE_KEY);
       if (stored !== null && stored.length > 0) {
-        const parsedView = safeJsonParse<ViewMode>(stored, defaultView);
+        const parsedView = safeJsonParse(stored, defaultView);
         if (parsedView === 'grid' || parsedView === 'list') {
           setView(parsedView);
         }

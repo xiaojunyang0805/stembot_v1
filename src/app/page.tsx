@@ -1,9 +1,9 @@
 'use client';
 
-import { useAuthContext } from '../providers/AuthProvider';
+import { useAuth } from '../providers/AuthProvider';
 
 function HeaderNavigation() {
-  const { user, loading } = useAuthContext();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return (
