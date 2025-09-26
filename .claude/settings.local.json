@@ -1,0 +1,38 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(sed:*)",
+      "Bash(npm run type-check:*)",
+      "Bash(cat:*)",
+      "Bash(node:*)",
+      "Bash(npx tsc:*)",
+      "Bash(git checkout:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)",
+      "Bash(npm run lint)",
+      "Bash(npx eslint:*)",
+      "Bash(mkdir:*)",
+      "Bash(npm run lint:*)",
+      "Bash(npm run build:*)",
+      "Bash(find:*)",
+      "Read(//d/**)",
+      "Bash(ls:*)",
+      "Bash(grep:*)",
+      "Bash(tail:*)",
+      "Bash(npm install:*)",
+      "Bash(npm run:*)",
+      "mcp__ide__executeCode",
+      "WebFetch(domain:stembotv1.vercel.app)",
+      "WebFetch(domain:supabase.com)",
+      "WebFetch(domain:kutpbtpdgptcmrlabekq.supabase.co)",
+      "WebSearch",
+      "Bash(taskkill:*)",
+      "Bash(git init:*)",
+      "Bash(tree:*)",
+      "Bash(gh auth:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}
