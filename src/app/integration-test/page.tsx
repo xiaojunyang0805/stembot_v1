@@ -6,8 +6,8 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { coreIntegration, getIntegrationStatus } from '@/lib/integration';
-import IntegrationStatus, { IntegrationConfig } from '@/components/common/IntegrationStatus';
+import { coreIntegration, getIntegrationStatus } from '../../lib/integration';
+import IntegrationStatus, { IntegrationConfig } from '../../components/common/IntegrationStatus';
 
 export default function IntegrationTestPage() {
   const [testResults, setTestResults] = useState<any[]>([]);

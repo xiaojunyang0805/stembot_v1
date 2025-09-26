@@ -6,7 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { getIntegrationStatus, type IntegrationStatus as IntegrationStatusType } from '@/lib/integration';
+import { getIntegrationStatus, type IntegrationStatus as IntegrationStatusType } from '../../lib/integration';
 
 interface IntegrationStatusProps {
   showInProduction?: boolean;
