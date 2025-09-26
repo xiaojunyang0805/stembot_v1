@@ -20,8 +20,6 @@ certificates/
 /src/lib/supabase/
 /src/lib/pinecone/
 /src/lib/ai/
-/src/lib/auth/
-/src/lib/stripe/
 /src/lib/memory/
 /src/lib/embeddings/
 /src/lib/research/
