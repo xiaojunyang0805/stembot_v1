@@ -14,43 +14,149 @@ export const plans = [
     id: 'free',
     name: 'Free',
     price: 0,
+    currency: 'USD',
     interval: 'month',
-    features: ['Basic research tools', 'Limited AI assistance']
+    features: {
+      projects: 3,
+      aiInteractions: 100,
+      memoryType: 'basic',
+      support: 'community',
+      exportFormats: ['pdf'],
+      collaboration: false,
+      adminDashboard: false,
+      usageAnalytics: false
+    },
+    limits: {
+      maxProjects: 3,
+      monthlyAiInteractions: 100,
+      maxSourcesPerProject: 10,
+      maxFileSize: 5
+    }
   },
   {
     id: 'pro_monthly',
     name: 'Pro Monthly',
     price: 19,
+    currency: 'USD',
     interval: 'month',
-    features: ['Advanced research tools', 'Unlimited AI assistance', 'Priority support']
+    features: {
+      projects: 'unlimited',
+      aiInteractions: 'unlimited',
+      memoryType: 'advanced',
+      support: 'priority',
+      exportFormats: ['pdf', 'docx', 'latex'],
+      collaboration: true,
+      adminDashboard: false,
+      usageAnalytics: true
+    },
+    limits: {
+      maxProjects: -1,
+      monthlyAiInteractions: -1,
+      maxSourcesPerProject: 100,
+      maxFileSize: 50
+    }
   },
   {
     id: 'pro_annual',
     name: 'Pro Annual',
     price: 15,
+    currency: 'USD',
     interval: 'month',
-    features: ['Advanced research tools', 'Unlimited AI assistance', 'Priority support', '2 months free']
+    features: {
+      projects: 'unlimited',
+      aiInteractions: 'unlimited',
+      memoryType: 'advanced',
+      support: 'priority',
+      exportFormats: ['pdf', 'docx', 'latex'],
+      collaboration: true,
+      adminDashboard: false,
+      usageAnalytics: true,
+      savings: '17%'
+    },
+    limits: {
+      maxProjects: -1,
+      monthlyAiInteractions: -1,
+      maxSourcesPerProject: 100,
+      maxFileSize: 50
+    }
   },
   {
     id: 'student_monthly',
     name: 'Student Monthly',
     price: 9,
+    currency: 'USD',
     interval: 'month',
-    features: ['Student verification required', 'Unlimited AI tutoring', 'Study guides']
+    features: {
+      projects: 10,
+      aiInteractions: 'unlimited',
+      memoryType: 'advanced',
+      support: 'standard',
+      exportFormats: ['pdf', 'docx'],
+      collaboration: true,
+      adminDashboard: false,
+      usageAnalytics: false
+    },
+    limits: {
+      maxProjects: 10,
+      monthlyAiInteractions: -1,
+      maxSourcesPerProject: 50,
+      maxFileSize: 25
+    },
+    requirements: {
+      universityEmail: true,
+      verification: 'Student verification required'
+    }
   },
   {
     id: 'department_license',
     name: 'Department License',
     price: 499,
+    currency: 'USD',
     interval: 'month',
-    features: ['Unlimited seats', 'Department analytics', 'Custom integrations']
+    features: {
+      projects: 'unlimited',
+      aiInteractions: 'unlimited',
+      memoryType: 'enterprise',
+      support: 'dedicated',
+      exportFormats: ['pdf', 'docx', 'latex', 'csv'],
+      collaboration: true,
+      adminDashboard: true,
+      usageAnalytics: true,
+      customBranding: false,
+      seats: 100
+    },
+    limits: {
+      maxProjects: -1,
+      monthlyAiInteractions: -1,
+      maxSourcesPerProject: 500,
+      maxFileSize: 100
+    }
   },
   {
     id: 'institution_license',
     name: 'Institution License',
     price: 999,
+    currency: 'USD',
     interval: 'month',
-    features: ['Unlimited seats', 'Institution-wide analytics', 'Custom branding']
+    features: {
+      projects: 'unlimited',
+      aiInteractions: 'unlimited',
+      memoryType: 'enterprise',
+      support: 'dedicated',
+      exportFormats: ['pdf', 'docx', 'latex', 'csv'],
+      collaboration: true,
+      adminDashboard: true,
+      usageAnalytics: true,
+      customBranding: true,
+      sso: true,
+      seats: 'unlimited'
+    },
+    limits: {
+      maxProjects: -1,
+      monthlyAiInteractions: -1,
+      maxSourcesPerProject: 1000,
+      maxFileSize: 500
+    }
   }
 ];
 
