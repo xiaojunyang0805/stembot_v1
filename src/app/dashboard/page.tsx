@@ -207,9 +207,9 @@ return;
       </div>
 
       {/* Navigation Tabs */}
-      <div className="border-b bg-white">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <nav className="flex space-x-8">
+      <div className="border-b bg-white" style={{borderBottom: '1px solid #e5e7eb', backgroundColor: 'white'}}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" style={{maxWidth: '80rem', margin: '0 auto', padding: '0 1rem'}}>
+          <nav className="flex space-x-8" style={{display: 'flex', gap: '2rem'}}>
             {[
               { id: 'upload', label: '📄 Document Upload', icon: '📄' },
               { id: 'analysis', label: '🧠 AI Analysis', icon: '🧠' },
@@ -219,11 +219,28 @@ return;
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`border-b-2 px-1 py-4 text-sm font-medium ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:border-gray-300 hover:text-gray-700'
-                }`}
+                style={{
+                  borderBottom: activeTab === tab.id ? '2px solid #3b82f6' : '2px solid transparent',
+                  padding: '1rem 0.25rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '500',
+                  color: activeTab === tab.id ? '#2563eb' : '#6b7280',
+                  background: 'none',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeTab !== tab.id) {
+                    (e.target as HTMLButtonElement).style.borderBottomColor = '#d1d5db';
+                    (e.target as HTMLButtonElement).style.color = '#374151';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeTab !== tab.id) {
+                    (e.target as HTMLButtonElement).style.borderBottomColor = 'transparent';
+                    (e.target as HTMLButtonElement).style.color = '#6b7280';
+                  }
+                }}
               >
                 {tab.label}
               </button>
@@ -233,15 +250,15 @@ return;
       </div>
 
       {/* Main Content */}
-      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3">
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8" style={{maxWidth: '80rem', margin: '0 auto', padding: '2rem 1rem'}}>
+        <div className="grid grid-cols-1 gap-8 lg:grid-cols-3" style={{display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '2rem'}}>
 
           {/* Main Content Area */}
-          <div className="lg:col-span-2">
+          <div className="lg:col-span-2" style={{}}>
             {activeTab === 'upload' && (
-            <div className="rounded-lg border bg-white shadow-sm">
-              <div className="p-6">
-                <h2 className="mb-4 text-lg font-semibold text-gray-900">
+            <div className="rounded-lg border bg-white shadow-sm" style={{borderRadius: '0.5rem', border: '1px solid #e5e7eb', backgroundColor: 'white', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'}}>
+              <div className="p-6" style={{padding: '1.5rem'}}>
+                <h2 className="mb-4 text-lg font-semibold text-gray-900" style={{marginBottom: '1rem', fontSize: '1.125rem', fontWeight: '600', color: '#111827'}}>
                   📄 Document Upload & AI Analysis
                 </h2>
 
