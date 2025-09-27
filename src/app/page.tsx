@@ -9,7 +9,13 @@ function DeploymentDebugger() {
   useEffect(() => {
     const fetchDebugInfo = async () => {
       try {
-        const response = await fetch('/api/version');
+        const response = await fetch('/api/version', {
+          cache: 'no-cache',
+          headers: {
+            'Cache-Control': 'no-cache',
+            'Pragma': 'no-cache'
+          }
+        });
         const data = await response.json();
         setDebugInfo(data);
       } catch (error) {
@@ -17,6 +23,13 @@ function DeploymentDebugger() {
       }
     };
     fetchDebugInfo();
+
+    // Auto-refresh detection every 30 seconds
+    const interval = setInterval(() => {
+      fetchDebugInfo();
+    }, 30000);
+
+    return () => clearInterval(interval);
   }, []);
 
   if (!debugInfo) return null;
@@ -126,7 +139,7 @@ export default function HomePage() {
         top: 0,
         left: 0,
         right: 0,
-        backgroundColor: '#dc2626',
+        backgroundColor: '#16a34a',
         color: 'white',
         padding: '8px',
         textAlign: 'center',
@@ -134,7 +147,7 @@ export default function HomePage() {
         fontSize: '14px',
         fontWeight: 'bold'
       }}>
-✅ INLINE STYLES WORKING - Cache Fix v12 Deployed - No more refresh needed!
+⚡ AGGRESSIVE NO-CACHE v13 - Should update immediately without refresh!
       </div>
       <div style={{minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '40px'}}>
       {/* Header */}
