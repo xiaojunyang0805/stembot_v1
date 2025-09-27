@@ -26,7 +26,7 @@ const nextConfig = {
     NEXT_PUBLIC_APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'local',
     NEXT_PUBLIC_BUILD_DATE: new Date().toISOString(),
     NEXT_PUBLIC_DEPLOYMENT_ENV: process.env.VERCEL_ENV || 'development',
-    FORCE_REFRESH: 'v14-VERCEL-CONFIG-FIX',
+    FORCE_REFRESH: 'v15-GLOBAL-DOMAIN-CDN-BYPASS',
   },
   // Aggressive cache busting for immediate updates
   async headers() {

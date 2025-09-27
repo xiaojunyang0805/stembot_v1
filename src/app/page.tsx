@@ -147,7 +147,7 @@ export default function HomePage() {
         fontSize: '14px',
         fontWeight: 'bold'
       }}>
-🔧 VERCEL CONFIG FIX v14 - Fixed CDN edge caching + regions!
+🌍 GLOBAL DOMAIN FIX v15 - Bypassing main domain CDN cache!
       </div>
       <div style={{minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '40px'}}>
       {/* Header */}

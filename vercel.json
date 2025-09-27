@@ -21,7 +21,7 @@
       "NEXT_TELEMETRY_DISABLED": "1",
       "BUILD_VERSION": "$VERCEL_GIT_COMMIT_SHA",
       "DEPLOYMENT_ENV": "$VERCEL_ENV",
-      "FORCE_DOMAIN_UPDATE": "v14-VERCEL-CONFIG-FIX-IMMEDIATE-UPDATE"
+      "FORCE_DOMAIN_UPDATE": "v15-GLOBAL-MAIN-DOMAIN-CDN-BYPASS"
     }
   },
   "rewrites": [
@@ -52,7 +52,11 @@
         },
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0"
+          "value": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0, proxy-revalidate"
+        },
+        {
+          "key": "Surrogate-Control",
+          "value": "no-store"
         },
         {
           "key": "Pragma",
@@ -87,7 +91,15 @@
   "crons": [
     {
       "path": "/api/invalidate-cache",
-      "schedule": "*/5 * * * *"
+      "schedule": "*/2 * * * *"
     }
-  ]
+  ],
+  "git": {
+    "deploymentEnabled": {
+      "main": true
+    }
+  },
+  "github": {
+    "autoAlias": false
+  }
 }
