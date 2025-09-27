@@ -182,10 +182,7 @@ return;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Diagnostic info */}
-      <div style={{padding: '10px', backgroundColor: '#f0f0f0', fontSize: '12px', borderBottom: '1px solid #ccc'}}>
-        🔍 Dashboard Debug: User={user ? 'YES' : 'NO'} | Loading={loading ? 'YES' : 'NO'} | ActiveTab={activeTab}
-      </div>
+      {/* Diagnostic info removed - dashboard working */}
 
       {/* Header */}
       <div className="border-b bg-white shadow-sm" style={{borderBottom: '1px solid #e5e7eb', backgroundColor: 'white', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'}}>
@@ -263,23 +260,71 @@ return;
                 </h2>
 
                 {/* Upload Area */}
-                <div className="mb-6">
+                <div className="mb-6" style={{marginBottom: '1.5rem'}}>
                   <div
                     className="cursor-pointer rounded-lg border-2 border-dashed border-gray-300 p-8 text-center transition-colors hover:border-blue-400"
+                    style={{
+                      cursor: 'pointer',
+                      borderRadius: '0.5rem',
+                      border: '2px dashed #d1d5db',
+                      padding: '2rem',
+                      textAlign: 'center',
+                      transition: 'colors 0.2s',
+                      backgroundColor: '#f9fafb'
+                    }}
                     onClick={() => fileInputRef.current?.click()}
+                    onMouseEnter={(e) => {
+                      (e.target as HTMLDivElement).style.borderColor = '#60a5fa';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.target as HTMLDivElement).style.borderColor = '#d1d5db';
+                    }}
                   >
-                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50">
-                      <svg className="h-6 w-6 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <div className="mx-auto mb-4 flex h-12 w-12 items-center justify-center rounded-lg bg-blue-50" style={{
+                      margin: '0 auto 1rem auto',
+                      display: 'flex',
+                      height: '3rem',
+                      width: '3rem',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      borderRadius: '0.5rem',
+                      backgroundColor: '#eff6ff'
+                    }}>
+                      <svg className="h-6 w-6 text-blue-600" style={{height: '1.5rem', width: '1.5rem', color: '#2563eb'}} fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                       </svg>
                     </div>
-                    <h3 className="mb-2 text-lg font-medium text-gray-900">
+                    <h3 className="mb-2 text-lg font-medium text-gray-900" style={{
+                      marginBottom: '0.5rem',
+                      fontSize: '1.125rem',
+                      fontWeight: '500',
+                      color: '#111827'
+                    }}>
                       Upload Research Document
                     </h3>
-                    <p className="mb-4 text-sm text-gray-500">
+                    <p className="mb-4 text-sm text-gray-500" style={{
+                      marginBottom: '1rem',
+                      fontSize: '0.875rem',
+                      color: '#6b7280'
+                    }}>
                       Upload PDF papers, research documents, or images for AI analysis
                     </p>
-                    <button className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700">
+                    <button className="rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700" style={{
+                      borderRadius: '0.375rem',
+                      backgroundColor: '#2563eb',
+                      padding: '0.5rem 1rem',
+                      color: 'white',
+                      border: 'none',
+                      cursor: 'pointer',
+                      transition: 'background-color 0.2s',
+                      fontWeight: '500'
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                    }}>
                       Choose File
                     </button>
                   </div>
