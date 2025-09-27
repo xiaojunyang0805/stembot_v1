@@ -3,16 +3,6 @@
   "outputDirectory": ".next",
   "framework": "nextjs",
   "regions": ["iad1"],
-  "builds": [
-    {
-      "src": "package.json",
-      "use": "@vercel/node@3",
-      "config": {
-        "includeFiles": "**",
-        "zeroConfig": true
-      }
-    }
-  ],
   "functions": {
     "src/app/**/*.ts": {
       "maxDuration": 30,
