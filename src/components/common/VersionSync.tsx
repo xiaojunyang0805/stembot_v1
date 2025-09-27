@@ -64,11 +64,11 @@ export function VersionSync() {
   }
 
   return (
-    <div className="fixed bottom-4 right-4 z-50 max-w-sm rounded-lg border border-yellow-300 bg-yellow-50 p-3 shadow-lg">
+    <div style={{position: 'fixed', bottom: '1rem', right: '1rem', zIndex: 50, maxWidth: '24rem', borderRadius: '0.5rem', border: '1px solid #fde047', backgroundColor: '#fefce8', padding: '0.75rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'}}>
       <div className="flex items-start">
         <div className="flex-shrink-0">
           <svg
-            className="h-5 w-5 text-yellow-400"
+            style={{height: '1.25rem', width: '1.25rem', color: '#facc15'}}
             viewBox="0 0 20 20"
             fill="currentColor"
           >
@@ -80,20 +80,22 @@ export function VersionSync() {
           </svg>
         </div>
         <div className="ml-3">
-          <h3 className="text-sm font-medium text-yellow-800">
+          <h3 style={{fontSize: '0.875rem', fontWeight: 500, color: '#92400e'}}>
             Version Mismatch Detected
           </h3>
-          <div className="mt-1 text-xs text-yellow-700">
+          <div style={{marginTop: '0.25rem', fontSize: '0.75rem', color: '#a16207'}}>
             <p>Frontend: {versionInfo.frontend.slice(0, 8)}</p>
             <p>Backend: {versionInfo.backend.slice(0, 8)}</p>
-            <p className="mt-1 text-yellow-600">
+            <p style={{marginTop: '0.25rem', color: '#ca8a04'}}>
               Please refresh the page to sync versions.
             </p>
           </div>
-          <div className="mt-2">
+          <div style={{marginTop: '0.5rem'}}>
             <button
               onClick={() => window.location.reload()}
-              className="rounded bg-yellow-600 px-2 py-1 text-xs font-medium text-white hover:bg-yellow-700"
+              style={{borderRadius: '0.25rem', backgroundColor: '#ca8a04', paddingLeft: '0.5rem', paddingRight: '0.5rem', paddingTop: '0.25rem', paddingBottom: '0.25rem', fontSize: '0.75rem', fontWeight: 500, color: 'white', cursor: 'pointer'}}
+              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#a16207'; }}
+              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#ca8a04'; }}
             >
               Refresh Page
             </button>
@@ -128,7 +130,7 @@ export function VersionDisplay() {
   }
 
   return (
-    <div className="fixed bottom-4 left-4 z-50 rounded-lg bg-gray-800 p-2 text-xs text-white opacity-75">
+    <div style={{position: 'fixed', bottom: '1rem', left: '1rem', zIndex: 50, borderRadius: '0.5rem', backgroundColor: '#1f2937', padding: '0.5rem', fontSize: '0.75rem', color: 'white', opacity: 0.75}}>
       <div>Frontend: {versionInfo.frontend.slice(0, 8)}</div>
       <div>Env: {versionInfo.environment}</div>
       <div>Built: {new Date(versionInfo.buildDate).toLocaleString()}</div>
