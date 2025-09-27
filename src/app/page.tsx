@@ -124,8 +124,8 @@ export default function HomePage() {
             marginBottom: '24px',
             lineHeight: '1.1'
           }}>
-            AI Research Mentor That<br />
-            <span style={{color: '#2563eb'}}>Guides Your Academic Journey</span>
+*** TESTING DEPLOYMENT CHANGES ***<br />
+            <span style={{color: '#ff0000'}}>*** VERSION a299e04 DEPLOYED ***</span>
           </h1>
 
           <p style={{
