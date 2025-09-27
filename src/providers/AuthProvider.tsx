@@ -45,13 +45,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
   }
 
   useEffect(() => {
-    // Mock initial auth check
-    setTimeout(() => {
-      setUser(mockUser)
-      setSession(mockSession)
-      setLoading(false)
-    }, 1000)
-  }, [])
+    // Mock initial auth check - immediate loading for better UX
+    setUser(mockUser)
+    setSession(mockSession)
+    setLoading(false)
+  }, [mockSession, mockUser])
 
   const signIn = async (email: string, password: string) => {
     setLoading(true)
