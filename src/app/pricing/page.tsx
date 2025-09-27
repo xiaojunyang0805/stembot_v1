@@ -113,37 +113,61 @@ export default function PricingPage() {
   ].filter(Boolean);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12">
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div style={{minHeight: '100vh', background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)', padding: '3rem 0'}}>
+      <div style={{margin: '0 auto', maxWidth: '80rem', padding: '0 1rem'}}>
         {/* Header */}
-        <div className="mb-12 text-center">
-          <h1 className="mb-4 text-4xl font-bold text-gray-900">
+        <div style={{marginBottom: '3rem', textAlign: 'center'}}>
+          <h1 style={{marginBottom: '1rem', fontSize: '2.25rem', fontWeight: 'bold', color: '#111827'}}>
             Choose Your Research Mentoring Plan
           </h1>
-          <p className="mb-8 text-xl text-gray-600">
+          <p style={{marginBottom: '2rem', fontSize: '1.25rem', color: '#4b5563'}}>
             Start with a 7-day free trial. No commitment required.
           </p>
 
           {/* Billing Toggle */}
-          <div className="mb-8 flex items-center justify-center space-x-4">
-            <span className={`text-sm font-medium ${billingInterval === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
+          <div style={{marginBottom: '2rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem'}}>
+            <span style={{fontSize: '0.875rem', fontWeight: '500', color: billingInterval === 'monthly' ? '#111827' : '#6b7280'}}>
               Monthly
             </span>
             <button
               onClick={() => setBillingInterval(billingInterval === 'monthly' ? 'yearly' : 'monthly')}
-              className="relative inline-flex h-6 w-11 items-center rounded-full bg-gray-200 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              style={{
+                position: 'relative',
+                display: 'inline-flex',
+                height: '1.5rem',
+                width: '2.75rem',
+                alignItems: 'center',
+                borderRadius: '9999px',
+                backgroundColor: '#e5e7eb',
+                transition: 'background-color 0.2s',
+                border: 'none',
+                cursor: 'pointer',
+                outline: 'none'
+              }}
+              onFocus={(e) => {
+                e.target.style.boxShadow = '0 0 0 2px rgba(59, 130, 246, 0.5)';
+              }}
+              onBlur={(e) => {
+                e.target.style.boxShadow = 'none';
+              }}
             >
               <span
-                className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                  billingInterval === 'yearly' ? 'translate-x-6' : 'translate-x-1'
-                }`}
+                style={{
+                  display: 'inline-block',
+                  height: '1rem',
+                  width: '1rem',
+                  borderRadius: '50%',
+                  backgroundColor: 'white',
+                  transition: 'transform 0.2s',
+                  transform: billingInterval === 'yearly' ? 'translateX(1.5rem)' : 'translateX(0.25rem)'
+                }}
               />
             </button>
-            <span className={`text-sm font-medium ${billingInterval === 'yearly' ? 'text-gray-900' : 'text-gray-500'}`}>
+            <span style={{fontSize: '0.875rem', fontWeight: '500', color: billingInterval === 'yearly' ? '#111827' : '#6b7280'}}>
               Yearly
             </span>
             {billingInterval === 'yearly' && (
-              <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+              <span style={{borderRadius: '9999px', backgroundColor: '#dcfce7', padding: '0.25rem 0.5rem', fontSize: '0.75rem', fontWeight: '500', color: '#166534'}}>
                 Save 17%
               </span>
             )}
@@ -151,9 +175,9 @@ export default function PricingPage() {
         </div>
 
         {/* Individual Plans */}
-        <div className="mb-16">
-          <h2 className="mb-8 text-center text-2xl font-bold">Individual Plans</h2>
-          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
+        <div style={{marginBottom: '4rem'}}>
+          <h2 style={{marginBottom: '2rem', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold'}}>Individual Plans</h2>
+          <div style={{margin: '0 auto', display: 'grid', maxWidth: '72rem', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '2rem'}}>
             {individualTiers.map((tier, index) => (
               <PricingCard
                 key={tier.id}
@@ -168,13 +192,13 @@ export default function PricingPage() {
         </div>
 
         {/* Institution Plans */}
-        <div className="mb-16">
-          <h2 className="mb-4 text-center text-2xl font-bold">Institution Plans</h2>
-          <p className="mx-auto mb-8 max-w-2xl text-center text-gray-600">
+        <div style={{marginBottom: '4rem'}}>
+          <h2 style={{marginBottom: '1rem', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold'}}>Institution Plans</h2>
+          <p style={{margin: '0 auto', marginBottom: '2rem', maxWidth: '42rem', textAlign: 'center', color: '#4b5563'}}>
             Perfect for universities, departments, and educational institutions. Includes admin dashboard,
             usage analytics, and priority support.
           </p>
-          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 md:grid-cols-2">
+          <div style={{margin: '0 auto', display: 'grid', maxWidth: '56rem', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '2rem'}}>
             {institutionTiers.map((tier) => (
               <PricingCard
                 key={tier.id}
@@ -188,52 +212,52 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-8 text-center text-2xl font-bold">Frequently Asked Questions</h2>
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-            <div className="rounded-lg bg-white p-6">
-              <h3 className="mb-2 font-semibold">What happens after the 7-day free trial?</h3>
-              <p className="text-sm text-gray-600">
+        <div style={{margin: '0 auto', maxWidth: '56rem'}}>
+          <h2 style={{marginBottom: '2rem', textAlign: 'center', fontSize: '1.5rem', fontWeight: 'bold'}}>Frequently Asked Questions</h2>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem'}}>
+            <div style={{borderRadius: '0.5rem', backgroundColor: 'white', padding: '1.5rem'}}>
+              <h3 style={{marginBottom: '0.5rem', fontWeight: '600'}}>What happens after the 7-day free trial?</h3>
+              <p style={{fontSize: '0.875rem', color: '#4b5563'}}>
                 After your trial ends, you'll be automatically converted to a paid subscription.
                 You can cancel anytime during the trial period with no charges.
               </p>
             </div>
 
-            <div className="rounded-lg bg-white p-6">
-              <h3 className="mb-2 font-semibold">Can I change my plan later?</h3>
-              <p className="text-sm text-gray-600">
+            <div style={{borderRadius: '0.5rem', backgroundColor: 'white', padding: '1.5rem'}}>
+              <h3 style={{marginBottom: '0.5rem', fontWeight: '600'}}>Can I change my plan later?</h3>
+              <p style={{fontSize: '0.875rem', color: '#4b5563'}}>
                 Yes! You can upgrade or downgrade your plan at any time. Changes will be prorated
                 and reflected in your next billing cycle.
               </p>
             </div>
 
-            <div className="rounded-lg bg-white p-6">
-              <h3 className="mb-2 font-semibold">What qualifies for student pricing?</h3>
-              <p className="text-sm text-gray-600">
+            <div style={{borderRadius: '0.5rem', backgroundColor: 'white', padding: '1.5rem'}}>
+              <h3 style={{marginBottom: '0.5rem', fontWeight: '600'}}>What qualifies for student pricing?</h3>
+              <p style={{fontSize: '0.875rem', color: '#4b5563'}}>
                 Students with a valid university email address (.edu, .ac.uk, etc.) are eligible
                 for student pricing. Verification is automatic during signup.
               </p>
             </div>
 
-            <div className="rounded-lg bg-white p-6">
-              <h3 className="mb-2 font-semibold">Do you offer refunds?</h3>
-              <p className="text-sm text-gray-600">
+            <div style={{borderRadius: '0.5rem', backgroundColor: 'white', padding: '1.5rem'}}>
+              <h3 style={{marginBottom: '0.5rem', fontWeight: '600'}}>Do you offer refunds?</h3>
+              <p style={{fontSize: '0.875rem', color: '#4b5563'}}>
                 Yes, we offer a 30-day money-back guarantee. If you're not satisfied with StemBot,
                 contact us for a full refund within 30 days of purchase.
               </p>
             </div>
 
-            <div className="rounded-lg bg-white p-6">
-              <h3 className="mb-2 font-semibold">What payment methods do you accept?</h3>
-              <p className="text-sm text-gray-600">
+            <div style={{borderRadius: '0.5rem', backgroundColor: 'white', padding: '1.5rem'}}>
+              <h3 style={{marginBottom: '0.5rem', fontWeight: '600'}}>What payment methods do you accept?</h3>
+              <p style={{fontSize: '0.875rem', color: '#4b5563'}}>
                 We accept all major credit cards, bank transfers, and digital wallets through Stripe.
                 All payments are secure and encrypted.
               </p>
             </div>
 
-            <div className="rounded-lg bg-white p-6">
-              <h3 className="mb-2 font-semibold">Is there a setup fee?</h3>
-              <p className="text-sm text-gray-600">
+            <div style={{borderRadius: '0.5rem', backgroundColor: 'white', padding: '1.5rem'}}>
+              <h3 style={{marginBottom: '0.5rem', fontWeight: '600'}}>Is there a setup fee?</h3>
+              <p style={{fontSize: '0.875rem', color: '#4b5563'}}>
                 No setup fees, ever. You only pay the subscription price. Institution licenses
                 include free onboarding and training sessions.
               </p>
@@ -242,15 +266,31 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="mt-16 text-center">
-          <h2 className="mb-4 text-2xl font-bold">Ready to accelerate your research?</h2>
-          <p className="mb-8 text-gray-600">
+        <div style={{marginTop: '4rem', textAlign: 'center'}}>
+          <h2 style={{marginBottom: '1rem', fontSize: '1.5rem', fontWeight: 'bold'}}>Ready to accelerate your research?</h2>
+          <p style={{marginBottom: '2rem', color: '#4b5563'}}>
             Join thousands of researchers who are using StemBot to streamline their research process.
           </p>
           <button
             onClick={() => handleSubscribe('pro_monthly')}
             disabled={!!loading}
-            className="rounded-lg bg-blue-600 px-8 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+            style={{
+              borderRadius: '0.5rem',
+              backgroundColor: '#2563eb',
+              padding: '0.75rem 2rem',
+              fontWeight: '500',
+              color: 'white',
+              border: 'none',
+              cursor: 'pointer',
+              transition: 'background-color 0.2s',
+              opacity: loading ? '0.5' : '1'
+            }}
+            onMouseEnter={(e) => {
+              if (!loading) (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
+            }}
+            onMouseLeave={(e) => {
+              if (!loading) (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+            }}
           >
             {loading ? 'Processing...' : 'Start Free Trial'}
           </button>

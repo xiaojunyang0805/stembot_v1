@@ -43,26 +43,26 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
   const { redirect, error, message } = searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="w-full max-w-md space-y-8 p-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+    <div style={{display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)'}}>
+      <div style={{width: '100%', maxWidth: '28rem', display: 'flex', flexDirection: 'column', gap: '2rem', padding: '2rem'}}>
+        <div style={{textAlign: 'center'}}>
+          <h1 style={{fontSize: '1.875rem', fontWeight: 'bold', color: '#111827'}}>
             Welcome Back
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p style={{marginTop: '0.5rem', fontSize: '0.875rem', color: '#4b5563'}}>
             Sign in to continue your research journey
           </p>
         </div>
 
         {/* Display error or success messages */}
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+          <div style={{borderRadius: '0.375rem', border: '1px solid #fecaca', backgroundColor: '#fef2f2', padding: '0.75rem 1rem', color: '#b91c1c'}}>
             {error}
           </div>
         )}
 
         {message && (
-          <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-green-700">
+          <div style={{borderRadius: '0.375rem', border: '1px solid #bbf7d0', backgroundColor: '#f0fdf4', padding: '0.75rem 1rem', color: '#15803d'}}>
             {message}
           </div>
         )}
@@ -71,12 +71,23 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
           <LoginForm redirectTo={redirect} />
         </Suspense>
 
-        <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div style={{textAlign: 'center'}}>
+          <p style={{fontSize: '0.875rem', color: '#4b5563'}}>
             Don't have an account?{' '}
             <a
               href="/register"
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+              style={{
+                fontWeight: '500',
+                color: '#2563eb',
+                textDecoration: 'none',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLAnchorElement).style.color = '#3b82f6';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLAnchorElement).style.color = '#2563eb';
+              }}
             >
               Register here
             </a>

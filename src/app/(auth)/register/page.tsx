@@ -44,27 +44,27 @@ export default function RegisterPage({ searchParams }: RegisterPageProps) {
   const { redirect, invite, error } = searchParams;
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="w-full max-w-2xl space-y-8 p-8">
-        <div className="text-center">
-          <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
+    <div style={{display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', background: 'linear-gradient(to bottom right, #eff6ff, #e0e7ff)'}}>
+      <div style={{width: '100%', maxWidth: '42rem', display: 'flex', flexDirection: 'column', gap: '2rem', padding: '2rem'}}>
+        <div style={{textAlign: 'center'}}>
+          <h1 style={{fontSize: '1.875rem', fontWeight: 'bold', color: '#111827'}}>
             Join StemBot Research
           </h1>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p style={{marginTop: '0.5rem', fontSize: '0.875rem', color: '#4b5563'}}>
             Create your account to access AI-powered research mentoring
           </p>
         </div>
 
         {/* Display error messages */}
         {error && (
-          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-700">
+          <div style={{borderRadius: '0.375rem', border: '1px solid #fecaca', backgroundColor: '#fef2f2', padding: '0.75rem 1rem', color: '#b91c1c'}}>
             {error}
           </div>
         )}
 
         {/* Display invite information */}
         {invite && (
-          <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-blue-700">
+          <div style={{borderRadius: '0.375rem', border: '1px solid #bfdbfe', backgroundColor: '#eff6ff', padding: '0.75rem 1rem', color: '#1d4ed8'}}>
             You've been invited to join a research project. Complete registration to get started.
           </div>
         )}
@@ -76,24 +76,55 @@ export default function RegisterPage({ searchParams }: RegisterPageProps) {
           />
         </Suspense>
 
-        <div className="space-y-4 text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+        <div style={{display: 'flex', flexDirection: 'column', gap: '1rem', textAlign: 'center'}}>
+          <p style={{fontSize: '0.875rem', color: '#4b5563'}}>
             Already have an account?{' '}
             <a
               href="/login"
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400"
+              style={{
+                fontWeight: '500',
+                color: '#2563eb',
+                textDecoration: 'none',
+                transition: 'color 0.2s'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLAnchorElement).style.color = '#3b82f6';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLAnchorElement).style.color = '#2563eb';
+              }}
             >
               Sign in here
             </a>
           </p>
 
-          <div className="mx-auto max-w-md text-xs text-gray-500 dark:text-gray-400">
+          <div style={{margin: '0 auto', maxWidth: '28rem', fontSize: '0.75rem', color: '#6b7280'}}>
             By registering, you agree to our{' '}
-            <a href="/terms" className="underline hover:text-gray-700">
+            <a href="/terms" style={{
+              textDecoration: 'underline',
+              color: '#6b7280',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLAnchorElement).style.color = '#374151';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLAnchorElement).style.color = '#6b7280';
+            }}>
               Terms of Service
             </a>{' '}
             and{' '}
-            <a href="/privacy" className="underline hover:text-gray-700">
+            <a href="/privacy" style={{
+              textDecoration: 'underline',
+              color: '#6b7280',
+              transition: 'color 0.2s'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLAnchorElement).style.color = '#374151';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLAnchorElement).style.color = '#6b7280';
+            }}>
               Privacy Policy
             </a>
           </div>

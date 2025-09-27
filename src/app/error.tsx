@@ -31,22 +31,22 @@ export default function Error({ error, reset }: ErrorProps) {
   }, [error]);
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50" style={{
+    <div style={{
       display: 'flex',
       minHeight: '100vh',
       alignItems: 'center',
       justifyContent: 'center',
       backgroundColor: '#f9fafb'
     }}>
-      <div className="w-full max-w-md p-8 text-center" style={{
+      <div style={{
         width: '100%',
         maxWidth: '28rem',
         padding: '2rem',
         textAlign: 'center'
       }}>
         {/* Error Icon */}
-        <div className="mb-6" style={{marginBottom: '1.5rem'}}>
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-red-100" style={{
+        <div style={{marginBottom: '1.5rem'}}>
+          <div style={{
             margin: '0 auto 1rem auto',
             display: 'flex',
             height: '4rem',
@@ -56,9 +56,9 @@ export default function Error({ error, reset }: ErrorProps) {
             borderRadius: '50%',
             backgroundColor: '#fee2e2'
           }}>
-            <span className="text-2xl text-red-600" style={{fontSize: '1.5rem', color: '#dc2626'}}>⚠</span>
+            <span style={{fontSize: '1.5rem', color: '#dc2626'}}>⚠</span>
           </div>
-          <h1 className="mb-2 text-2xl font-bold text-gray-900" style={{
+          <h1 style={{
             marginBottom: '0.5rem',
             fontSize: '1.5rem',
             fontWeight: 'bold',

@@ -33,7 +33,9 @@
       "Bash(gh auth:*)",
       "Bash(git remote set-url:*)",
       "Bash(npx vercel:*)",
-      "Bash(curl:*)"
+      "Bash(curl:*)",
+      "Bash(for file in src/app/auth/*/page.tsx src/app/auth/layout.tsx)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

@@ -74,90 +74,106 @@ export default function IntegrationTestPage() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="mx-auto max-w-4xl px-4">
-        <div className="rounded-lg bg-white p-6 shadow-lg">
-          <h1 className="mb-6 text-2xl font-bold text-gray-900">
+    <div style={{minHeight: '100vh', backgroundColor: '#f9fafb', padding: '2rem 0'}}>
+      <div style={{margin: '0 auto', maxWidth: '56rem', padding: '0 1rem'}}>
+        <div style={{borderRadius: '0.5rem', backgroundColor: 'white', padding: '1.5rem', boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)'}}>
+          <h1 style={{marginBottom: '1.5rem', fontSize: '1.5rem', fontWeight: 'bold', color: '#111827'}}>
             Integration Test Page
           </h1>
 
-          <div className="mb-6">
+          <div style={{marginBottom: '1.5rem'}}>
             <IntegrationConfig />
           </div>
 
-          <div className="mb-6">
-            <h2 className="mb-4 text-lg font-semibold text-gray-800">
+          <div style={{marginBottom: '1.5rem'}}>
+            <h2 style={{marginBottom: '1rem', fontSize: '1.125rem', fontWeight: '600', color: '#1f2937'}}>
               Current Integration Status
             </h2>
             {status && (
-              <div className="rounded-lg bg-gray-50 p-4">
-                <div className="grid grid-cols-2 gap-4 text-sm">
+              <div style={{borderRadius: '0.5rem', backgroundColor: '#f9fafb', padding: '1rem'}}>
+                <div style={{display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', fontSize: '0.875rem'}}>
                   <div>
-                    <span className="font-medium">Environment:</span>
-                    <span className="ml-2">{status.environment}</span>
+                    <span style={{fontWeight: '500'}}>Environment:</span>
+                    <span style={{marginLeft: '0.5rem'}}>{status.environment}</span>
                   </div>
                   <div>
-                    <span className="font-medium">Integration Method:</span>
-                    <span className="ml-2">{status.integrationMethod}</span>
+                    <span style={{fontWeight: '500'}}>Integration Method:</span>
+                    <span style={{marginLeft: '0.5rem'}}>{status.integrationMethod}</span>
                   </div>
                   <div>
-                    <span className="font-medium">Core Available:</span>
-                    <span className="ml-2">{status.coreAvailable ? 'Yes' : 'No'}</span>
+                    <span style={{fontWeight: '500'}}>Core Available:</span>
+                    <span style={{marginLeft: '0.5rem'}}>{status.coreAvailable ? 'Yes' : 'No'}</span>
                   </div>
                   <div>
-                    <span className="font-medium">Using Mocks:</span>
-                    <span className="ml-2">{status.usingMocks ? 'Yes' : 'No'}</span>
+                    <span style={{fontWeight: '500'}}>Using Mocks:</span>
+                    <span style={{marginLeft: '0.5rem'}}>{status.usingMocks ? 'Yes' : 'No'}</span>
                   </div>
                 </div>
               </div>
             )}
           </div>
 
-          <div className="mb-6">
-            <div className="mb-4 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-gray-800">
+          <div style={{marginBottom: '1.5rem'}}>
+            <div style={{marginBottom: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+              <h2 style={{fontSize: '1.125rem', fontWeight: '600', color: '#1f2937'}}>
                 Integration Tests
               </h2>
               <button
                 onClick={runTests}
                 disabled={isRunning}
-                className={`rounded-lg px-4 py-2 font-medium ${
-                  isRunning
-                    ? 'cursor-not-allowed bg-gray-300 text-gray-500'
-                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                }`}
+                style={{
+                  borderRadius: '0.5rem',
+                  padding: '0.5rem 1rem',
+                  fontWeight: '500',
+                  border: 'none',
+                  cursor: isRunning ? 'not-allowed' : 'pointer',
+                  backgroundColor: isRunning ? '#d1d5db' : '#2563eb',
+                  color: isRunning ? '#6b7280' : 'white',
+                  transition: 'background-color 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  if (!isRunning) (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
+                }}
+                onMouseLeave={(e) => {
+                  if (!isRunning) (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                }}
               >
                 {isRunning ? 'Running Tests...' : 'Run Tests'}
               </button>
             </div>
 
             {testResults.length > 0 && (
-              <div className="space-y-3">
+              <div style={{display: 'flex', flexDirection: 'column', gap: '0.75rem'}}>
                 {testResults.map((result, index) => (
                   <div
                     key={index}
-                    className={`rounded-lg border p-4 ${
-                      result.status === 'success'
-                        ? 'border-green-200 bg-green-50'
-                        : 'border-red-200 bg-red-50'
-                    }`}
+                    style={{
+                      borderRadius: '0.5rem',
+                      border: '1px solid',
+                      padding: '1rem',
+                      borderColor: result.status === 'success' ? '#bbf7d0' : '#fecaca',
+                      backgroundColor: result.status === 'success' ? '#f0fdf4' : '#fef2f2'
+                    }}
                   >
-                    <div className="mb-2 flex items-center justify-between">
-                      <h3 className="font-medium text-gray-800">
+                    <div style={{marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
+                      <h3 style={{fontWeight: '500', color: '#1f2937'}}>
                         {result.name}
                       </h3>
-                      <div className="flex items-center space-x-2">
+                      <div style={{display: 'flex', alignItems: 'center', gap: '0.5rem'}}>
                         <span
-                          className={`rounded px-2 py-1 text-xs font-medium ${
-                            result.status === 'success'
-                              ? 'bg-green-100 text-green-800'
-                              : 'bg-red-100 text-red-800'
-                          }`}
+                          style={{
+                            borderRadius: '0.25rem',
+                            padding: '0.25rem 0.5rem',
+                            fontSize: '0.75rem',
+                            fontWeight: '500',
+                            backgroundColor: result.status === 'success' ? '#dcfce7' : '#fee2e2',
+                            color: result.status === 'success' ? '#166534' : '#991b1b'
+                          }}
                         >
                           {result.status.toUpperCase()}
                         </span>
                         {result.duration > 0 && (
-                          <span className="text-xs text-gray-500">
+                          <span style={{fontSize: '0.75rem', color: '#6b7280'}}>
                             {result.duration}ms
                           </span>
                         )}
@@ -165,18 +181,24 @@ export default function IntegrationTestPage() {
                     </div>
 
                     {result.error && (
-                      <div className="rounded bg-red-100 p-2 text-sm text-red-700">
+                      <div style={{borderRadius: '0.25rem', backgroundColor: '#fee2e2', padding: '0.5rem', fontSize: '0.875rem', color: '#b91c1c'}}>
                         Error: {result.error}
                       </div>
                     )}
 
                     {result.result && (
-                      <div className="text-sm text-gray-600">
+                      <div style={{fontSize: '0.875rem', color: '#4b5563'}}>
                         <details>
-                          <summary className="cursor-pointer hover:text-gray-800">
+                          <summary style={{cursor: 'pointer', transition: 'color 0.2s'}}
+                            onMouseEnter={(e) => {
+                              (e.target as HTMLElement).style.color = '#1f2937';
+                            }}
+                            onMouseLeave={(e) => {
+                              (e.target as HTMLElement).style.color = '#4b5563';
+                            }}>
                             View Result
                           </summary>
-                          <pre className="mt-2 overflow-x-auto rounded bg-gray-100 p-2 text-xs">
+                          <pre style={{marginTop: '0.5rem', overflowX: 'auto', borderRadius: '0.25rem', backgroundColor: '#f3f4f6', padding: '0.5rem', fontSize: '0.75rem'}}>
                             {JSON.stringify(result.result, null, 2)}
                           </pre>
                         </details>
@@ -188,11 +210,11 @@ export default function IntegrationTestPage() {
             )}
           </div>
 
-          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-            <h3 className="mb-2 font-medium text-blue-800">
+          <div style={{borderRadius: '0.5rem', border: '1px solid #bfdbfe', backgroundColor: '#eff6ff', padding: '1rem'}}>
+            <h3 style={{marginBottom: '0.5rem', fontWeight: '500', color: '#1e40af'}}>
               About This Test Page
             </h3>
-            <p className="text-sm text-blue-700">
+            <p style={{fontSize: '0.875rem', color: '#1d4ed8'}}>
               This page tests the integration between the public frontend repository
               and the private core repository. In development mode with mocks enabled,
               you'll see mock responses. In production with proper integration,

@@ -60,7 +60,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
-      <body className={inter.className} style={{height: '100%', backgroundColor: '#ffffff', color: '#0f172a', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale'}}>
+      <body style={{height: '100%', backgroundColor: '#ffffff', color: '#0f172a', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', fontFamily: inter.style.fontFamily}}>
         <ThemeErrorBoundary>
           <ThemeProvider
             attribute="class"
