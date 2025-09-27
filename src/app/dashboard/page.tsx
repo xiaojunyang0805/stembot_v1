@@ -1,5 +1,9 @@
 // COMPLETELY NEW DASHBOARD - Server Component (no 'use client')
 
+// Force static generation
+export const dynamic = 'force-static';
+export const revalidate = false;
+
 export default function DashboardPage() {
   return (
     <div style={{
