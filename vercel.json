@@ -22,12 +22,6 @@
       "DEPLOYMENT_ENV": "$VERCEL_ENV"
     }
   },
-  "env": {
-    "BUILD_DATE": "@now",
-    "VERCEL_GIT_COMMIT_SHA": "@vercel-git-commit-sha",
-    "VERCEL_ENV": "@vercel-env",
-    "APP_VERSION": "@vercel-git-commit-sha"
-  },
   "rewrites": [
     {
       "source": "/dashboard/:path*",
