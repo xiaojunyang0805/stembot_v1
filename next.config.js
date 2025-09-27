@@ -19,7 +19,7 @@ const nextConfig = {
     BUILD_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'development',
     DEPLOYMENT_ENV: process.env.VERCEL_ENV || 'development',
     APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'local',
-    FORCE_REFRESH: 'v7-EXTREME-CACHE-BUST-TEST',
+    FORCE_REFRESH: 'v8-MAIN-DOMAIN-FORCE-UPDATE-CF7854F',
   },
   // Build optimizations
   compiler: {
