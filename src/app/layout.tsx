@@ -63,6 +63,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <meta name="cache-bust" content={`f940f53-${Date.now()}`} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        <script src="/sw-uninstall.js" defer></script>
       </head>
       <body style={{height: '100%', backgroundColor: '#ffffff', color: '#0f172a', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', fontFamily: inter.style.fontFamily}}>
         <ThemeErrorBoundary>
