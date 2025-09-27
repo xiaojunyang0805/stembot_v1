@@ -19,7 +19,10 @@ const nextConfig = {
     BUILD_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'development',
     DEPLOYMENT_ENV: process.env.VERCEL_ENV || 'development',
     APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'local',
-    FORCE_REFRESH: 'v8-MAIN-DOMAIN-FORCE-UPDATE-CF7854F',
+    NEXT_PUBLIC_APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'local',
+    NEXT_PUBLIC_BUILD_DATE: new Date().toISOString(),
+    NEXT_PUBLIC_DEPLOYMENT_ENV: process.env.VERCEL_ENV || 'development',
+    FORCE_REFRESH: 'v9-ENV-VAR-FIX-3BFC382',
   },
   // Build optimizations
   compiler: {

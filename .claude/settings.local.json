@@ -32,7 +32,8 @@
       "Bash(tree:*)",
       "Bash(gh auth:*)",
       "Bash(git remote set-url:*)",
-      "Bash(npx vercel:*)"
+      "Bash(npx vercel:*)",
+      "Bash(curl:*)"
     ],
     "deny": [],
     "ask": []
