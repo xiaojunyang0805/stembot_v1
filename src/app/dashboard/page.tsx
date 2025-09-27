@@ -11,6 +11,33 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  // Prevent SSR/CSR hydration mismatch by only rendering after client mount
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Don't render anything until client-side hydration is complete
+  if (!mounted) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        backgroundColor: '#f9fafb',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}>
+        <div style={{
+          fontSize: '1rem',
+          color: '#6b7280'
+        }}>
+          Loading Dashboard...
+        </div>
+      </div>
+    );
+  }
+
   // Cache-busting rebuild force - Sep 27, 2025
 
   // For now, allow access to dashboard regardless of auth state for testing
