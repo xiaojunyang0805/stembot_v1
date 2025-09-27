@@ -1,6 +1,45 @@
 'use client';
 
 import { useAuth } from '../providers/AuthProvider';
+import { useEffect, useState } from 'react';
+
+function DeploymentDebugger() {
+  const [debugInfo, setDebugInfo] = useState<any>(null);
+
+  useEffect(() => {
+    const fetchDebugInfo = async () => {
+      try {
+        const response = await fetch('/api/version');
+        const data = await response.json();
+        setDebugInfo(data);
+      } catch (error) {
+        console.error('Debug info fetch failed:', error);
+      }
+    };
+    fetchDebugInfo();
+  }, []);
+
+  if (!debugInfo) return null;
+
+  return (
+    <div style={{
+      position: 'fixed',
+      top: '10px',
+      right: '10px',
+      backgroundColor: '#1f2937',
+      color: 'white',
+      padding: '8px 12px',
+      borderRadius: '6px',
+      fontSize: '12px',
+      zIndex: 1000,
+      fontFamily: 'monospace'
+    }}>
+      <div>🚀 Commit: {debugInfo.version?.slice(0, 8) || 'unknown'}</div>
+      <div>🌍 Domain: {window.location.hostname}</div>
+      <div>⏰ {new Date().toLocaleTimeString()}</div>
+    </div>
+  );
+}
 
 function HeaderNavigation() {
   const { user, loading } = useAuth();
@@ -80,6 +119,7 @@ function HeaderNavigation() {
 export default function HomePage() {
   return (
     <>
+      <DeploymentDebugger />
       <div style={{minHeight: '100vh', backgroundColor: '#f8fafc'}}>
       {/* Header */}
       <header style={{
@@ -102,6 +142,20 @@ export default function HomePage() {
           }}>
             StemBot
           </h1>
+
+          {/* Deployment Status Banner */}
+          <div style={{
+            backgroundColor: '#fef3c7',
+            border: '1px solid #fbbf24',
+            borderRadius: '6px',
+            padding: '8px 12px',
+            fontSize: '12px',
+            color: '#92400e',
+            fontWeight: '500'
+          }}>
+            🔍 DEPLOYMENT DEBUG: Commit {process.env.NEXT_PUBLIC_APP_VERSION?.slice(0,8) || 'unknown'} | Domain: {typeof window !== 'undefined' ? window.location.hostname : 'server'}
+          </div>
+
           <HeaderNavigation />
         </div>
       </header>
