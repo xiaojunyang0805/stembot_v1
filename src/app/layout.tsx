@@ -12,7 +12,7 @@ import { Inter } from 'next/font/google';
 
 import type { Metadata } from 'next';
 
-import './globals.css';
+// Removed globals.css import to eliminate CSS build dependencies
 import { AuthProvider } from '../providers/AuthProvider';
 import { ThemeProvider, ThemeErrorBoundary } from '../providers/ThemeProvider';
 import { VersionSync, VersionDisplay } from '../components/common/VersionSync';

@@ -1,9 +1,7 @@
 /* src/app/globals.css */
 
-/* Tailwind CSS directives */
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+/* Pure CSS - No Tailwind Dependencies */
+/* Removed @tailwind directives to eliminate build dependencies */
 
 /* Academic Research Design System */
 :root {
