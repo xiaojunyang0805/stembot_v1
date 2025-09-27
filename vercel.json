@@ -1,0 +1,39 @@
+{
+  "buildCommand": "npm run build",
+  "outputDirectory": ".next",
+  "framework": "nextjs",
+  "regions": ["iad1"],
+  "functions": {
+    "src/app/**/*.ts": {
+      "maxDuration": 30
+    },
+    "src/app/**/*.tsx": {
+      "maxDuration": 30
+    }
+  },
+  "rewrites": [
+    {
+      "source": "/dashboard/:path*",
+      "destination": "/dashboard/:path*"
+    }
+  ],
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "DENY"
+        },
+        {
+          "key": "X-XSS-Protection",
+          "value": "1; mode=block"
+        }
+      ]
+    }
+  ]
+}
