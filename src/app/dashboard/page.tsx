@@ -177,6 +177,7 @@ return;
 
   return (
     <div className="min-h-screen bg-gray-50">
+      {/* Force deployment refresh */}
       {/* Header */}
       <div className="border-b bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
