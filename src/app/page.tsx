@@ -143,17 +143,21 @@ export default function HomePage() {
             StemBot
           </h1>
 
-          {/* Deployment Status Banner */}
+          {/* Deployment Status Banner - FORCE VISIBLE */}
           <div style={{
-            backgroundColor: '#fef3c7',
-            border: '1px solid #fbbf24',
+            backgroundColor: '#ef4444',
+            border: '2px solid #dc2626',
             borderRadius: '6px',
-            padding: '8px 12px',
-            fontSize: '12px',
-            color: '#92400e',
-            fontWeight: '500'
+            padding: '12px 16px',
+            fontSize: '14px',
+            color: 'white',
+            fontWeight: 'bold',
+            textAlign: 'center',
+            boxShadow: '0 4px 12px rgba(239, 68, 68, 0.4)',
+            zIndex: '9999',
+            position: 'relative'
           }}>
-            🔍 DEPLOYMENT DEBUG: Commit {process.env.NEXT_PUBLIC_APP_VERSION?.slice(0,8) || 'unknown'} | Domain: {typeof window !== 'undefined' ? window.location.hostname : 'server'}
+            🚨 DEPLOYMENT VERIFICATION: Commit {process.env.NEXT_PUBLIC_APP_VERSION?.slice(0,8) || 'unknown'} | Domain: {typeof window !== 'undefined' ? window.location.hostname : 'server'} | Time: {new Date().toLocaleTimeString()}
           </div>
 
           <HeaderNavigation />
