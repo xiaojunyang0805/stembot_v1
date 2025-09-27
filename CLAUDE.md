@@ -2,6 +2,19 @@
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
+## 🚨 CRITICAL STYLING REQUIREMENTS
+
+### **ALWAYS USE INLINE STYLES - NEVER TAILWIND CLASSES**
+**IMPORTANT**: This project has persistent Tailwind CSS build/deployment issues.
+
+**MANDATORY STYLING APPROACH:**
+- ✅ **ALWAYS use inline styles**: `style={{color: '#111827', fontSize: '1rem'}}`
+- ❌ **NEVER use Tailwind classes**: `className="text-gray-900 text-base"`
+- ✅ **Include both className AND style**: Keep Tailwind classes for semantic meaning but ALWAYS add inline styles as fallback
+- ✅ **Example correct approach**: `<div className="bg-white p-4" style={{backgroundColor: 'white', padding: '1rem'}}>`
+
+**This applies to ALL UI components, pages, and styling tasks regardless of what the user requests.**
+
 ## Development Commands
 
 ### Core Development
@@ -92,9 +105,12 @@ src/
 - Custom path mapping for clean imports
 
 ### Styling Conventions
-- Use Tailwind utility classes with the `cn()` helper for conditional styling
-- STEM subject colors: `text-math`, `bg-science`, `border-coding`, etc.
-- Custom animations available: `animate-badge-pop`, `animate-glow`, `animate-float`
+**🚨 CRITICAL: ALWAYS USE INLINE STYLES DUE TO TAILWIND BUILD ISSUES**
+- **PRIMARY**: Use inline styles for all styling: `style={{backgroundColor: 'white', padding: '1rem'}}`
+- **SECONDARY**: Keep Tailwind classes for semantic reference but they may not work
+- **COLORS**: Use hex values in inline styles: `#111827` (gray-900), `#3b82f6` (blue-600), `#22c55e` (green-600)
+- **SPACING**: Use rem/px values: `1rem` (4), `1.5rem` (6), `2rem` (8)
+- **LAYOUT**: Use CSS Grid/Flexbox in inline styles: `display: 'grid'`, `gridTemplateColumns: '2fr 1fr'`
 
 ### Component Development
 - Follow Radix UI + Tailwind patterns from existing UI components
