@@ -101,6 +101,27 @@ git status           # Review all changes
 
 ---
 
+## 🚨 **CRITICAL DEPLOYMENT LESSONS LEARNED**
+
+### **Domain Routing Issue (Sep 27, 2025)**
+**Problem:** Main domain served different content than working domain despite same project.
+**Root Cause:** Vercel deployed from `master` branch while development was on `main` branch.
+**Symptoms:** Debug indicators showed on working domain but not main domain.
+**Resolution:** Merged `main` into `master` and pushed to update main domain.
+
+**Key Lessons:**
+1. **Always verify which branch Vercel uses for production domain**
+2. **Check Vercel project settings → Git → Production Branch**
+3. **Keep main and master branches synchronized**
+4. **Use debug indicators to identify branch/deployment mismatches**
+
+### **Prevention Checklist:**
+- [ ] Verify production branch setting in Vercel before major changes
+- [ ] Ensure all development happens on the branch Vercel deploys from
+- [ ] Add deployment verification banners for visual confirmation
+- [ ] Test both main domain AND working domain URLs
+- [ ] Document which branch is used for production deployments
+
 ## 📝 **CHANGE LOG TEMPLATE**
 
 For every significant change, document:
@@ -110,6 +131,7 @@ For every significant change, document:
 **Date:** [DATE]
 **Before Commit:** [HASH]
 **After Commit:** [HASH]
+**Branch Used:** [main/master - verify Vercel production branch]
 
 **What Works Before:**
 - [List working functionality]
@@ -119,14 +141,17 @@ For every significant change, document:
 
 **Potential Risks:**
 - [What could break]
+- [ ] Branch mismatch causing domain routing issues
 
 **Testing Done:**
 - [ ] Local dev test
 - [ ] Build test
-- [ ] Deployment test
+- [ ] Deployment test on MAIN DOMAIN (not just working domain)
+- [ ] Verify correct branch is being deployed
 
 **Rollback Plan:**
 - Reset to commit: [HASH]
+- Ensure rollback is on correct branch for production
 ```
 
 ---

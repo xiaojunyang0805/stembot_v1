@@ -39,6 +39,17 @@ git push origin main --force
 - **Protected Features:** Homepage, Auth Flow, Dashboard, Inline Styles, Successful Builds
 - **Date Protected:** 2025-01-27
 
+#### **🚨 CRITICAL DEPLOYMENT LESSON (Sep 27, 2025):**
+**Branch Mismatch Issue:** Main domain served different content because Vercel deployed from `master` branch while development was on `main` branch.
+
+**Prevention Protocol:**
+1. **ALWAYS verify which branch Vercel deploys from** (Settings → Git → Production Branch)
+2. **Keep main and master branches synchronized** or switch development to production branch
+3. **Test MAIN DOMAIN, not just working domain** URLs after deployment
+4. **Add deployment debug indicators** to visually confirm which code is running
+
+**Quick Check:** If main domain shows different content, check if you're developing on wrong branch!
+
 **🚨 NEVER BREAK WORKING FUNCTIONALITY FOR "IMPROVEMENTS" - ADDITIVE CHANGES ONLY!**
 
 ## Development Commands
