@@ -39,18 +39,13 @@ const mockSession: AuthSession = {
 }
 
 export function AuthProvider({ children }: AuthProviderProps) {
+  // Start with loading=false to prevent infinite loading screens
   const [user, setUser] = useState<AuthUser | null>(null)
   const [session, setSession] = useState<AuthSession | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
-  useEffect(() => {
-    // Initialize as signed out - users need to explicitly sign in
-    console.log('AuthProvider: Initializing as signed out')
-    setUser(null)
-    setSession(null)
-    setLoading(false)
-  }, [])
+  // Remove useEffect that might be causing issues - start signed out by default
 
   const signIn = async (email: string, password: string) => {
     setLoading(true)
