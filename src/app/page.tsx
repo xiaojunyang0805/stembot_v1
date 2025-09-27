@@ -120,7 +120,23 @@ export default function HomePage() {
   return (
     <>
       <DeploymentDebugger />
-      <div style={{minHeight: '100vh', backgroundColor: '#f8fafc'}}>
+      {/* URGENT DEBUG: Inline styles deployment verification */}
+      <div style={{
+        position: 'fixed',
+        top: 0,
+        left: 0,
+        right: 0,
+        backgroundColor: '#dc2626',
+        color: 'white',
+        padding: '8px',
+        textAlign: 'center',
+        zIndex: 9999,
+        fontSize: '14px',
+        fontWeight: 'bold'
+      }}>
+        🚨 INLINE STYLES DEPLOYED 3df9db3 - Cache Bust v11 - If you see styling issues, hard refresh (Ctrl+F5)
+      </div>
+      <div style={{minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '40px'}}>
       {/* Header */}
       <header style={{
         backgroundColor: 'white',
