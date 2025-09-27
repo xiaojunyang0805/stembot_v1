@@ -1,4 +1,5 @@
 {
+  "name": "stembotv1",
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
@@ -19,7 +20,8 @@
       "NODE_ENV": "production",
       "NEXT_TELEMETRY_DISABLED": "1",
       "BUILD_VERSION": "$VERCEL_GIT_COMMIT_SHA",
-      "DEPLOYMENT_ENV": "$VERCEL_ENV"
+      "DEPLOYMENT_ENV": "$VERCEL_ENV",
+      "FORCE_DOMAIN_UPDATE": "v7-DOMAIN-FIX"
     }
   },
   "rewrites": [
