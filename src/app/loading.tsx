@@ -10,33 +10,51 @@
 
 export default function Loading() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-white">
-      <div className="text-center">
+    <>
+      <style jsx>{`
+        @keyframes bounce {
+          0%, 20%, 53%, 80%, 100% {
+            transform: translate3d(0, 0, 0);
+          }
+          40%, 43% {
+            transform: translate3d(0, -30px, 0);
+          }
+          70% {
+            transform: translate3d(0, -15px, 0);
+          }
+          90% {
+            transform: translate3d(0, -4px, 0);
+          }
+        }
+      `}</style>
+    <div style={{display: 'flex', minHeight: '100vh', alignItems: 'center', justifyContent: 'center', backgroundColor: 'white'}}>
+      <div style={{textAlign: 'center'}}>
         {/* Animated StemBot Logo */}
-        <div className="mb-8">
-          <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-blue-600">
-            <span className="text-2xl font-bold text-white">S</span>
+        <div style={{marginBottom: '2rem'}}>
+          <div style={{margin: '0 auto 1rem auto', display: 'flex', height: '4rem', width: '4rem', alignItems: 'center', justifyContent: 'center', borderRadius: '50%', backgroundColor: '#2563eb'}}>
+            <span style={{fontSize: '1.5rem', fontWeight: 'bold', color: 'white'}}>S</span>
           </div>
-          <h2 className="text-xl font-semibold text-gray-900">StemBot</h2>
+          <h2 style={{fontSize: '1.25rem', fontWeight: '600', color: '#111827'}}>StemBot</h2>
         </div>
         
         {/* Loading Animation */}
-        <div className="mb-6 flex items-center justify-center space-x-2">
-          <div className="h-3 w-3 animate-bounce rounded-full bg-blue-600"></div>
-          <div className="h-3 w-3 animate-bounce rounded-full bg-blue-600" style={{animationDelay: '0.1s'}}></div>
-          <div className="h-3 w-3 animate-bounce rounded-full bg-blue-600" style={{animationDelay: '0.2s'}}></div>
+        <div style={{marginBottom: '1.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem'}}>
+          <div style={{height: '0.75rem', width: '0.75rem', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'bounce 1s infinite'}}></div>
+          <div style={{height: '0.75rem', width: '0.75rem', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'bounce 1s infinite', animationDelay: '0.1s'}}></div>
+          <div style={{height: '0.75rem', width: '0.75rem', borderRadius: '50%', backgroundColor: '#2563eb', animation: 'bounce 1s infinite', animationDelay: '0.2s'}}></div>
         </div>
         
-        <p className="text-gray-600">Loading your learning environment...</p>
+        <p style={{color: '#4b5563'}}>Loading your learning environment...</p>
         
         {/* Privacy reminder */}
-        <div className="mt-6 text-sm text-gray-500">
-          <div className="flex items-center justify-center">
-            <span className="mr-2">🔒</span>
+        <div style={{marginTop: '1.5rem', fontSize: '0.875rem', color: '#6b7280'}}>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'center'}}>
+            <span style={{marginRight: '0.5rem'}}>🔒</span>
             <span>All processing happens locally</span>
           </div>
         </div>
       </div>
     </div>
+    </>
   );
 }

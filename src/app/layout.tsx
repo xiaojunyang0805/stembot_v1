@@ -50,7 +50,7 @@ interface RootLayoutProps {
 
 export default function RootLayout({ children }: RootLayoutProps) {
   return (
-    <html lang="en" className="h-full" suppressHydrationWarning>
+    <html lang="en" style={{height: '100%'}} suppressHydrationWarning>
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -60,7 +60,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
-      <body className={`${inter.className} h-full bg-background text-foreground antialiased`}>
+      <body className={inter.className} style={{height: '100%', backgroundColor: '#ffffff', color: '#0f172a', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale'}}>
         <ThemeErrorBoundary>
           <ThemeProvider
             attribute="class"
@@ -77,12 +77,43 @@ export default function RootLayout({ children }: RootLayoutProps) {
               {/* Skip to main content for accessibility */}
             <a
               href="#main-content"
-              className="sr-only z-50 rounded-lg bg-primary px-4 py-2 text-primary-foreground transition-colors duration-200 focus:not-sr-only focus:absolute focus:left-4 focus:top-4"
+              style={{
+                position: 'absolute',
+                left: '-10000px',
+                top: 'auto',
+                width: '1px',
+                height: '1px',
+                overflow: 'hidden',
+                zIndex: 50,
+                borderRadius: '0.5rem',
+                backgroundColor: '#2563eb',
+                padding: '0.5rem 1rem',
+                color: 'white',
+                transition: 'colors 0.2s'
+              }}
+              onFocus={(e) => {
+                const target = e.target as HTMLAnchorElement;
+                target.style.position = 'absolute';
+                target.style.left = '1rem';
+                target.style.top = '1rem';
+                target.style.width = 'auto';
+                target.style.height = 'auto';
+                target.style.overflow = 'visible';
+              }}
+              onBlur={(e) => {
+                const target = e.target as HTMLAnchorElement;
+                target.style.position = 'absolute';
+                target.style.left = '-10000px';
+                target.style.top = 'auto';
+                target.style.width = '1px';
+                target.style.height = '1px';
+                target.style.overflow = 'hidden';
+              }}
             >
               Skip to main content
             </a>
 
-              <div id="root" className="min-h-full">
+              <div id="root" style={{minHeight: '100%'}}>
                 {children}
               </div>
 
