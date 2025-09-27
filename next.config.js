@@ -12,6 +12,10 @@ const nextConfig = {
   },
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
+    staleTimes: {
+      dynamic: 0,
+      static: 0,
+    },
   },
   // Force cache invalidation
   generateBuildId: async () => {
