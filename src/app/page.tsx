@@ -139,7 +139,7 @@ export default function HomePage() {
         top: 0,
         left: 0,
         right: 0,
-        backgroundColor: '#16a34a',
+        backgroundColor: '#dc2626',
         color: 'white',
         padding: '8px',
         textAlign: 'center',
@@ -147,7 +147,7 @@ export default function HomePage() {
         fontSize: '14px',
         fontWeight: 'bold'
       }}>
-🔄 DEPLOYMENT TRIGGER v16 - Forcing Vercel to deploy 9ed5671!
+🚨 RED ALERT v17 - Manual deployment test - Should appear immediately!
       </div>
       <div style={{minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '40px'}}>
       {/* Header */}
