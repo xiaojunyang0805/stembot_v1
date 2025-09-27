@@ -112,3 +112,5 @@ supabase.exe
 # OS specific
 Thumbs.db
 desktop.ini
+
+.vercel

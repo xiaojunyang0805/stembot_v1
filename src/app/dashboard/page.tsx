@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 
-import { DocumentAnalysis } from '@/types/document';
+import { DocumentAnalysis } from '../../types/document';
 
 import { useAuth } from '../../providers/AuthProvider';
 
