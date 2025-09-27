@@ -15,6 +15,32 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **This applies to ALL UI components, pages, and styling tasks regardless of what the user requests.**
 
+## 🛡️ WORKING STATE PROTECTION PROTOCOL
+
+### **MANDATORY BEFORE ANY CHANGES:**
+**⚠️ CRITICAL: Protect days of work from being destroyed in minutes**
+
+**See `WORKING_STATE_PROTECTION.md` for full protocol**
+
+#### **Pre-Change Checklist:**
+1. **Document Working State**: Test `https://stembotv1.vercel.app` - record what works NOW
+2. **Risk Assessment**: What existing functionality could this change break?
+3. **Incremental Testing**: Run `npm run type-check && npm run build` before any deploy
+4. **Rollback Ready**: Keep last working commit hash accessible: `cat .working-commit`
+
+#### **Emergency Rollback Procedure:**
+```bash
+git reset --hard $(cat .working-commit)
+git push origin main --force
+```
+
+#### **Current Protected Baseline:**
+- **Working Commit:** `4ee78499e8e0c4c707bd41fafc014e748512f051`
+- **Protected Features:** Homepage, Auth Flow, Dashboard, Inline Styles, Successful Builds
+- **Date Protected:** 2025-01-27
+
+**🚨 NEVER BREAK WORKING FUNCTIONALITY FOR "IMPROVEMENTS" - ADDITIVE CHANGES ONLY!**
+
 ## Development Commands
 
 ### Core Development
