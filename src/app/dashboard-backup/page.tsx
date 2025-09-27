@@ -1,6 +1,8 @@
-// COMPLETELY NEW DASHBOARD - Server Component (no 'use client')
+// MINIMAL DASHBOARD TEST - No imports, no hooks, no complexity
 
 export default function DashboardPage() {
+  // MINIMAL TEST: Remove all complexity to isolate the issue
+
   return (
     <div style={{
       minHeight: '100vh',
@@ -19,39 +21,30 @@ export default function DashboardPage() {
           color: '#111827',
           marginBottom: '1rem'
         }}>
-          🔄 FRESH DASHBOARD - Server Component
+          🧪 MINIMAL DASHBOARD TEST
         </h1>
         <p style={{
           fontSize: '1rem',
           color: '#6b7280',
           marginBottom: '1rem'
         }}>
-          This is a completely new dashboard file as a Server Component (no client-side JS).
+          If this text appears immediately without refresh, the issue is in the removed code.
         </p>
         <p style={{
           fontSize: '1rem',
-          color: '#059669',
+          color: '#dc2626',
           fontWeight: 'bold'
         }}>
-          If this works without refresh, the issue was in the client component setup.
+          If this still requires refresh, the issue is deeper in Next.js routing or deployment.
         </p>
         <div style={{
           marginTop: '2rem',
           padding: '1rem',
-          backgroundColor: '#ecfdf5',
-          border: '1px solid #059669',
+          backgroundColor: '#eff6ff',
+          border: '1px solid #3b82f6',
           borderRadius: '4px'
         }}>
-          <strong>Test Status:</strong> Server Component with zero client-side JavaScript
-        </div>
-        <div style={{
-          marginTop: '1rem',
-          padding: '1rem',
-          backgroundColor: '#fef3c7',
-          border: '1px solid #f59e0b',
-          borderRadius: '4px'
-        }}>
-          <strong>Note:</strong> This completely bypasses any hydration or client-side issues
+          <strong>Test Status:</strong> Completely static content with inline styles only
         </div>
       </div>
     </div>

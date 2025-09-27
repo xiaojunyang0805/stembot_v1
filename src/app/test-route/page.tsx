@@ -1,6 +1,6 @@
-// COMPLETELY NEW DASHBOARD - Server Component (no 'use client')
+// TEST ROUTE - Same content as dashboard but different path
 
-export default function DashboardPage() {
+export default function TestRoutePage() {
   return (
     <div style={{
       minHeight: '100vh',
@@ -19,39 +19,30 @@ export default function DashboardPage() {
           color: '#111827',
           marginBottom: '1rem'
         }}>
-          🔄 FRESH DASHBOARD - Server Component
+          🧪 TEST ROUTE - Same Content, Different Path
         </h1>
         <p style={{
           fontSize: '1rem',
           color: '#6b7280',
           marginBottom: '1rem'
         }}>
-          This is a completely new dashboard file as a Server Component (no client-side JS).
+          This is identical content to the dashboard but at /test-route
         </p>
         <p style={{
           fontSize: '1rem',
-          color: '#059669',
+          color: '#dc2626',
           fontWeight: 'bold'
         }}>
-          If this works without refresh, the issue was in the client component setup.
+          If this works without refresh but dashboard doesn't, the issue is route-specific.
         </p>
         <div style={{
           marginTop: '2rem',
           padding: '1rem',
-          backgroundColor: '#ecfdf5',
-          border: '1px solid #059669',
+          backgroundColor: '#eff6ff',
+          border: '1px solid #3b82f6',
           borderRadius: '4px'
         }}>
-          <strong>Test Status:</strong> Server Component with zero client-side JavaScript
-        </div>
-        <div style={{
-          marginTop: '1rem',
-          padding: '1rem',
-          backgroundColor: '#fef3c7',
-          border: '1px solid #f59e0b',
-          borderRadius: '4px'
-        }}>
-          <strong>Note:</strong> This completely bypasses any hydration or client-side issues
+          <strong>Test Status:</strong> Same static content as dashboard, different route
         </div>
       </div>
     </div>
