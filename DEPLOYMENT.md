@@ -1730,3 +1730,79 @@ Perfect! ✅ Your comprehensive README.md has been successfully pushed to the pu
 
   The system provides a solid foundation for processing laboratory documentation and extracting meaningful insights for STEM research project management.
 
+21:49, 26/09, 2025
+
+● Summary of AI Integration Status
+
+  I've successfully investigated the AI integration status and created a functional dashboard. Here's what I found:
+
+  ✅ What's Working (UI-Only Repository)
+
+  1. Dashboard Page: Created /dashboard route with full document upload interface
+  2. File Upload: Functional file upload with support for PDF, DOC, TXT, and image files
+  3. UI Components: All UI components for document processing are working
+  4. Mock AI Response: Intelligent demo mode that explains the current limitations
+
+  ⚠️ What's Missing (Requires Full Repository)
+
+  1. Ollama Integration: The AI model integration is in the stembot-mvp-core repository, not this UI-only repo
+  2. Backend API Routes: No actual /api/document/analyze endpoints (they're in the main repo)
+  3. Document Processing Pipeline: OCR and AI analysis functionality requires the full backend
+  4. Vector Embeddings: Semantic search and memory features need the complete system
+
+  🔧 Current Status
+
+  - UI Repository: stembot_v1 (this one) - ✅ Working perfectly for UI testing
+  - Full Repository: stembot-mvp-core - Contains the actual Ollama integration and AI processing
+
+  🚀 How to Test AI Functionality
+
+  1. Visit: https://stembotv1.vercel.app/dashboard (now available!)
+  2. Upload a PDF: The UI will work and show you a detailed mock analysis
+  3. For Real AI: You need to run the stembot-mvp-core repository locally with Ollama
+
+  22:29, 26/09, 2025
+  Based on my review of your codebase, here's how you can test real AI features with locally installed Ollama at https://stembotv1.vercel.app/:
+
+  Current Setup Issue
+  Problem: Your deployed Vercel app cannot connect to your local Ollama instance because:
+  - The API routes in src/app/api/ai/chat/route.ts:3 hardcode OLLAMA_BASE_URL = 'http://localhost:11434'
+  - Vercel runs in the cloud and cannot access localhost:11434 on your local machine
+
+  Solutions to Test Real AI Features
+
+  Option 1: Expose Local Ollama (Recommended for Testing)
+  1. Install ngrok to create a public tunnel to your local Ollama:
+  npm install -g ngrok
+  ngrok http 11434
+  2. Update environment variables in Vercel dashboard:
+    - Set OLLAMA_BASE_URL to your ngrok URL (e.g., https://abc123.ngrok.io)
+
+  Option 2: Use Remote Ollama Service
+  Deploy Ollama on a cloud service (DigitalOcean, AWS, etc.) and update OLLAMA_BASE_URL
+
+  Option 3: Local Development Testing
+
+  Test locally first:
+  npm run dev
+  # Visit http://localhost:3000
+
+  Current AI API Endpoints
+
+  Your app has these AI endpoints ready:
+  - /api/ai/health - Check Ollama connection and available models
+  - /api/ai/chat - Chat with AI tutor (STEM-focused)
+  - /api/ai/explanation - Get explanations
+  - /api/ai/problem-generator - Generate problems
+
+  Testing Process
+  1. First, test health endpoint:
+  curl https://stembotv1.vercel.app/api/ai/health
+  2. Then test chat:
+  curl -X POST https://stembotv1.vercel.app/api/ai/chat \
+    -H "Content-Type: application/json" \
+    -d '{"messages":[{"role":"user","content":"Explain photosynthesis"}]}'
+
+● The main issue is that your deployed app tries to connect to localhost:11434 which doesn't exist in Vercel's cloud environment. You'll need to expose your local Ollama or use a cloud-hosted
+  instance to test the real AI features.
+
