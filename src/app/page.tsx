@@ -147,7 +147,7 @@ export default function HomePage() {
         fontSize: '14px',
         fontWeight: 'bold'
       }}>
-⚡ AGGRESSIVE NO-CACHE v13 - Should update immediately without refresh!
+🔧 VERCEL CONFIG FIX v14 - Fixed CDN edge caching + regions!
       </div>
       <div style={{minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '40px'}}>
       {/* Header */}
