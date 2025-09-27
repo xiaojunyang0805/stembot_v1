@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import {
   BookOpen,
   Star,
@@ -185,7 +186,9 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
   const criticalGaps = gaps.filter(gap => gap.severity === 'critical');
 
   const handleSearch = async () => {
-    if (!searchQuery.trim() || !onSearchSources) return;
+    if (!searchQuery.trim() || !onSearchSources) {
+return;
+}
 
     setIsSearching(true);
     try {
@@ -199,9 +202,15 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
   };
 
   const getCredibilityInfo = (score: number): typeof credibilityConfig[CredibilityLevel] => {
-    if (score >= 80) return credibilityConfig.high;
-    if (score >= 60) return credibilityConfig.medium;
-    if (score >= 40) return credibilityConfig.low;
+    if (score >= 80) {
+return credibilityConfig.high;
+}
+    if (score >= 60) {
+return credibilityConfig.medium;
+}
+    if (score >= 40) {
+return credibilityConfig.low;
+}
     return credibilityConfig.questionable;
   };
 
@@ -209,8 +218,8 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
     <div className={`academic-container ${className}`}>
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-academic-blue rounded-lg">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="bg-academic-blue rounded-lg p-3">
             <BookOpen className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -223,37 +232,37 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
         {/* Stats Overview */}
         <div className="academic-grid-3 gap-4">
-          <div className="p-4 bg-academic-primary rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <BookOpen className="h-5 w-5 text-academic-blue" />
-              <span className="font-medium text-academic-primary">Total Sources</span>
+          <div className="bg-academic-primary rounded-lg p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <BookOpen className="text-academic-blue h-5 w-5" />
+              <span className="text-academic-primary font-medium">Total Sources</span>
             </div>
-            <div className="text-2xl font-bold text-academic-primary">{sources.length}</div>
-            <div className="text-sm text-academic-secondary">
+            <div className="text-academic-primary text-2xl font-bold">{sources.length}</div>
+            <div className="text-academic-secondary text-sm">
               {topSources.length} high-priority sources
             </div>
           </div>
 
-          <div className="p-4 bg-academic-primary rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Shield className="h-5 w-5 text-semantic-success" />
-              <span className="font-medium text-academic-primary">Avg. Credibility</span>
+          <div className="bg-academic-primary rounded-lg p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <Shield className="text-semantic-success h-5 w-5" />
+              <span className="text-academic-primary font-medium">Avg. Credibility</span>
             </div>
-            <div className="text-2xl font-bold text-academic-primary">
+            <div className="text-academic-primary text-2xl font-bold">
               {sources.length > 0 ? Math.round(sources.reduce((sum, s) => sum + s.credibilityScore, 0) / sources.length) : 0}%
             </div>
-            <div className="text-sm text-academic-secondary">
+            <div className="text-academic-secondary text-sm">
               {sources.filter(s => s.credibilityLevel === 'high').length} high-credibility sources
             </div>
           </div>
 
-          <div className="p-4 bg-academic-primary rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="h-5 w-5 text-semantic-warning" />
-              <span className="font-medium text-academic-primary">Literature Gaps</span>
+          <div className="bg-academic-primary rounded-lg p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <Target className="text-semantic-warning h-5 w-5" />
+              <span className="text-academic-primary font-medium">Literature Gaps</span>
             </div>
-            <div className="text-2xl font-bold text-academic-primary">{gaps.length}</div>
-            <div className="text-sm text-academic-secondary">
+            <div className="text-academic-primary text-2xl font-bold">{gaps.length}</div>
+            <div className="text-academic-secondary text-sm">
               {criticalGaps.length} critical gaps identified
             </div>
           </div>
@@ -262,7 +271,7 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
       {/* Tab Navigation */}
       <div className="mb-6">
-        <div className="border-b border-academic-primary">
+        <div className="border-academic-primary border-b">
           <nav className="flex space-x-8">
             {[
               { id: 'sources', label: 'Top Sources', icon: Star },
@@ -274,10 +283,10 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`flex items-center gap-2 border-b-2 px-1 py-2 text-sm font-medium ${
                     activeTab === tab.id
                       ? 'border-academic-blue text-academic-blue'
-                      : 'border-transparent text-academic-muted hover:text-academic-primary'
+                      : 'text-academic-muted hover:text-academic-primary border-transparent'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -300,7 +309,7 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
               <div key={source.id} className="academic-research-card">
                 <div className="flex items-start gap-4">
                   {/* Ranking Badge */}
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                  <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
                     index === 0 ? 'bg-semantic-warning' :
                     index === 1 ? 'bg-academic-primary' :
                     index === 2 ? 'bg-academic-primary' : 'bg-academic-muted'
@@ -310,21 +319,21 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
                   <div className="flex-1">
                     {/* Source Header */}
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="mb-3 flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="academic-heading-section mb-2 line-clamp-2">
                           {source.title}
                         </h3>
-                        <div className="flex items-center gap-4 mb-2">
-                          <span className="text-sm text-academic-primary">
+                        <div className="mb-2 flex items-center gap-4">
+                          <span className="text-academic-primary text-sm">
                             {source.authors.slice(0, 3).join(', ')}
                             {source.authors.length > 3 && ` et al.`}
                           </span>
-                          <span className="text-sm text-academic-muted">
+                          <span className="text-academic-muted text-sm">
                             {source.year}
                           </span>
                           {source.journal && (
-                            <span className="text-sm text-academic-blue">
+                            <span className="text-academic-blue text-sm">
                               {source.journal}
                             </span>
                           )}
@@ -333,7 +342,7 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
                       <div className="flex items-center gap-3">
                         {/* Credibility Badge */}
-                        <div className={`flex items-center gap-1 px-2 py-1 rounded ${credibilityInfo.bgColor} text-white`}>
+                        <div className={`flex items-center gap-1 rounded px-2 py-1 ${credibilityInfo.bgColor} text-white`}>
                           <CredibilityIcon className="h-3 w-3" />
                           <span className="text-xs font-medium">
                             {credibilityInfo.label}
@@ -345,29 +354,29 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
                         <button
                           onClick={() => setSelectedSource(selectedSource?.id === source.id ? null : source)}
-                          className="p-2 hover:bg-academic-primary rounded-lg"
+                          className="hover:bg-academic-primary rounded-lg p-2"
                         >
-                          <Eye className="h-4 w-4 text-academic-muted" />
+                          <Eye className="text-academic-muted h-4 w-4" />
                         </button>
                       </div>
                     </div>
 
                     {/* Abstract Preview */}
-                    <p className="academic-body-text text-sm text-academic-secondary mb-3 line-clamp-3">
+                    <p className="academic-body-text text-academic-secondary mb-3 line-clamp-3 text-sm">
                       {source.abstract}
                     </p>
 
                     {/* Key Findings */}
                     {source.keyFindings.length > 0 && (
                       <div className="mb-3">
-                        <h4 className="text-sm font-medium text-academic-primary mb-2">
+                        <h4 className="text-academic-primary mb-2 text-sm font-medium">
                           Key Findings:
                         </h4>
                         <div className="space-y-1">
                           {source.keyFindings.slice(0, 2).map((finding, idx) => (
                             <div key={idx} className="flex items-start gap-2">
-                              <Quote className="h-3 w-3 text-academic-blue mt-1 flex-shrink-0" />
-                              <span className="text-sm text-academic-secondary">
+                              <Quote className="text-academic-blue mt-1 h-3 w-3 flex-shrink-0" />
+                              <span className="text-academic-secondary text-sm">
                                 {finding}
                               </span>
                             </div>
@@ -380,21 +389,21 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-4">
                         <div className="flex items-center gap-1">
-                          <TrendingUp className="h-4 w-4 text-academic-blue" />
-                          <span className="text-sm text-academic-muted">
+                          <TrendingUp className="text-academic-blue h-4 w-4" />
+                          <span className="text-academic-muted text-sm">
                             Relevance: {source.relevanceScore}%
                           </span>
                         </div>
                         <div className="flex items-center gap-1">
-                          <Users className="h-4 w-4 text-academic-muted" />
-                          <span className="text-sm text-academic-muted">
+                          <Users className="text-academic-muted h-4 w-4" />
+                          <span className="text-academic-muted text-sm">
                             {source.credibilityFactors.citationCount} citations
                           </span>
                         </div>
                         {source.memoryContext && (
                           <div className="flex items-center gap-1">
-                            <Brain className="h-4 w-4 text-memory-purple" />
-                            <span className="text-sm text-memory-purple">
+                            <Brain className="text-memory-purple h-4 w-4" />
+                            <span className="text-memory-purple text-sm">
                               {source.memoryContext.readingProgress}% read
                             </span>
                           </div>
@@ -403,12 +412,12 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
                       <div className="flex gap-2">
                         {source.url && (
-                          <button className="academic-btn-outline text-xs py-1 px-3 flex items-center gap-1">
+                          <button className="academic-btn-outline flex items-center gap-1 px-3 py-1 text-xs">
                             <ExternalLink className="h-3 w-3" />
                             View
                           </button>
                         )}
-                        <button className="academic-btn-outline text-xs py-1 px-3 flex items-center gap-1">
+                        <button className="academic-btn-outline flex items-center gap-1 px-3 py-1 text-xs">
                           <Download className="h-3 w-3" />
                           Save
                         </button>
@@ -417,10 +426,10 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
                     {/* Expanded Details */}
                     {selectedSource?.id === source.id && (
-                      <div className="mt-4 pt-4 border-t border-academic-primary">
-                        <div className="academic-grid-2 gap-4 mb-4">
+                      <div className="border-academic-primary mt-4 border-t pt-4">
+                        <div className="academic-grid-2 mb-4 gap-4">
                           <div>
-                            <h4 className="text-sm font-medium text-academic-primary mb-2">
+                            <h4 className="text-academic-primary mb-2 text-sm font-medium">
                               Credibility Factors:
                             </h4>
                             <div className="space-y-1 text-xs">
@@ -447,23 +456,23 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
                           {source.memoryContext && (
                             <div>
-                              <h4 className="text-sm font-medium text-academic-primary mb-2">
+                              <h4 className="text-academic-primary mb-2 text-sm font-medium">
                                 Reading Progress:
                               </h4>
-                              <div className="progress-bar h-2 mb-2">
+                              <div className="progress-bar mb-2 h-2">
                                 <div
                                   className="progress-fill bg-memory-purple"
                                   style={{ width: `${source.memoryContext.readingProgress}%` }}
                                 />
                               </div>
-                              <div className="text-xs text-academic-muted">
+                              <div className="text-academic-muted text-xs">
                                 Added: {source.memoryContext.addedDate.toLocaleDateString()}
                               </div>
                             </div>
                           )}
                         </div>
 
-                        <div className="p-3 bg-academic-primary rounded-lg">
+                        <div className="bg-academic-primary rounded-lg p-3">
                           <p className="academic-caption">
                             <strong>Credibility Assessment:</strong> {credibilityInfo.description}
                           </p>
@@ -477,8 +486,8 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
           })}
 
           {sources.length === 0 && (
-            <div className="text-center py-12">
-              <BookOpen className="h-16 w-16 text-academic-muted mx-auto mb-4" />
+            <div className="py-12 text-center">
+              <BookOpen className="text-academic-muted mx-auto mb-4 h-16 w-16" />
               <h3 className="academic-heading-section text-academic-muted mb-2">
                 No sources added yet
               </h3>
@@ -502,7 +511,7 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
           {gaps.map((gap) => (
             <div key={gap.id} className="academic-research-card">
               <div className="flex items-start gap-4">
-                <div className={`p-2 rounded-lg ${
+                <div className={`rounded-lg p-2 ${
                   gap.severity === 'critical' ? 'bg-semantic-error' :
                   gap.severity === 'important' ? 'bg-semantic-warning' : 'bg-academic-blue'
                 }`}>
@@ -510,32 +519,32 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
                 </div>
 
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="mb-2 flex items-center gap-2">
                     <h3 className="academic-heading-section mb-0">{gap.title}</h3>
-                    <span className={`px-2 py-1 rounded text-xs text-white capitalize ${
+                    <span className={`rounded px-2 py-1 text-xs capitalize text-white ${
                       gap.severity === 'critical' ? 'bg-semantic-error' :
                       gap.severity === 'important' ? 'bg-semantic-warning' : 'bg-academic-blue'
                     }`}>
                       {gap.severity}
                     </span>
-                    <span className="px-2 py-1 bg-academic-primary text-xs rounded capitalize">
+                    <span className="bg-academic-primary rounded px-2 py-1 text-xs capitalize">
                       {gap.type}
                     </span>
                   </div>
 
-                  <p className="academic-body-text text-sm text-academic-secondary mb-4">
+                  <p className="academic-body-text text-academic-secondary mb-4 text-sm">
                     {gap.description}
                   </p>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-academic-primary mb-2">
+                    <h4 className="text-academic-primary mb-2 text-sm font-medium">
                       Suggestions to Address:
                     </h4>
                     <div className="space-y-1">
                       {gap.suggestions.map((suggestion, index) => (
                         <div key={index} className="flex items-start gap-2">
-                          <Lightbulb className="h-3 w-3 text-academic-blue mt-1" />
-                          <span className="text-sm text-academic-secondary">
+                          <Lightbulb className="text-academic-blue mt-1 h-3 w-3" />
+                          <span className="text-academic-secondary text-sm">
                             {suggestion}
                           </span>
                         </div>
@@ -545,16 +554,16 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
                   {gap.potentialSources && gap.potentialSources.length > 0 && (
                     <div>
-                      <h4 className="text-sm font-medium text-academic-primary mb-2">
+                      <h4 className="text-academic-primary mb-2 text-sm font-medium">
                         Potential Sources:
                       </h4>
                       <div className="space-y-2">
                         {gap.potentialSources.slice(0, 3).map((source) => (
-                          <div key={source.id} className="flex items-center justify-between p-2 bg-academic-primary rounded">
-                            <span className="text-sm text-academic-primary line-clamp-1">
+                          <div key={source.id} className="bg-academic-primary flex items-center justify-between rounded p-2">
+                            <span className="text-academic-primary line-clamp-1 text-sm">
                               {source.title}
                             </span>
-                            <button className="academic-btn-outline text-xs py-1 px-2">
+                            <button className="academic-btn-outline px-2 py-1 text-xs">
                               Add
                             </button>
                           </div>
@@ -568,8 +577,8 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
           ))}
 
           {gaps.length === 0 && (
-            <div className="text-center py-12">
-              <Target className="h-16 w-16 text-academic-muted mx-auto mb-4" />
+            <div className="py-12 text-center">
+              <Target className="text-academic-muted mx-auto mb-4 h-16 w-16" />
               <h3 className="academic-heading-section text-academic-muted mb-2">
                 No gaps identified yet
               </h3>
@@ -602,7 +611,7 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
                     placeholder="Search for research papers, authors, or keywords..."
-                    className="w-full p-3 border border-academic-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-academic-blue focus:border-transparent"
+                    className="border-academic-primary focus:ring-academic-blue w-full rounded-lg border p-3 focus:border-transparent focus:outline-none focus:ring-2"
                   />
                 </div>
                 <button
@@ -618,7 +627,7 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
                   className="academic-btn-primary flex items-center gap-2"
                 >
                   {isSearching ? (
-                    <div className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />
+                    <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
                   ) : (
                     <Search className="h-4 w-4" />
                   )}
@@ -628,10 +637,10 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
 
               {/* Advanced Filters */}
               {showFilters && (
-                <div className="p-4 bg-academic-primary rounded-lg">
+                <div className="bg-academic-primary rounded-lg p-4">
                   <div className="academic-grid-2 gap-4">
                     <div>
-                      <label className="block text-sm font-medium text-academic-primary mb-2">
+                      <label className="text-academic-primary mb-2 block text-sm font-medium">
                         Publication Year Range
                       </label>
                       <div className="flex gap-2">
@@ -642,7 +651,7 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
                             ...prev,
                             yearRange: [parseInt(e.target.value), prev.yearRange[1]]
                           }))}
-                          className="w-20 p-2 border border-academic-primary rounded text-sm"
+                          className="border-academic-primary w-20 rounded border p-2 text-sm"
                         />
                         <span className="py-2">to</span>
                         <input
@@ -652,13 +661,13 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
                             ...prev,
                             yearRange: [prev.yearRange[0], parseInt(e.target.value)]
                           }))}
-                          className="w-20 p-2 border border-academic-primary rounded text-sm"
+                          className="border-academic-primary w-20 rounded border p-2 text-sm"
                         />
                       </div>
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-academic-primary mb-2">
+                      <label className="text-academic-primary mb-2 block text-sm font-medium">
                         Source Type
                       </label>
                       <div className="space-y-1">
@@ -694,8 +703,8 @@ export const LiteratureReview: React.FC<LiteratureReviewProps> = ({
           </div>
 
           {/* Search Results Placeholder */}
-          <div className="text-center py-12">
-            <Search className="h-16 w-16 text-academic-muted mx-auto mb-4" />
+          <div className="py-12 text-center">
+            <Search className="text-academic-muted mx-auto mb-4 h-16 w-16" />
             <h3 className="academic-heading-section text-academic-muted mb-2">
               Search Academic Sources
             </h3>

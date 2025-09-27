@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import {
   MessageCircle,
   Brain,
@@ -148,17 +149,29 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
   };
 
   const getCurrentQuality = (): QuestionQuality => {
-    if (!currentQuestion.trim()) return 'vague';
+    if (!currentQuestion.trim()) {
+return 'vague';
+}
 
     const wordCount = currentQuestion.split(' ').length;
     const hasSpecifics = /\b(how|why|what|when|where|which)\b/i.test(currentQuestion);
     const hasScope = /\b(among|within|between|during|in)\b/i.test(currentQuestion);
 
-    if (wordCount < 5) return 'vague';
-    if (wordCount < 10 && !hasSpecifics) return 'developing';
-    if (hasSpecifics && hasScope && wordCount > 15) return 'research-ready';
-    if (hasSpecifics && wordCount > 10) return 'specific';
-    if (hasSpecifics) return 'focused';
+    if (wordCount < 5) {
+return 'vague';
+}
+    if (wordCount < 10 && !hasSpecifics) {
+return 'developing';
+}
+    if (hasSpecifics && hasScope && wordCount > 15) {
+return 'research-ready';
+}
+    if (hasSpecifics && wordCount > 10) {
+return 'specific';
+}
+    if (hasSpecifics) {
+return 'focused';
+}
 
     return 'developing';
   };
@@ -168,7 +181,9 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
   const QualityIcon = qualityInfo.icon;
 
   const handleAnalyzeQuestion = async () => {
-    if (!currentQuestion.trim() || !onRequestFeedback) return;
+    if (!currentQuestion.trim() || !onRequestFeedback) {
+return;
+}
 
     setIsAnalyzing(true);
     try {
@@ -182,7 +197,9 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
   };
 
   const handleSaveIteration = () => {
-    if (!currentQuestion.trim()) return;
+    if (!currentQuestion.trim()) {
+return;
+}
 
     const iteration: QuestionIteration = {
       id: `iteration-${Date.now()}`,
@@ -207,8 +224,8 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
     <div className={`academic-container ${className}`}>
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-academic-blue rounded-lg">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="bg-academic-blue rounded-lg p-3">
             <MessageCircle className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -220,20 +237,20 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
         </div>
 
         {/* Progress Indicator */}
-        <div className="flex items-center gap-4 p-4 bg-academic-primary rounded-lg">
+        <div className="bg-academic-primary flex items-center gap-4 rounded-lg p-4">
           <QualityIcon className={`h-5 w-5 ${qualityInfo.color}`} />
           <div className="flex-1">
-            <div className="flex items-center gap-2 mb-1">
-              <span className="font-medium text-academic-primary">
+            <div className="mb-1 flex items-center gap-2">
+              <span className="text-academic-primary font-medium">
                 Question Quality: {qualityInfo.label}
               </span>
-              <span className={`px-2 py-1 rounded text-xs ${qualityInfo.bgColor} text-white`}>
+              <span className={`rounded px-2 py-1 text-xs ${qualityInfo.bgColor} text-white`}>
                 {currentQuality === 'research-ready' ? '90+' :
                  currentQuality === 'specific' ? '70-89' :
                  currentQuality === 'focused' ? '50-69' : '< 50'}% Ready
               </span>
             </div>
-            <p className="text-sm text-academic-secondary">
+            <p className="text-academic-secondary text-sm">
               {qualityInfo.description}
             </p>
           </div>
@@ -256,16 +273,16 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
             value={currentQuestion}
             onChange={(e) => setCurrentQuestion(e.target.value)}
             placeholder="Enter your research question... Start with 'How does...', 'What is the relationship between...', or 'Why do...'"
-            className="w-full p-4 border border-academic-primary rounded-lg focus:outline-none focus:ring-2 focus:ring-academic-blue focus:border-transparent resize-none"
+            className="border-academic-primary focus:ring-academic-blue w-full resize-none rounded-lg border p-4 focus:border-transparent focus:outline-none focus:ring-2"
             rows={4}
           />
 
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-4">
-              <span className="text-sm text-academic-muted">
+              <span className="text-academic-muted text-sm">
                 Words: {currentQuestion.split(' ').filter(w => w.length > 0).length}
               </span>
-              <span className="text-sm text-academic-muted">
+              <span className="text-academic-muted text-sm">
                 Characters: {currentQuestion.length}
               </span>
             </div>
@@ -301,34 +318,34 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
       {currentPrompts.length > 0 && (
         <div className="academic-research-card mb-6">
           <h3 className="academic-heading-section mb-4 flex items-center gap-2">
-            <Lightbulb className="h-5 w-5 text-academic-blue" />
+            <Lightbulb className="text-academic-blue h-5 w-5" />
             Coaching Questions
           </h3>
 
           <div className="space-y-4">
             {currentPrompts.map((prompt) => (
-              <div key={prompt.id} className="p-4 bg-academic-primary rounded-lg">
+              <div key={prompt.id} className="bg-academic-primary rounded-lg p-4">
                 <div className="flex items-start gap-3">
-                  <div className="p-2 bg-academic-blue rounded-lg mt-1">
+                  <div className="bg-academic-blue mt-1 rounded-lg p-2">
                     <MessageCircle className="h-4 w-4 text-white" />
                   </div>
                   <div className="flex-1">
-                    <h4 className="font-medium text-academic-primary mb-2">
+                    <h4 className="text-academic-primary mb-2 font-medium">
                       {prompt.question}
                     </h4>
-                    <p className="text-sm text-academic-secondary mb-3">
+                    <p className="text-academic-secondary mb-3 text-sm">
                       {prompt.purpose}
                     </p>
 
                     {prompt.followUps.length > 0 && (
                       <div className="space-y-1">
-                        <span className="text-xs font-medium text-academic-muted uppercase">
+                        <span className="text-academic-muted text-xs font-medium uppercase">
                           Consider These Aspects:
                         </span>
                         {prompt.followUps.map((followUp, index) => (
                           <div key={index} className="flex items-center gap-2">
-                            <ArrowRight className="h-3 w-3 text-academic-blue" />
-                            <span className="text-sm text-academic-primary">
+                            <ArrowRight className="text-academic-blue h-3 w-3" />
+                            <span className="text-academic-primary text-sm">
                               {followUp}
                             </span>
                           </div>
@@ -347,7 +364,7 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
       {highConfidenceSuggestions.length > 0 && (
         <div className="academic-memory-card mb-6">
           <h3 className="academic-heading-section mb-4 flex items-center gap-2">
-            <Brain className="h-5 w-5 text-memory-purple" />
+            <Brain className="text-memory-purple h-5 w-5" />
             Memory-Driven Suggestions
           </h3>
 
@@ -355,7 +372,7 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
             {highConfidenceSuggestions.map((suggestion) => (
               <div
                 key={suggestion.id}
-                className={`p-3 rounded-lg border transition-all cursor-pointer ${
+                className={`cursor-pointer rounded-lg border p-3 transition-all ${
                   focusedSuggestion === suggestion.id
                     ? 'border-memory-purple bg-memory-purple'
                     : 'border-memory-purple hover:border-memory-purple hover:bg-memory-purple'
@@ -366,11 +383,11 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
               >
                 <div className="flex items-start justify-between">
                   <div className="flex-1">
-                    <p className="text-sm text-academic-primary mb-2">
+                    <p className="text-academic-primary mb-2 text-sm">
                       {suggestion.suggestion}
                     </p>
                     <div className="flex items-center gap-3">
-                      <span className="text-xs text-memory-purple capitalize">
+                      <span className="text-memory-purple text-xs capitalize">
                         {suggestion.type.replace('_', ' ')}
                       </span>
                       <div className="flex items-center gap-1">
@@ -378,7 +395,7 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
                           suggestion.confidence > 0.8 ? 'bg-semantic-success' :
                           suggestion.confidence > 0.7 ? 'bg-semantic-warning' : 'bg-semantic-error'
                         }`} />
-                        <span className="text-xs text-academic-muted">
+                        <span className="text-academic-muted text-xs">
                           {Math.round(suggestion.confidence * 100)}% confidence
                         </span>
                       </div>
@@ -394,7 +411,7 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
                           suggestion.suggestion
                         );
                       }}
-                      className="ml-3 p-1 text-memory-purple hover:bg-memory-purple rounded"
+                      className="text-memory-purple hover:bg-memory-purple ml-3 rounded p-1"
                     >
                       <ArrowRight className="h-4 w-4" />
                     </button>
@@ -410,7 +427,7 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
       {showHistory && iterations.length > 0 && (
         <div className="academic-project-card">
           <h3 className="academic-heading-section mb-4 flex items-center gap-2">
-            <Clock className="h-5 w-5 text-academic-blue" />
+            <Clock className="text-academic-blue h-5 w-5" />
             Question Evolution History
           </h3>
 
@@ -422,31 +439,31 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
               return (
                 <div key={iteration.id} className="flex gap-4">
                   <div className="flex flex-col items-center">
-                    <div className={`p-2 rounded-lg ${iterationQuality.bgColor}`}>
+                    <div className={`rounded-lg p-2 ${iterationQuality.bgColor}`}>
                       <IterationIcon className="h-4 w-4 text-white" />
                     </div>
                     {index < iterations.length - 1 && (
-                      <div className="w-px h-8 bg-academic-primary mt-2" />
+                      <div className="bg-academic-primary mt-2 h-8 w-px" />
                     )}
                   </div>
 
                   <div className="flex-1 pb-4">
-                    <div className="flex items-center justify-between mb-2">
-                      <span className="text-sm font-medium text-academic-primary">
+                    <div className="mb-2 flex items-center justify-between">
+                      <span className="text-academic-primary text-sm font-medium">
                         {iterationQuality.label} - Score: {iteration.score}%
                       </span>
-                      <span className="text-xs text-academic-muted">
+                      <span className="text-academic-muted text-xs">
                         {iteration.timestamp.toLocaleString()}
                       </span>
                     </div>
 
-                    <p className="text-sm text-academic-secondary mb-2">
+                    <p className="text-academic-secondary mb-2 text-sm">
                       "{iteration.text}"
                     </p>
 
                     <button
                       onClick={() => setCurrentQuestion(iteration.text)}
-                      className="text-xs text-academic-blue hover:text-academic-blue font-medium"
+                      className="text-academic-blue hover:text-academic-blue text-xs font-medium"
                     >
                       Restore this version
                     </button>
@@ -459,22 +476,22 @@ export const QuestionCoach: React.FC<QuestionCoachProps> = ({
       )}
 
       {/* Quick Action Suggestions */}
-      <div className="mt-8 p-6 bg-academic-primary rounded-lg">
+      <div className="bg-academic-primary mt-8 rounded-lg p-6">
         <h3 className="academic-heading-section mb-4">Quick Actions</h3>
         <div className="academic-grid-2 gap-4">
-          <button className="academic-btn-outline flex items-center gap-2 justify-center">
+          <button className="academic-btn-outline flex items-center justify-center gap-2">
             <Search className="h-4 w-4" />
             Research Similar Questions
           </button>
-          <button className="academic-btn-outline flex items-center gap-2 justify-center">
+          <button className="academic-btn-outline flex items-center justify-center gap-2">
             <BookOpen className="h-4 w-4" />
             Find Related Literature
           </button>
-          <button className="academic-btn-outline flex items-center gap-2 justify-center">
+          <button className="academic-btn-outline flex items-center justify-center gap-2">
             <Target className="h-4 w-4" />
             Scope Assessment
           </button>
-          <button className="academic-btn-outline flex items-center gap-2 justify-center">
+          <button className="academic-btn-outline flex items-center justify-center gap-2">
             <Zap className="h-4 w-4" />
             Generate Variations
           </button>

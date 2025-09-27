@@ -6,9 +6,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { useRouter } from 'next/navigation';
-import { loadStripe } from '../../lib/stripe';
+
 import { PricingCard } from '../../components/billing/PricingCard';
+import { loadStripe } from '../../lib/stripe';
 import { PRICING, STRIPE_PRODUCTS } from '../../lib/stripe/config';
 import type { PricingTier } from '../../types/billing';
 
@@ -112,18 +114,18 @@ export default function PricingPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-12">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        <div className="text-center mb-12">
-          <h1 className="text-4xl font-bold text-gray-900 mb-4">
+        <div className="mb-12 text-center">
+          <h1 className="mb-4 text-4xl font-bold text-gray-900">
             Choose Your Research Mentoring Plan
           </h1>
-          <p className="text-xl text-gray-600 mb-8">
+          <p className="mb-8 text-xl text-gray-600">
             Start with a 7-day free trial. No commitment required.
           </p>
 
           {/* Billing Toggle */}
-          <div className="flex items-center justify-center space-x-4 mb-8">
+          <div className="mb-8 flex items-center justify-center space-x-4">
             <span className={`text-sm font-medium ${billingInterval === 'monthly' ? 'text-gray-900' : 'text-gray-500'}`}>
               Monthly
             </span>
@@ -141,7 +143,7 @@ export default function PricingPage() {
               Yearly
             </span>
             {billingInterval === 'yearly' && (
-              <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-xs font-medium">
+              <span className="rounded-full bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
                 Save 17%
               </span>
             )}
@@ -150,8 +152,8 @@ export default function PricingPage() {
 
         {/* Individual Plans */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-8">Individual Plans</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <h2 className="mb-8 text-center text-2xl font-bold">Individual Plans</h2>
+          <div className="mx-auto grid max-w-6xl grid-cols-1 gap-8 md:grid-cols-3">
             {individualTiers.map((tier, index) => (
               <PricingCard
                 key={tier.id}
@@ -167,12 +169,12 @@ export default function PricingPage() {
 
         {/* Institution Plans */}
         <div className="mb-16">
-          <h2 className="text-2xl font-bold text-center mb-4">Institution Plans</h2>
-          <p className="text-gray-600 text-center mb-8 max-w-2xl mx-auto">
+          <h2 className="mb-4 text-center text-2xl font-bold">Institution Plans</h2>
+          <p className="mx-auto mb-8 max-w-2xl text-center text-gray-600">
             Perfect for universities, departments, and educational institutions. Includes admin dashboard,
             usage analytics, and priority support.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+          <div className="mx-auto grid max-w-4xl grid-cols-1 gap-8 md:grid-cols-2">
             {institutionTiers.map((tier) => (
               <PricingCard
                 key={tier.id}
@@ -186,52 +188,52 @@ export default function PricingPage() {
         </div>
 
         {/* FAQ Section */}
-        <div className="max-w-4xl mx-auto">
-          <h2 className="text-2xl font-bold text-center mb-8">Frequently Asked Questions</h2>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="font-semibold mb-2">What happens after the 7-day free trial?</h3>
-              <p className="text-gray-600 text-sm">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="mb-8 text-center text-2xl font-bold">Frequently Asked Questions</h2>
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+            <div className="rounded-lg bg-white p-6">
+              <h3 className="mb-2 font-semibold">What happens after the 7-day free trial?</h3>
+              <p className="text-sm text-gray-600">
                 After your trial ends, you'll be automatically converted to a paid subscription.
                 You can cancel anytime during the trial period with no charges.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="font-semibold mb-2">Can I change my plan later?</h3>
-              <p className="text-gray-600 text-sm">
+            <div className="rounded-lg bg-white p-6">
+              <h3 className="mb-2 font-semibold">Can I change my plan later?</h3>
+              <p className="text-sm text-gray-600">
                 Yes! You can upgrade or downgrade your plan at any time. Changes will be prorated
                 and reflected in your next billing cycle.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="font-semibold mb-2">What qualifies for student pricing?</h3>
-              <p className="text-gray-600 text-sm">
+            <div className="rounded-lg bg-white p-6">
+              <h3 className="mb-2 font-semibold">What qualifies for student pricing?</h3>
+              <p className="text-sm text-gray-600">
                 Students with a valid university email address (.edu, .ac.uk, etc.) are eligible
                 for student pricing. Verification is automatic during signup.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="font-semibold mb-2">Do you offer refunds?</h3>
-              <p className="text-gray-600 text-sm">
+            <div className="rounded-lg bg-white p-6">
+              <h3 className="mb-2 font-semibold">Do you offer refunds?</h3>
+              <p className="text-sm text-gray-600">
                 Yes, we offer a 30-day money-back guarantee. If you're not satisfied with StemBot,
                 contact us for a full refund within 30 days of purchase.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="font-semibold mb-2">What payment methods do you accept?</h3>
-              <p className="text-gray-600 text-sm">
+            <div className="rounded-lg bg-white p-6">
+              <h3 className="mb-2 font-semibold">What payment methods do you accept?</h3>
+              <p className="text-sm text-gray-600">
                 We accept all major credit cards, bank transfers, and digital wallets through Stripe.
                 All payments are secure and encrypted.
               </p>
             </div>
 
-            <div className="bg-white rounded-lg p-6">
-              <h3 className="font-semibold mb-2">Is there a setup fee?</h3>
-              <p className="text-gray-600 text-sm">
+            <div className="rounded-lg bg-white p-6">
+              <h3 className="mb-2 font-semibold">Is there a setup fee?</h3>
+              <p className="text-sm text-gray-600">
                 No setup fees, ever. You only pay the subscription price. Institution licenses
                 include free onboarding and training sessions.
               </p>
@@ -240,15 +242,15 @@ export default function PricingPage() {
         </div>
 
         {/* CTA Section */}
-        <div className="text-center mt-16">
-          <h2 className="text-2xl font-bold mb-4">Ready to accelerate your research?</h2>
-          <p className="text-gray-600 mb-8">
+        <div className="mt-16 text-center">
+          <h2 className="mb-4 text-2xl font-bold">Ready to accelerate your research?</h2>
+          <p className="mb-8 text-gray-600">
             Join thousands of researchers who are using StemBot to streamline their research process.
           </p>
           <button
             onClick={() => handleSubscribe('pro_monthly')}
             disabled={!!loading}
-            className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors disabled:opacity-50"
+            className="rounded-lg bg-blue-600 px-8 py-3 font-medium text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? 'Processing...' : 'Start Free Trial'}
           </button>

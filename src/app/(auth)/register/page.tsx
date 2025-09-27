@@ -7,8 +7,9 @@
  * @location src/app/(auth)/register/page.tsx
  */
 
-import type { Metadata } from 'next';
 import { Suspense } from 'react';
+
+import type { Metadata } from 'next';
 
 import { RegisterForm } from '../../../components/auth/RegisterForm';
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner';
@@ -43,8 +44,8 @@ export default function RegisterPage({ searchParams }: RegisterPageProps) {
   const { redirect, invite, error } = searchParams;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-2xl w-full space-y-8 p-8">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="w-full max-w-2xl space-y-8 p-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Join StemBot Research
@@ -56,14 +57,14 @@ export default function RegisterPage({ searchParams }: RegisterPageProps) {
 
         {/* Display error messages */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-700">
             {error}
           </div>
         )}
 
         {/* Display invite information */}
         {invite && (
-          <div className="bg-blue-50 border border-blue-200 text-blue-700 px-4 py-3 rounded-md">
+          <div className="rounded-md border border-blue-200 bg-blue-50 px-4 py-3 text-blue-700">
             You've been invited to join a research project. Complete registration to get started.
           </div>
         )}
@@ -75,7 +76,7 @@ export default function RegisterPage({ searchParams }: RegisterPageProps) {
           />
         </Suspense>
 
-        <div className="text-center space-y-4">
+        <div className="space-y-4 text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             Already have an account?{' '}
             <a
@@ -86,7 +87,7 @@ export default function RegisterPage({ searchParams }: RegisterPageProps) {
             </a>
           </p>
 
-          <div className="text-xs text-gray-500 dark:text-gray-400 max-w-md mx-auto">
+          <div className="mx-auto max-w-md text-xs text-gray-500 dark:text-gray-400">
             By registering, you agree to our{' '}
             <a href="/terms" className="underline hover:text-gray-700">
               Terms of Service

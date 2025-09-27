@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState } from 'react';
+
 import {
   BookOpen,
   Search,
@@ -33,6 +34,7 @@ import {
   Star,
   AlertTriangle,
 } from 'lucide-react';
+
 import { ResearchProject as GlobalResearchProject, ResearchStage } from '../../types/research-project';
 
 /**
@@ -202,7 +204,9 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
   };
 
   const getDaysUntilDeadline = () => {
-    if (!projectData.targetDate) return null;
+    if (!projectData.targetDate) {
+return null;
+}
     const today = new Date();
     const target = new Date(projectData.targetDate);
     const diffTime = target.getTime() - today.getTime();
@@ -223,19 +227,19 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       }}
     >
       {/* Header */}
-      <div className="flex items-start justify-between mb-4">
+      <div className="mb-4 flex items-start justify-between">
         <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
+          <div className="mb-2 flex items-center gap-2">
             <h3 className="academic-heading-section mb-0 line-clamp-1">
               {projectData.title}
             </h3>
             {projectData.isStarred && (
-              <Star className="h-4 w-4 text-semantic-warning fill-current" />
+              <Star className="text-semantic-warning h-4 w-4 fill-current" />
             )}
           </div>
 
           {!compact && (
-            <p className="academic-body-text text-sm text-academic-secondary line-clamp-2 mb-3">
+            <p className="academic-body-text text-academic-secondary mb-3 line-clamp-2 text-sm">
               {projectData.researchQuestion}
             </p>
           )}
@@ -244,7 +248,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
             <span className={`academic-status-${projectData.status === 'active' ? 'active' : 'pending'}`}>
               {projectData.status}
             </span>
-            <span className="text-xs text-academic-muted">
+            <span className="text-academic-muted text-xs">
               {projectData.field}
             </span>
           </div>
@@ -252,17 +256,17 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
         <div className="flex items-center gap-2">
           {isOverdue && (
-            <AlertTriangle className="h-4 w-4 text-semantic-error" />
+            <AlertTriangle className="text-semantic-error h-4 w-4" />
           )}
           {isUrgent && (
-            <Clock className="h-4 w-4 text-semantic-warning" />
+            <Clock className="text-semantic-warning h-4 w-4" />
           )}
           <button
             onClick={(e) => {
               e.stopPropagation();
               onToggleStar?.(projectData.id);
             }}
-            className="p-1 hover:bg-academic-primary rounded"
+            className="hover:bg-academic-primary rounded p-1"
           >
             <Star className={`h-4 w-4 ${projectData.isStarred ? 'text-semantic-warning fill-current' : 'text-academic-muted'}`} />
           </button>
@@ -271,23 +275,23 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
               e.stopPropagation();
               setShowDetails(!showDetails);
             }}
-            className="p-1 hover:bg-academic-primary rounded"
+            className="hover:bg-academic-primary rounded p-1"
           >
-            <MoreHorizontal className="h-4 w-4 text-academic-muted" />
+            <MoreHorizontal className="text-academic-muted h-4 w-4" />
           </button>
         </div>
       </div>
 
       {/* Phase Progress */}
       <div className="mb-4">
-        <div className="flex items-center justify-between mb-2">
+        <div className="mb-2 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <PhaseIcon className={`h-4 w-4 ${currentPhase.color}`} />
-            <span className="text-sm font-medium text-academic-primary">
+            <span className="text-academic-primary text-sm font-medium">
               {currentPhase.name}
             </span>
           </div>
-          <span className="text-sm text-academic-muted">
+          <span className="text-academic-muted text-sm">
             {projectData.progress}%
           </span>
         </div>
@@ -302,10 +306,10 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
       {/* Memory Hints */}
       {showMemoryHints && projectData.memoryContext && (
-        <div className="mb-4 p-3 bg-memory-purple rounded-lg">
-          <div className="flex items-center gap-2 mb-2">
-            <Brain className="h-4 w-4 text-memory-purple" />
-            <span className="text-sm font-medium text-memory-purple">
+        <div className="bg-memory-purple mb-4 rounded-lg p-3">
+          <div className="mb-2 flex items-center gap-2">
+            <Brain className="text-memory-purple h-4 w-4" />
+            <span className="text-memory-purple text-sm font-medium">
               Memory Context
             </span>
             <div className="flex items-center gap-1">
@@ -313,20 +317,20 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 projectData.memoryContext.confidence > 0.8 ? 'bg-semantic-success' :
                 projectData.memoryContext.confidence > 0.6 ? 'bg-semantic-warning' : 'bg-semantic-error'
               }`} />
-              <span className="text-xs text-academic-muted">
+              <span className="text-academic-muted text-xs">
                 {Math.round(projectData.memoryContext.confidence * 100)}%
               </span>
             </div>
           </div>
 
-          <p className="text-xs text-academic-primary mb-2">
+          <p className="text-academic-primary mb-2 text-xs">
             {projectData.memoryContext.lastSession}
           </p>
 
           {projectData.memoryContext.nextSteps.length > 0 && (
             <div className="flex items-center gap-1">
-              <ArrowRight className="h-3 w-3 text-memory-purple" />
-              <span className="text-xs text-memory-purple">
+              <ArrowRight className="text-memory-purple h-3 w-3" />
+              <span className="text-memory-purple text-xs">
                 {projectData.memoryContext.nextSteps[0]}
               </span>
             </div>
@@ -335,7 +339,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
       )}
 
       {/* Project Meta */}
-      <div className="flex items-center justify-between text-xs text-academic-muted">
+      <div className="text-academic-muted flex items-center justify-between text-xs">
         <div className="flex items-center gap-4">
           <div className="flex items-center gap-1">
             <Calendar className="h-3 w-3" />
@@ -367,26 +371,26 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
 
       {/* Expanded Details */}
       {showDetails && (
-        <div className="mt-4 pt-4 border-t border-academic-primary space-y-3">
+        <div className="border-academic-primary mt-4 space-y-3 border-t pt-4">
           <div>
-            <h4 className="text-sm font-medium text-academic-primary mb-2">
+            <h4 className="text-academic-primary mb-2 text-sm font-medium">
               Research Question
             </h4>
-            <p className="text-sm text-academic-secondary">
+            <p className="text-academic-secondary text-sm">
               {projectData.researchQuestion}
             </p>
           </div>
 
           {projectData.memoryContext?.insights && projectData.memoryContext.insights.length > 0 && (
             <div>
-              <h4 className="text-sm font-medium text-academic-primary mb-2">
+              <h4 className="text-academic-primary mb-2 text-sm font-medium">
                 Recent Insights
               </h4>
               <div className="space-y-1">
                 {projectData.memoryContext.insights.slice(0, 3).map((insight: any, index: number) => (
                   <div key={index} className="flex items-start gap-2">
-                    <div className="h-1.5 w-1.5 rounded-full bg-memory-purple mt-2" />
-                    <span className="text-xs text-academic-secondary">
+                    <div className="bg-memory-purple mt-2 h-1.5 w-1.5 rounded-full" />
+                    <span className="text-academic-secondary text-xs">
                       {insight}
                     </span>
                   </div>
@@ -401,7 +405,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 e.stopPropagation();
                 onViewDetails?.(projectData.id);
               }}
-              className="academic-btn-outline flex-1 text-xs py-2"
+              className="academic-btn-outline flex-1 py-2 text-xs"
             >
               View Details
             </button>
@@ -410,7 +414,7 @@ export const ProjectCard: React.FC<ProjectCardProps> = ({
                 e.stopPropagation();
                 onSelect?.(project);
               }}
-              className="academic-btn-primary flex-1 text-xs py-2"
+              className="academic-btn-primary flex-1 py-2 text-xs"
             >
               Continue Research
             </button>

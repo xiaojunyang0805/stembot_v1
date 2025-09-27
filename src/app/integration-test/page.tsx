@@ -6,8 +6,9 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { coreIntegration, getIntegrationStatus } from '../../lib/integration';
+
 import IntegrationStatus, { IntegrationConfig } from '../../components/common/IntegrationStatus';
+import { coreIntegration, getIntegrationStatus } from '../../lib/integration';
 
 export default function IntegrationTestPage() {
   const [testResults, setTestResults] = useState<any[]>([]);
@@ -74,9 +75,9 @@ export default function IntegrationTestPage() {
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-lg p-6">
-          <h1 className="text-2xl font-bold text-gray-900 mb-6">
+      <div className="mx-auto max-w-4xl px-4">
+        <div className="rounded-lg bg-white p-6 shadow-lg">
+          <h1 className="mb-6 text-2xl font-bold text-gray-900">
             Integration Test Page
           </h1>
 
@@ -85,11 +86,11 @@ export default function IntegrationTestPage() {
           </div>
 
           <div className="mb-6">
-            <h2 className="text-lg font-semibold text-gray-800 mb-4">
+            <h2 className="mb-4 text-lg font-semibold text-gray-800">
               Current Integration Status
             </h2>
             {status && (
-              <div className="bg-gray-50 rounded-lg p-4">
+              <div className="rounded-lg bg-gray-50 p-4">
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
                     <span className="font-medium">Environment:</span>
@@ -113,16 +114,16 @@ export default function IntegrationTestPage() {
           </div>
 
           <div className="mb-6">
-            <div className="flex items-center justify-between mb-4">
+            <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-gray-800">
                 Integration Tests
               </h2>
               <button
                 onClick={runTests}
                 disabled={isRunning}
-                className={`px-4 py-2 rounded-lg font-medium ${
+                className={`rounded-lg px-4 py-2 font-medium ${
                   isRunning
-                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                    ? 'cursor-not-allowed bg-gray-300 text-gray-500'
                     : 'bg-blue-600 text-white hover:bg-blue-700'
                 }`}
               >
@@ -135,19 +136,19 @@ export default function IntegrationTestPage() {
                 {testResults.map((result, index) => (
                   <div
                     key={index}
-                    className={`border rounded-lg p-4 ${
+                    className={`rounded-lg border p-4 ${
                       result.status === 'success'
                         ? 'border-green-200 bg-green-50'
                         : 'border-red-200 bg-red-50'
                     }`}
                   >
-                    <div className="flex items-center justify-between mb-2">
+                    <div className="mb-2 flex items-center justify-between">
                       <h3 className="font-medium text-gray-800">
                         {result.name}
                       </h3>
                       <div className="flex items-center space-x-2">
                         <span
-                          className={`px-2 py-1 rounded text-xs font-medium ${
+                          className={`rounded px-2 py-1 text-xs font-medium ${
                             result.status === 'success'
                               ? 'bg-green-100 text-green-800'
                               : 'bg-red-100 text-red-800'
@@ -164,7 +165,7 @@ export default function IntegrationTestPage() {
                     </div>
 
                     {result.error && (
-                      <div className="text-sm text-red-700 bg-red-100 rounded p-2">
+                      <div className="rounded bg-red-100 p-2 text-sm text-red-700">
                         Error: {result.error}
                       </div>
                     )}
@@ -175,7 +176,7 @@ export default function IntegrationTestPage() {
                           <summary className="cursor-pointer hover:text-gray-800">
                             View Result
                           </summary>
-                          <pre className="mt-2 bg-gray-100 rounded p-2 overflow-x-auto text-xs">
+                          <pre className="mt-2 overflow-x-auto rounded bg-gray-100 p-2 text-xs">
                             {JSON.stringify(result.result, null, 2)}
                           </pre>
                         </details>
@@ -187,8 +188,8 @@ export default function IntegrationTestPage() {
             )}
           </div>
 
-          <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-            <h3 className="font-medium text-blue-800 mb-2">
+          <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
+            <h3 className="mb-2 font-medium text-blue-800">
               About This Test Page
             </h3>
             <p className="text-sm text-blue-700">

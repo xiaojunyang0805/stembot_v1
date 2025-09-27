@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import {
   Settings,
   Brain,
@@ -197,8 +198,8 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
     <div className={`academic-container ${className}`}>
       {/* Header */}
       <div className="mb-6">
-        <div className="flex items-center gap-3 mb-4">
-          <div className="p-3 bg-academic-blue rounded-lg">
+        <div className="mb-4 flex items-center gap-3">
+          <div className="bg-academic-blue rounded-lg p-3">
             <Settings className="h-6 w-6 text-white" />
           </div>
           <div>
@@ -210,52 +211,52 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
         </div>
 
         {/* Research Question Context */}
-        <div className="p-4 bg-academic-primary rounded-lg">
-          <h3 className="text-sm font-medium text-academic-primary mb-2">
+        <div className="bg-academic-primary rounded-lg p-4">
+          <h3 className="text-academic-primary mb-2 text-sm font-medium">
             Research Question:
           </h3>
-          <p className="academic-body-text text-sm text-academic-secondary">
+          <p className="academic-body-text text-academic-secondary text-sm">
             "{researchQuestion}"
           </p>
         </div>
 
         {/* Status Overview */}
-        <div className="mt-4 academic-grid-3 gap-4">
-          <div className="p-4 bg-white border border-academic-primary rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
-              <Target className="h-5 w-5 text-academic-blue" />
-              <span className="font-medium text-academic-primary">Method Selected</span>
+        <div className="academic-grid-3 mt-4 gap-4">
+          <div className="border-academic-primary rounded-lg border bg-white p-4">
+            <div className="mb-2 flex items-center gap-2">
+              <Target className="text-academic-blue h-5 w-5" />
+              <span className="text-academic-primary font-medium">Method Selected</span>
             </div>
-            <div className="text-lg font-bold text-academic-primary">
+            <div className="text-academic-primary text-lg font-bold">
               {selectedMethod ? selectedMethod.name : 'Not Selected'}
             </div>
-            <div className="text-sm text-academic-secondary">
+            <div className="text-academic-secondary text-sm">
               {selectedMethod ? `${selectedMethod.suitabilityScore}% match` : 'Choose methodology'}
             </div>
           </div>
 
-          <div className="p-4 bg-white border border-academic-primary rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="border-academic-primary rounded-lg border bg-white p-4">
+            <div className="mb-2 flex items-center gap-2">
               <AlertTriangle className={`h-5 w-5 ${criticalFlaws.length > 0 ? 'text-semantic-error' : 'text-semantic-success'}`} />
-              <span className="font-medium text-academic-primary">Design Issues</span>
+              <span className="text-academic-primary font-medium">Design Issues</span>
             </div>
-            <div className="text-lg font-bold text-academic-primary">
+            <div className="text-academic-primary text-lg font-bold">
               {detectedFlaws.length}
             </div>
-            <div className="text-sm text-academic-secondary">
+            <div className="text-academic-secondary text-sm">
               {criticalFlaws.length} critical issues
             </div>
           </div>
 
-          <div className="p-4 bg-white border border-academic-primary rounded-lg">
-            <div className="flex items-center gap-2 mb-2">
+          <div className="border-academic-primary rounded-lg border bg-white p-4">
+            <div className="mb-2 flex items-center gap-2">
               <Shield className={`h-5 w-5 ${requiredEthics.length > 0 ? 'text-semantic-warning' : 'text-semantic-success'}`} />
-              <span className="font-medium text-academic-primary">Ethics Review</span>
+              <span className="text-academic-primary font-medium">Ethics Review</span>
             </div>
-            <div className="text-lg font-bold text-academic-primary">
+            <div className="text-academic-primary text-lg font-bold">
               {ethicsConsiderations.length}
             </div>
-            <div className="text-sm text-academic-secondary">
+            <div className="text-academic-secondary text-sm">
               {requiredEthics.length} required items
             </div>
           </div>
@@ -264,7 +265,7 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
 
       {/* Tab Navigation */}
       <div className="mb-6">
-        <div className="border-b border-academic-primary">
+        <div className="border-academic-primary border-b">
           <nav className="flex space-x-8">
             {[
               { id: 'recommendations', label: 'Method Selection', icon: Target },
@@ -277,10 +278,10 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                 <button
                   key={tab.id}
                   onClick={() => setActiveTab(tab.id as any)}
-                  className={`flex items-center gap-2 py-2 px-1 border-b-2 font-medium text-sm ${
+                  className={`flex items-center gap-2 border-b-2 px-1 py-2 text-sm font-medium ${
                     activeTab === tab.id
                       ? 'border-academic-blue text-academic-blue'
-                      : 'border-transparent text-academic-muted hover:text-academic-primary'
+                      : 'text-academic-muted hover:text-academic-primary border-transparent'
                   }`}
                 >
                   <Icon className="h-4 w-4" />
@@ -302,14 +303,14 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
             return (
               <div
                 key={method.id}
-                className={`academic-research-card transition-all cursor-pointer ${
-                  isSelected ? 'ring-2 ring-academic-blue border-academic-blue' : ''
+                className={`academic-research-card cursor-pointer transition-all ${
+                  isSelected ? 'ring-academic-blue border-academic-blue ring-2' : ''
                 }`}
                 onClick={() => setSelectedMethod(method)}
               >
                 <div className="flex items-start gap-4">
                   {/* Ranking */}
-                  <div className={`flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
+                  <div className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full text-sm font-bold text-white ${
                     index === 0 ? 'bg-semantic-warning' :
                     index === 1 ? 'bg-academic-primary' : 'bg-academic-muted'
                   }`}>
@@ -318,44 +319,44 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
 
                   <div className="flex-1">
                     {/* Method Header */}
-                    <div className="flex items-start justify-between mb-3">
+                    <div className="mb-3 flex items-start justify-between">
                       <div className="flex-1">
                         <h3 className="academic-heading-section mb-2 flex items-center gap-2">
                           {method.name}
-                          {isSelected && <Star className="h-4 w-4 text-semantic-warning fill-current" />}
+                          {isSelected && <Star className="text-semantic-warning h-4 w-4 fill-current" />}
                         </h3>
-                        <p className="academic-body-text text-sm text-academic-secondary mb-3">
+                        <p className="academic-body-text text-academic-secondary mb-3 text-sm">
                           {method.description}
                         </p>
                       </div>
 
                       <div className="flex items-center gap-3">
                         <div className="text-right">
-                          <div className="text-lg font-bold text-academic-blue">
+                          <div className="text-academic-blue text-lg font-bold">
                             {method.suitabilityScore}%
                           </div>
-                          <div className="text-xs text-academic-muted">
+                          <div className="text-academic-muted text-xs">
                             Suitability
                           </div>
                         </div>
 
-                        <span className={`px-2 py-1 rounded text-xs ${complexityInfo.color} border border-current`}>
+                        <span className={`rounded px-2 py-1 text-xs ${complexityInfo.color} border border-current`}>
                           {complexityInfo.label} Complexity
                         </span>
                       </div>
                     </div>
 
                     {/* Method Details Grid */}
-                    <div className="academic-grid-2 gap-4 mb-4">
+                    <div className="academic-grid-2 mb-4 gap-4">
                       <div>
-                        <h4 className="text-sm font-medium text-semantic-success mb-2">
+                        <h4 className="text-semantic-success mb-2 text-sm font-medium">
                           Advantages:
                         </h4>
                         <ul className="space-y-1">
                           {method.advantages.slice(0, 3).map((advantage, idx) => (
                             <li key={idx} className="flex items-start gap-2">
-                              <CheckCircle className="h-3 w-3 text-semantic-success mt-1 flex-shrink-0" />
-                              <span className="text-sm text-academic-secondary">
+                              <CheckCircle className="text-semantic-success mt-1 h-3 w-3 flex-shrink-0" />
+                              <span className="text-academic-secondary text-sm">
                                 {advantage}
                               </span>
                             </li>
@@ -364,14 +365,14 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                       </div>
 
                       <div>
-                        <h4 className="text-sm font-medium text-semantic-warning mb-2">
+                        <h4 className="text-semantic-warning mb-2 text-sm font-medium">
                           Limitations:
                         </h4>
                         <ul className="space-y-1">
                           {method.limitations.slice(0, 3).map((limitation, idx) => (
                             <li key={idx} className="flex items-start gap-2">
-                              <AlertTriangle className="h-3 w-3 text-semantic-warning mt-1 flex-shrink-0" />
-                              <span className="text-sm text-academic-secondary">
+                              <AlertTriangle className="text-semantic-warning mt-1 h-3 w-3 flex-shrink-0" />
+                              <span className="text-academic-secondary text-sm">
                                 {limitation}
                               </span>
                             </li>
@@ -381,26 +382,26 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                     </div>
 
                     {/* Method Specifications */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4 p-3 bg-academic-primary rounded-lg">
+                    <div className="bg-academic-primary mb-4 grid grid-cols-2 gap-4 rounded-lg p-3 md:grid-cols-4">
                       <div>
-                        <div className="text-xs text-academic-muted uppercase">Timeframe</div>
-                        <div className="text-sm font-medium text-academic-primary">{method.timeframe}</div>
+                        <div className="text-academic-muted text-xs uppercase">Timeframe</div>
+                        <div className="text-academic-primary text-sm font-medium">{method.timeframe}</div>
                       </div>
                       <div>
-                        <div className="text-xs text-academic-muted uppercase">Sample Size</div>
-                        <div className="text-sm font-medium text-academic-primary">
+                        <div className="text-academic-muted text-xs uppercase">Sample Size</div>
+                        <div className="text-academic-primary text-sm font-medium">
                           {method.sampleSizeRange[0]}-{method.sampleSizeRange[1]}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-academic-muted uppercase">Ethics</div>
-                        <div className="text-sm font-medium text-academic-primary capitalize">
+                        <div className="text-academic-muted text-xs uppercase">Ethics</div>
+                        <div className="text-academic-primary text-sm font-medium capitalize">
                           {method.ethicsComplexity}
                         </div>
                       </div>
                       <div>
-                        <div className="text-xs text-academic-muted uppercase">Resources</div>
-                        <div className="text-sm font-medium text-academic-primary">
+                        <div className="text-academic-muted text-xs uppercase">Resources</div>
+                        <div className="text-academic-primary text-sm font-medium">
                           {method.requiredResources.length} items
                         </div>
                       </div>
@@ -409,13 +410,13 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                     {/* Action Buttons */}
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs text-academic-muted">
+                        <span className="text-academic-muted text-xs">
                           Match: {method.suitabilityScore}% • {complexityInfo.description}
                         </span>
                       </div>
 
                       <div className="flex gap-2">
-                        <button className="academic-btn-outline text-xs py-1 px-3 flex items-center gap-1">
+                        <button className="academic-btn-outline flex items-center gap-1 px-3 py-1 text-xs">
                           <Eye className="h-3 w-3" />
                           Details
                         </button>
@@ -424,7 +425,7 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                             e.stopPropagation();
                             onMethodologySelect?.(method);
                           }}
-                          className={`text-xs py-1 px-3 flex items-center gap-1 ${
+                          className={`flex items-center gap-1 px-3 py-1 text-xs ${
                             isSelected ? 'academic-btn-secondary' : 'academic-btn-primary'
                           }`}
                         >
@@ -460,49 +461,49 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
             return (
               <div key={flaw.id} className="academic-research-card">
                 <div className="flex items-start gap-4">
-                  <div className={`p-2 rounded-lg ${severityInfo.bgColor}`}>
+                  <div className={`rounded-lg p-2 ${severityInfo.bgColor}`}>
                     <SeverityIcon className="h-5 w-5 text-white" />
                   </div>
 
                   <div className="flex-1">
-                    <div className="flex items-center gap-2 mb-2">
+                    <div className="mb-2 flex items-center gap-2">
                       <h3 className="academic-heading-section mb-0">{flaw.title}</h3>
-                      <span className={`px-2 py-1 rounded text-xs text-white ${severityInfo.bgColor}`}>
+                      <span className={`rounded px-2 py-1 text-xs text-white ${severityInfo.bgColor}`}>
                         {severityInfo.label}
                       </span>
-                      <span className="px-2 py-1 bg-academic-primary text-xs rounded capitalize">
+                      <span className="bg-academic-primary rounded px-2 py-1 text-xs capitalize">
                         {flaw.type}
                       </span>
                     </div>
 
-                    <p className="academic-body-text text-sm text-academic-secondary mb-3">
+                    <p className="academic-body-text text-academic-secondary mb-3 text-sm">
                       {flaw.description}
                     </p>
 
                     {showFlawDetails === flaw.id && (
-                      <div className="mb-4 p-3 bg-academic-primary rounded-lg">
-                        <h4 className="text-sm font-medium text-academic-primary mb-2">
+                      <div className="bg-academic-primary mb-4 rounded-lg p-3">
+                        <h4 className="text-academic-primary mb-2 text-sm font-medium">
                           Detailed Explanation:
                         </h4>
-                        <p className="text-sm text-academic-secondary mb-3">
+                        <p className="text-academic-secondary mb-3 text-sm">
                           {flaw.explanation}
                         </p>
-                        <div className="p-2 bg-semantic-warning rounded border-l-4 border-semantic-warning">
-                          <span className="text-sm font-medium text-academic-primary">Impact: </span>
-                          <span className="text-sm text-academic-secondary">{flaw.impact}</span>
+                        <div className="bg-semantic-warning border-semantic-warning rounded border-l-4 p-2">
+                          <span className="text-academic-primary text-sm font-medium">Impact: </span>
+                          <span className="text-academic-secondary text-sm">{flaw.impact}</span>
                         </div>
                       </div>
                     )}
 
                     <div className="mb-4">
-                      <h4 className="text-sm font-medium text-academic-primary mb-2">
+                      <h4 className="text-academic-primary mb-2 text-sm font-medium">
                         Suggested Solutions:
                       </h4>
                       <div className="space-y-1">
                         {flaw.suggestions.map((suggestion, index) => (
                           <div key={index} className="flex items-start gap-2">
-                            <Lightbulb className="h-3 w-3 text-academic-blue mt-1" />
-                            <span className="text-sm text-academic-secondary">
+                            <Lightbulb className="text-academic-blue mt-1 h-3 w-3" />
+                            <span className="text-academic-secondary text-sm">
                               {suggestion}
                             </span>
                           </div>
@@ -515,19 +516,19 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                         onClick={() => setShowFlawDetails(
                           showFlawDetails === flaw.id ? null : flaw.id
                         )}
-                        className="text-xs text-academic-blue hover:text-academic-blue font-medium"
+                        className="text-academic-blue hover:text-academic-blue text-xs font-medium"
                       >
                         {showFlawDetails === flaw.id ? 'Hide Details' : 'Show Details'}
                       </button>
 
                       <div className="flex gap-2">
-                        <button className="academic-btn-outline text-xs py-1 px-3 flex items-center gap-1">
+                        <button className="academic-btn-outline flex items-center gap-1 px-3 py-1 text-xs">
                           <Book className="h-3 w-3" />
                           Learn More
                         </button>
                         <button
                           onClick={() => onFlawAddressed?.(flaw.id)}
-                          className="academic-btn-primary text-xs py-1 px-3 flex items-center gap-1"
+                          className="academic-btn-primary flex items-center gap-1 px-3 py-1 text-xs"
                         >
                           <CheckCircle className="h-3 w-3" />
                           Mark Addressed
@@ -541,8 +542,8 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
           })}
 
           {detectedFlaws.length === 0 && (
-            <div className="text-center py-12">
-              <CheckCircle className="h-16 w-16 text-semantic-success mx-auto mb-4" />
+            <div className="py-12 text-center">
+              <CheckCircle className="text-semantic-success mx-auto mb-4 h-16 w-16" />
               <h3 className="academic-heading-section text-academic-primary mb-2">
                 No Design Issues Detected
               </h3>
@@ -562,20 +563,20 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
               {/* Power Analysis */}
               <div className="academic-research-card">
                 <h3 className="academic-heading-section mb-4 flex items-center gap-2">
-                  <Calculator className="h-5 w-5 text-academic-blue" />
+                  <Calculator className="text-academic-blue h-5 w-5" />
                   Power Analysis
                 </h3>
 
-                <div className="academic-grid-2 gap-4 mb-4">
-                  <div className="p-3 bg-academic-primary rounded-lg">
-                    <div className="text-sm text-academic-muted mb-1">Required Sample Size</div>
-                    <div className="text-2xl font-bold text-academic-primary">
+                <div className="academic-grid-2 mb-4 gap-4">
+                  <div className="bg-academic-primary rounded-lg p-3">
+                    <div className="text-academic-muted mb-1 text-sm">Required Sample Size</div>
+                    <div className="text-academic-primary text-2xl font-bold">
                       {statisticalPlan.powerAnalysis.requiredSampleSize}
                     </div>
                   </div>
-                  <div className="p-3 bg-academic-primary rounded-lg">
-                    <div className="text-sm text-academic-muted mb-1">Statistical Power</div>
-                    <div className="text-2xl font-bold text-academic-primary">
+                  <div className="bg-academic-primary rounded-lg p-3">
+                    <div className="text-academic-muted mb-1 text-sm">Statistical Power</div>
+                    <div className="text-academic-primary text-2xl font-bold">
                       {(statisticalPlan.powerAnalysis.power * 100).toFixed(0)}%
                     </div>
                   </div>
@@ -583,20 +584,20 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
 
                 <div className="grid grid-cols-3 gap-4">
                   <div>
-                    <div className="text-xs text-academic-muted uppercase">Effect Size</div>
-                    <div className="text-lg font-medium text-academic-primary">
+                    <div className="text-academic-muted text-xs uppercase">Effect Size</div>
+                    <div className="text-academic-primary text-lg font-medium">
                       {statisticalPlan.powerAnalysis.effectSize}
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-academic-muted uppercase">Alpha Level</div>
-                    <div className="text-lg font-medium text-academic-primary">
+                    <div className="text-academic-muted text-xs uppercase">Alpha Level</div>
+                    <div className="text-academic-primary text-lg font-medium">
                       {statisticalPlan.powerAnalysis.alpha}
                     </div>
                   </div>
                   <div>
-                    <div className="text-xs text-academic-muted uppercase">Power</div>
-                    <div className="text-lg font-medium text-academic-primary">
+                    <div className="text-academic-muted text-xs uppercase">Power</div>
+                    <div className="text-academic-primary text-lg font-medium">
                       {statisticalPlan.powerAnalysis.power}
                     </div>
                   </div>
@@ -606,29 +607,29 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
               {/* Analysis Plan */}
               <div className="academic-research-card">
                 <h3 className="academic-heading-section mb-4 flex items-center gap-2">
-                  <BarChart3 className="h-5 w-5 text-academic-blue" />
+                  <BarChart3 className="text-academic-blue h-5 w-5" />
                   Analysis Plan
                 </h3>
 
                 <div className="space-y-4">
                   <div>
-                    <h4 className="text-sm font-medium text-academic-primary mb-2">
+                    <h4 className="text-academic-primary mb-2 text-sm font-medium">
                       Primary Analysis:
                     </h4>
-                    <p className="text-sm text-academic-secondary p-3 bg-academic-primary rounded-lg">
+                    <p className="text-academic-secondary bg-academic-primary rounded-lg p-3 text-sm">
                       {statisticalPlan.primaryAnalysis}
                     </p>
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-academic-primary mb-2">
+                    <h4 className="text-academic-primary mb-2 text-sm font-medium">
                       Secondary Analyses:
                     </h4>
                     <div className="space-y-1">
                       {statisticalPlan.secondaryAnalyses.map((analysis, index) => (
                         <div key={index} className="flex items-start gap-2">
-                          <ArrowRight className="h-3 w-3 text-academic-blue mt-1" />
-                          <span className="text-sm text-academic-secondary">
+                          <ArrowRight className="text-academic-blue mt-1 h-3 w-3" />
+                          <span className="text-academic-secondary text-sm">
                             {analysis}
                           </span>
                         </div>
@@ -637,14 +638,14 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                   </div>
 
                   <div>
-                    <h4 className="text-sm font-medium text-academic-primary mb-2">
+                    <h4 className="text-academic-primary mb-2 text-sm font-medium">
                       Recommended Software:
                     </h4>
                     <div className="flex flex-wrap gap-2">
                       {statisticalPlan.softwareRecommendations.map((software, index) => (
                         <span
                           key={index}
-                          className="px-2 py-1 bg-academic-blue text-white text-xs rounded"
+                          className="bg-academic-blue rounded px-2 py-1 text-xs text-white"
                         >
                           {software}
                         </span>
@@ -655,8 +656,8 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
               </div>
             </>
           ) : (
-            <div className="text-center py-12">
-              <Calculator className="h-16 w-16 text-academic-muted mx-auto mb-4" />
+            <div className="py-12 text-center">
+              <Calculator className="text-academic-muted mx-auto mb-4 h-16 w-16" />
               <h3 className="academic-heading-section text-academic-muted mb-2">
                 Statistical Plan Not Available
               </h3>
@@ -680,7 +681,7 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
           {ethicsConsiderations.map((ethics) => (
             <div key={ethics.id} className="academic-research-card">
               <div className="flex items-start gap-4">
-                <div className={`p-2 rounded-lg ${
+                <div className={`rounded-lg p-2 ${
                   ethics.priority === 'required' ? 'bg-semantic-error' :
                   ethics.priority === 'recommended' ? 'bg-semantic-warning' : 'bg-academic-blue'
                 }`}>
@@ -688,32 +689,32 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                 </div>
 
                 <div className="flex-1">
-                  <div className="flex items-center gap-2 mb-2">
+                  <div className="mb-2 flex items-center gap-2">
                     <h3 className="academic-heading-section mb-0">{ethics.title}</h3>
-                    <span className={`px-2 py-1 rounded text-xs text-white capitalize ${
+                    <span className={`rounded px-2 py-1 text-xs capitalize text-white ${
                       ethics.priority === 'required' ? 'bg-semantic-error' :
                       ethics.priority === 'recommended' ? 'bg-semantic-warning' : 'bg-academic-blue'
                     }`}>
                       {ethics.priority}
                     </span>
-                    <span className="px-2 py-1 bg-academic-primary text-xs rounded capitalize">
+                    <span className="bg-academic-primary rounded px-2 py-1 text-xs capitalize">
                       {ethics.category.replace('-', ' ')}
                     </span>
                   </div>
 
-                  <p className="academic-body-text text-sm text-academic-secondary mb-4">
+                  <p className="academic-body-text text-academic-secondary mb-4 text-sm">
                     {ethics.description}
                   </p>
 
                   <div className="mb-4">
-                    <h4 className="text-sm font-medium text-academic-primary mb-2">
+                    <h4 className="text-academic-primary mb-2 text-sm font-medium">
                       Requirements:
                     </h4>
                     <div className="space-y-1">
                       {ethics.requirements.map((requirement, index) => (
                         <div key={index} className="flex items-start gap-2">
-                          <CheckCircle className="h-3 w-3 text-semantic-success mt-1" />
-                          <span className="text-sm text-academic-secondary">
+                          <CheckCircle className="text-semantic-success mt-1 h-3 w-3" />
+                          <span className="text-academic-secondary text-sm">
                             {requirement}
                           </span>
                         </div>
@@ -723,14 +724,14 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
 
                   {ethics.documentation.length > 0 && (
                     <div className="mb-4">
-                      <h4 className="text-sm font-medium text-academic-primary mb-2">
+                      <h4 className="text-academic-primary mb-2 text-sm font-medium">
                         Required Documentation:
                       </h4>
                       <div className="flex flex-wrap gap-2">
                         {ethics.documentation.map((doc, index) => (
                           <span
                             key={index}
-                            className="px-2 py-1 bg-academic-primary text-xs rounded"
+                            className="bg-academic-primary rounded px-2 py-1 text-xs"
                           >
                             {doc}
                           </span>
@@ -740,10 +741,10 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
                   )}
 
                   {ethics.approvalNeeded && (
-                    <div className="p-3 bg-semantic-warning rounded-lg border-l-4 border-semantic-warning">
+                    <div className="bg-semantic-warning border-semantic-warning rounded-lg border-l-4 p-3">
                       <div className="flex items-center gap-2">
-                        <Shield className="h-4 w-4 text-semantic-warning" />
-                        <span className="text-sm font-medium text-academic-primary">
+                        <Shield className="text-semantic-warning h-4 w-4" />
+                        <span className="text-academic-primary text-sm font-medium">
                           IRB/Ethics Board Approval Required
                         </span>
                       </div>
@@ -755,8 +756,8 @@ export const MethodologyGuide: React.FC<MethodologyGuideProps> = ({
           ))}
 
           {ethicsConsiderations.length === 0 && (
-            <div className="text-center py-12">
-              <Shield className="h-16 w-16 text-semantic-success mx-auto mb-4" />
+            <div className="py-12 text-center">
+              <Shield className="text-semantic-success mx-auto mb-4 h-16 w-16" />
               <h3 className="academic-heading-section text-academic-primary mb-2">
                 No Ethics Issues Identified
               </h3>

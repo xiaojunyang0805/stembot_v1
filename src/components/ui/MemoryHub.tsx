@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import {
   Brain,
   Clock,
@@ -108,9 +109,13 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
 
   useEffect(() => {
     const hour = new Date().getHours();
-    if (hour < 12) setTimeOfDay('morning');
-    else if (hour < 17) setTimeOfDay('afternoon');
-    else setTimeOfDay('evening');
+    if (hour < 12) {
+setTimeOfDay('morning');
+} else if (hour < 17) {
+setTimeOfDay('afternoon');
+} else {
+setTimeOfDay('evening');
+}
   }, []);
 
   const getGreeting = () => {
@@ -123,7 +128,9 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
   };
 
   const getResumeContext = () => {
-    if (!currentProject || memoryContexts.length === 0) return null;
+    if (!currentProject || memoryContexts.length === 0) {
+return null;
+}
 
     // Find the most recent high-confidence context
     return memoryContexts
@@ -151,12 +158,12 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
         <div className="academic-research-card mb-academic">
           <div className="academic-flex-between mb-4">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-memory-purple rounded-lg">
-                <Brain className="h-5 w-5 text-memory-purple" />
+              <div className="bg-memory-purple rounded-lg p-2">
+                <Brain className="text-memory-purple h-5 w-5" />
               </div>
               <div>
                 <h2 className="academic-heading-section mb-1">Resume where you left off</h2>
-                <p className="text-sm text-academic-muted">
+                <p className="text-academic-muted text-sm">
                   Based on your recent research context
                 </p>
               </div>
@@ -170,11 +177,11 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
             </button>
           </div>
 
-          <div className="bg-academic-primary p-4 rounded-lg mb-4">
-            <h3 className="font-medium text-academic-primary mb-2">
+          <div className="bg-academic-primary mb-4 rounded-lg p-4">
+            <h3 className="text-academic-primary mb-2 font-medium">
               {currentProject.title}
             </h3>
-            <p className="academic-body-text text-sm mb-3">
+            <p className="academic-body-text mb-3 text-sm">
               {resumeContext.context}
             </p>
 
@@ -183,7 +190,7 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
                 {resumeContext.insights.slice(0, 3).map((insight, index) => (
                   <span
                     key={index}
-                    className="px-3 py-1 bg-memory-purple text-xs rounded-full"
+                    className="bg-memory-purple rounded-full px-3 py-1 text-xs"
                   >
                     {insight}
                   </span>
@@ -192,7 +199,7 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
             )}
           </div>
 
-          <div className="flex items-center justify-between text-sm text-academic-muted">
+          <div className="text-academic-muted flex items-center justify-between text-sm">
             <div className="flex items-center gap-2">
               <Clock className="h-4 w-4" />
               <span>
@@ -211,30 +218,30 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
       <div className="academic-grid-3 gap-6">
         {/* Recent Activities */}
         <div className="academic-project-card">
-          <div className="flex items-center gap-2 mb-4">
-            <Clock className="h-5 w-5 text-academic-blue" />
+          <div className="mb-4 flex items-center gap-2">
+            <Clock className="text-academic-blue h-5 w-5" />
             <h3 className="academic-heading-section mb-0">Recent Activities</h3>
           </div>
 
           <div className="space-y-3">
             {recentActivities.slice(0, 4).map((activity) => (
-              <div key={activity.id} className="border-l-3 border-academic-blue pl-3 py-2">
-                <div className="flex items-center justify-between mb-1">
-                  <h4 className="font-medium text-sm text-academic-primary">
+              <div key={activity.id} className="border-l-3 border-academic-blue py-2 pl-3">
+                <div className="mb-1 flex items-center justify-between">
+                  <h4 className="text-academic-primary text-sm font-medium">
                     {activity.title}
                   </h4>
-                  <span className="text-xs text-academic-muted">
+                  <span className="text-academic-muted text-xs">
                     {activity.timestamp.toLocaleDateString()}
                   </span>
                 </div>
-                <p className="text-xs text-academic-secondary mb-2">
+                <p className="text-academic-secondary mb-2 text-xs">
                   {activity.description}
                 </p>
 
                 {activity.memoryHints.length > 0 && (
                   <div className="flex items-center gap-1">
-                    <Lightbulb className="h-3 w-3 text-memory-purple" />
-                    <span className="text-xs text-memory-purple">
+                    <Lightbulb className="text-memory-purple h-3 w-3" />
+                    <span className="text-memory-purple text-xs">
                       {activity.memoryHints[0]}
                     </span>
                   </div>
@@ -244,7 +251,7 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
           </div>
 
           {recentActivities.length > 4 && (
-            <button className="w-full mt-4 text-sm text-academic-blue hover:text-academic-blue font-medium">
+            <button className="text-academic-blue hover:text-academic-blue mt-4 w-full text-sm font-medium">
               View all activities
             </button>
           )}
@@ -252,34 +259,34 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
 
         {/* Progress Insights */}
         <div className="academic-project-card">
-          <div className="flex items-center gap-2 mb-4">
-            <TrendingUp className="h-5 w-5 text-semantic-success" />
+          <div className="mb-4 flex items-center gap-2">
+            <TrendingUp className="text-semantic-success h-5 w-5" />
             <h3 className="academic-heading-section mb-0">Progress Insights</h3>
           </div>
 
           <div className="space-y-3">
             {highImpactInsights.slice(0, 3).map((insight) => (
-              <div key={insight.id} className="p-3 bg-academic-primary rounded-lg">
-                <div className="flex items-start gap-2 mb-2">
+              <div key={insight.id} className="bg-academic-primary rounded-lg p-3">
+                <div className="mb-2 flex items-start gap-2">
                   {insight.impact === 'high' ? (
-                    <AlertCircle className="h-4 w-4 text-semantic-warning mt-0.5" />
+                    <AlertCircle className="text-semantic-warning mt-0.5 h-4 w-4" />
                   ) : (
-                    <CheckCircle className="h-4 w-4 text-semantic-success mt-0.5" />
+                    <CheckCircle className="text-semantic-success mt-0.5 h-4 w-4" />
                   )}
                   <div className="flex-1">
-                    <h4 className="font-medium text-sm text-academic-primary">
+                    <h4 className="text-academic-primary text-sm font-medium">
                       {insight.title}
                     </h4>
-                    <p className="text-xs text-academic-secondary mt-1">
+                    <p className="text-academic-secondary mt-1 text-xs">
                       {insight.description}
                     </p>
                   </div>
                 </div>
 
                 {insight.actionable && insight.suggestedAction && (
-                  <div className="flex items-center gap-1 mt-2">
-                    <ArrowRight className="h-3 w-3 text-academic-blue" />
-                    <span className="text-xs text-academic-blue">
+                  <div className="mt-2 flex items-center gap-1">
+                    <ArrowRight className="text-academic-blue h-3 w-3" />
+                    <span className="text-academic-blue text-xs">
                       {insight.suggestedAction}
                     </span>
                   </div>
@@ -288,15 +295,15 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
             ))}
           </div>
 
-          <button className="w-full mt-4 text-sm text-academic-blue hover:text-academic-blue font-medium">
+          <button className="text-academic-blue hover:text-academic-blue mt-4 w-full text-sm font-medium">
             View all insights
           </button>
         </div>
 
         {/* Memory Context */}
         <div className="academic-memory-card">
-          <div className="flex items-center gap-2 mb-4">
-            <Brain className="h-5 w-5 text-memory-purple" />
+          <div className="mb-4 flex items-center gap-2">
+            <Brain className="text-memory-purple h-5 w-5" />
             <h3 className="academic-heading-section mb-0">Memory Context</h3>
           </div>
 
@@ -304,15 +311,15 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
             {memoryContexts.slice(0, 3).map((context) => (
               <div
                 key={context.id}
-                className={`p-3 rounded-lg cursor-pointer transition-all ${
+                className={`cursor-pointer rounded-lg p-3 transition-all ${
                   selectedContext?.id === context.id
-                    ? 'bg-memory-purple border border-memory-purple'
-                    : 'bg-white border border-memory-purple hover:bg-memory-purple'
+                    ? 'bg-memory-purple border-memory-purple border'
+                    : 'border-memory-purple hover:bg-memory-purple border bg-white'
                 }`}
                 onClick={() => setSelectedContext(context)}
               >
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-xs font-medium text-memory-purple">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-memory-purple text-xs font-medium">
                     Context #{context.id.slice(0, 8)}
                   </span>
                   <div className="flex items-center gap-1">
@@ -320,20 +327,20 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
                       context.confidence > 0.8 ? 'bg-semantic-success' :
                       context.confidence > 0.6 ? 'bg-semantic-warning' : 'bg-semantic-error'
                     }`} />
-                    <span className="text-xs text-academic-muted">
+                    <span className="text-academic-muted text-xs">
                       {Math.round(context.confidence * 100)}%
                     </span>
                   </div>
                 </div>
 
-                <p className="text-xs text-academic-primary line-clamp-2">
+                <p className="text-academic-primary line-clamp-2 text-xs">
                   {context.context}
                 </p>
 
                 {context.insights.length > 0 && (
                   <div className="mt-2 flex items-center gap-1">
-                    <Lightbulb className="h-3 w-3 text-memory-purple" />
-                    <span className="text-xs text-memory-purple">
+                    <Lightbulb className="text-memory-purple h-3 w-3" />
+                    <span className="text-memory-purple text-xs">
                       {context.insights.length} insight{context.insights.length !== 1 ? 's' : ''}
                     </span>
                   </div>
@@ -342,29 +349,29 @@ export const MemoryHub: React.FC<MemoryHubProps> = ({
             ))}
           </div>
 
-          <button className="w-full mt-4 text-sm text-memory-purple hover:text-memory-purple font-medium">
+          <button className="text-memory-purple hover:text-memory-purple mt-4 w-full text-sm font-medium">
             Explore memory graph
           </button>
         </div>
       </div>
 
       {/* Quick Actions */}
-      <div className="mt-8 p-6 bg-academic-primary rounded-lg">
+      <div className="bg-academic-primary mt-8 rounded-lg p-6">
         <h3 className="academic-heading-section mb-4">Quick Actions</h3>
         <div className="academic-grid-2 gap-4">
-          <button className="academic-btn-outline flex items-center gap-2 justify-center">
+          <button className="academic-btn-outline flex items-center justify-center gap-2">
             <BookOpen className="h-4 w-4" />
             Start Literature Review
           </button>
-          <button className="academic-btn-outline flex items-center gap-2 justify-center">
+          <button className="academic-btn-outline flex items-center justify-center gap-2">
             <FileText className="h-4 w-4" />
             Continue Writing
           </button>
-          <button className="academic-btn-outline flex items-center gap-2 justify-center">
+          <button className="academic-btn-outline flex items-center justify-center gap-2">
             <Target className="h-4 w-4" />
             Design Methodology
           </button>
-          <button className="academic-btn-outline flex items-center gap-2 justify-center">
+          <button className="academic-btn-outline flex items-center justify-center gap-2">
             <Calendar className="h-4 w-4" />
             Schedule Research Time
           </button>

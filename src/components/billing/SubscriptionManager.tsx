@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import {
   CreditCard,
   CheckCircle,
@@ -32,9 +33,9 @@ import {
   Shield,
 } from 'lucide-react';
 
-import { Card } from '../ui/Card';
-import { Button } from '../ui/Button';
 import { Badge } from '../ui/Badge';
+import { Button } from '../ui/Button';
+import { Card } from '../ui/Card';
 import { ProgressBar } from '../ui/ProgressBar';
 
 /**
@@ -155,7 +156,9 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
   ];
 
   const getUsagePercentage = (used: number, limit: number) => {
-    if (limit === -1) return 0; // Unlimited
+    if (limit === -1) {
+return 0;
+} // Unlimited
     return Math.min((used / limit) * 100, 100);
   };
 
@@ -173,16 +176,16 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
     return (
       <Card
         key={plan.id}
-        className={`p-6 relative ${
+        className={`relative p-6 ${
           isCurrentPlan
-            ? 'ring-2 ring-blue-500 bg-blue-50'
+            ? 'bg-blue-50 ring-2 ring-blue-500'
             : plan.popular
             ? 'ring-2 ring-green-500'
             : ''
         }`}
       >
         {plan.popular && (
-          <Badge variant="success" className="absolute -top-2 left-1/2 transform -translate-x-1/2">
+          <Badge variant="success" className="absolute -top-2 left-1/2 -translate-x-1/2 transform">
             Most Popular
           </Badge>
         )}
@@ -193,9 +196,9 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
           </Badge>
         )}
 
-        <div className="text-center mb-6">
-          <h3 className="text-xl font-bold text-gray-900 mb-2">{plan.name}</h3>
-          <p className="text-gray-600 text-sm mb-4">{plan.description}</p>
+        <div className="mb-6 text-center">
+          <h3 className="mb-2 text-xl font-bold text-gray-900">{plan.name}</h3>
+          <p className="mb-4 text-sm text-gray-600">{plan.description}</p>
 
           <div className="mb-4">
             <div className="text-3xl font-bold text-gray-900">
@@ -214,16 +217,16 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
           </div>
         </div>
 
-        <div className="space-y-3 mb-6">
+        <div className="mb-6 space-y-3">
           {plan.features.map((feature, index) => (
             <div key={index} className="flex items-center gap-2">
-              <CheckCircle className="h-4 w-4 text-green-600 flex-shrink-0" />
+              <CheckCircle className="h-4 w-4 flex-shrink-0 text-green-600" />
               <span className="text-sm text-gray-700">{feature}</span>
             </div>
           ))}
         </div>
 
-        <div className="space-y-3 mb-6">
+        <div className="mb-6 space-y-3">
           <div className="text-sm font-medium text-gray-900">Usage Limits:</div>
           <div className="grid grid-cols-2 gap-2 text-xs text-gray-600">
             <div>
@@ -246,7 +249,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
           disabled={isCurrentPlan}
           className={`w-full ${
             isCurrentPlan
-              ? 'bg-gray-400 cursor-not-allowed'
+              ? 'cursor-not-allowed bg-gray-400'
               : plan.popular
               ? 'bg-green-600 hover:bg-green-700'
               : 'bg-blue-600 hover:bg-blue-700'
@@ -263,7 +266,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+          <h2 className="flex items-center gap-2 text-2xl font-bold text-gray-900">
             <CreditCard className="h-6 w-6" />
             Subscription Management
           </h2>
@@ -274,11 +277,11 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
 
         <div className="flex items-center gap-2">
           <Button variant="outline">
-            <Download className="h-4 w-4 mr-1" />
+            <Download className="mr-1 h-4 w-4" />
             Download Invoice
           </Button>
           <Button variant="outline">
-            <Settings className="h-4 w-4 mr-1" />
+            <Settings className="mr-1 h-4 w-4" />
             Billing Settings
           </Button>
         </div>
@@ -287,7 +290,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
       {/* Current Usage */}
       {currentPlan && (
         <Card className="p-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="mb-6 flex items-center justify-between">
             <div>
               <h3 className="text-lg font-semibold text-gray-900">Current Usage</h3>
               <p className="text-gray-600">Your usage for the current billing period</p>
@@ -298,9 +301,9 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
             </Badge>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-gray-600">Projects</span>
                 <span className="text-sm font-medium">
                   {usage.projects}/{currentPlan.limits.projects === -1 ? '∞' : currentPlan.limits.projects}
@@ -314,7 +317,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-gray-600">AI Interactions</span>
                 <span className="text-sm font-medium">
                   {usage.aiInteractions}/{currentPlan.limits.aiInteractions === -1 ? '∞' : currentPlan.limits.aiInteractions}
@@ -328,7 +331,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-gray-600">Storage</span>
                 <span className="text-sm font-medium">
                   {usage.storage}GB/{currentPlan.limits.storage === -1 ? '∞' : `${currentPlan.limits.storage}GB`}
@@ -342,7 +345,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
             </div>
 
             <div>
-              <div className="flex items-center justify-between mb-2">
+              <div className="mb-2 flex items-center justify-between">
                 <span className="text-sm text-gray-600">Collaborators</span>
                 <span className="text-sm font-medium">
                   {usage.collaborators}/{currentPlan.limits.collaborators === -1 ? '∞' : currentPlan.limits.collaborators}
@@ -361,10 +364,10 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
       {/* Billing Toggle */}
       <Card className="p-4">
         <div className="flex items-center justify-center">
-          <div className="flex items-center bg-gray-100 rounded-lg p-1">
+          <div className="flex items-center rounded-lg bg-gray-100 p-1">
             <button
               onClick={() => setBillingInterval('monthly')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 billingInterval === 'monthly'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -374,7 +377,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
             </button>
             <button
               onClick={() => setBillingInterval('yearly')}
-              className={`px-4 py-2 rounded-md text-sm font-medium transition-colors ${
+              className={`rounded-md px-4 py-2 text-sm font-medium transition-colors ${
                 billingInterval === 'yearly'
                   ? 'bg-white text-gray-900 shadow-sm'
                   : 'text-gray-600 hover:text-gray-900'
@@ -390,15 +393,15 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
       </Card>
 
       {/* Subscription Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
         {plans.map(renderPlanCard)}
       </div>
 
       {/* Billing Information */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Payment Method</h3>
-          <div className="flex items-center gap-4 p-4 border border-gray-200 rounded-lg">
+          <h3 className="mb-4 text-lg font-semibold text-gray-900">Payment Method</h3>
+          <div className="flex items-center gap-4 rounded-lg border border-gray-200 p-4">
             <CreditCard className="h-8 w-8 text-gray-400" />
             <div>
               <div className="font-medium text-gray-900">•••• •••• •••• 4242</div>
@@ -411,7 +414,7 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
         </Card>
 
         <Card className="p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Next Billing</h3>
+          <h3 className="mb-4 text-lg font-semibold text-gray-900">Next Billing</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
               <span className="text-gray-600">Next charge</span>
@@ -431,12 +434,12 @@ export const SubscriptionManager: React.FC<SubscriptionManagerProps> = ({
 
       {/* Subscription Actions */}
       {currentPlan && currentPlan.id !== 'free' && (
-        <Card className="p-6 border-red-200">
+        <Card className="border-red-200 p-6">
           <div className="flex items-start gap-4">
-            <AlertTriangle className="h-6 w-6 text-red-600 flex-shrink-0 mt-1" />
+            <AlertTriangle className="mt-1 h-6 w-6 flex-shrink-0 text-red-600" />
             <div className="flex-1">
-              <h3 className="font-semibold text-red-900 mb-2">Cancel Subscription</h3>
-              <p className="text-red-700 text-sm mb-4">
+              <h3 className="mb-2 font-semibold text-red-900">Cancel Subscription</h3>
+              <p className="mb-4 text-sm text-red-700">
                 You can cancel your subscription at any time. Your access will continue until the end of your current billing period.
               </p>
               <Button

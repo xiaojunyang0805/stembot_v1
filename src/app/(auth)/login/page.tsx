@@ -7,8 +7,9 @@
  * @location src/app/(auth)/login/page.tsx
  */
 
-import type { Metadata } from 'next';
 import { Suspense } from 'react';
+
+import type { Metadata } from 'next';
 
 import { LoginForm } from '../../../components/auth/LoginForm';
 import { LoadingSpinner } from '../../../components/ui/LoadingSpinner';
@@ -42,8 +43,8 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
   const { redirect, error, message } = searchParams;
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
-      <div className="max-w-md w-full space-y-8 p-8">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800">
+      <div className="w-full max-w-md space-y-8 p-8">
         <div className="text-center">
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             Welcome Back
@@ -55,13 +56,13 @@ export default function LoginPage({ searchParams }: LoginPageProps) {
 
         {/* Display error or success messages */}
         {error && (
-          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-md">
+          <div className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-red-700">
             {error}
           </div>
         )}
 
         {message && (
-          <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-md">
+          <div className="rounded-md border border-green-200 bg-green-50 px-4 py-3 text-green-700">
             {message}
           </div>
         )}

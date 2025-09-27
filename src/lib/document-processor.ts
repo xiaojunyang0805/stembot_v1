@@ -1,8 +1,8 @@
-import { createWorker } from 'tesseract.js'
 import { Pinecone } from '@pinecone-database/pinecone'
-import { ollama } from './ollama'
 import { nanoid } from 'nanoid'
 import sharp from 'sharp'
+import { createWorker } from 'tesseract.js'
+
 // Lazy import pdf-parse to avoid build issues
 // import pdfParse from 'pdf-parse'
 import {
@@ -15,6 +15,8 @@ import {
   MemoryEntry,
   SemanticSearchResult
 } from '@/types/document'
+
+import { ollama } from './ollama'
 
 // PDF processing is handled by pdf-parse library for server-side use
 
@@ -434,7 +436,9 @@ ${text.slice(0, 12000)}...`
   }
 
   private async storeInVectorDB(analysis: DocumentAnalysis): Promise<void> {
-    if (!this.index) return
+    if (!this.index) {
+return
+}
 
     try {
       const vectors = [
@@ -477,7 +481,9 @@ ${text.slice(0, 12000)}...`
   }
 
   private async findDocumentRelationships(analysis: DocumentAnalysis): Promise<DocumentRelationship[]> {
-    if (!this.index) return []
+    if (!this.index) {
+return []
+}
 
     try {
       // Search for similar documents using embeddings
@@ -564,7 +570,9 @@ Return only one of these relationship types:
   }
 
   async semanticSearch(query: string, topK: number = 10): Promise<SemanticSearchResult[]> {
-    if (!this.index) return []
+    if (!this.index) {
+return []
+}
 
     try {
       // Generate query embedding (placeholder)

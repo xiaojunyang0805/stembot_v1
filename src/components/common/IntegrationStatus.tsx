@@ -6,6 +6,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+
 import { getIntegrationStatus, type IntegrationStatus as IntegrationStatusType } from '../../lib/integration';
 
 interface IntegrationStatusProps {
@@ -43,26 +44,26 @@ export default function IntegrationStatus({
 
   return (
     <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
-      <div className="bg-white border border-gray-200 rounded-lg shadow-lg p-3 max-w-xs">
-        <div className="text-xs font-semibold text-gray-600 mb-2">
+      <div className="max-w-xs rounded-lg border border-gray-200 bg-white p-3 shadow-lg">
+        <div className="mb-2 text-xs font-semibold text-gray-600">
           Integration Status
         </div>
 
         <div className="space-y-1 text-xs">
-          <div className={`px-2 py-1 rounded ${statusColor}`}>
+          <div className={`rounded px-2 py-1 ${statusColor}`}>
             Environment: {status.environment}
           </div>
 
-          <div className={`px-2 py-1 rounded ${statusColor}`}>
+          <div className={`rounded px-2 py-1 ${statusColor}`}>
             Core: {status.coreAvailable ? 'Connected' : 'Mock/Unavailable'}
           </div>
 
-          <div className="px-2 py-1 rounded bg-gray-100 text-gray-700">
+          <div className="rounded bg-gray-100 px-2 py-1 text-gray-700">
             Method: {status.integrationMethod}
           </div>
 
           {status.usingMocks && (
-            <div className={`px-2 py-1 rounded ${mockWarning}`}>
+            <div className={`rounded px-2 py-1 ${mockWarning}`}>
               ⚠️ Using Mock Data
             </div>
           )}
@@ -98,12 +99,12 @@ export function IntegrationConfig() {
   }
 
   return (
-    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-      <h3 className="text-sm font-semibold text-blue-800 mb-2">
+    <div className="mb-4 rounded-lg border border-blue-200 bg-blue-50 p-4">
+      <h3 className="mb-2 text-sm font-semibold text-blue-800">
         Integration Configuration
       </h3>
 
-      <div className="text-xs text-blue-700 space-y-1">
+      <div className="space-y-1 text-xs text-blue-700">
         <div>Environment: <code>{status.environment}</code></div>
         <div>Integration Method: <code>{status.integrationMethod}</code></div>
         <div>Core Available: <code>{status.coreAvailable ? 'Yes' : 'No'}</code></div>
@@ -111,7 +112,7 @@ export function IntegrationConfig() {
       </div>
 
       {status.usingMocks && (
-        <div className="mt-3 p-2 bg-orange-50 border border-orange-200 rounded text-xs text-orange-700">
+        <div className="mt-3 rounded border border-orange-200 bg-orange-50 p-2 text-xs text-orange-700">
           <strong>Development Mode:</strong> Using mock data. Some features may not work as expected.
           To use real integration, set up the private repository and configure environment variables.
         </div>

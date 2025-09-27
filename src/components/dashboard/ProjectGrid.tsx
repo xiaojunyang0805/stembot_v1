@@ -6,8 +6,11 @@
 'use client'
 
 import { useState } from 'react'
+
 import { Filter, Grid, List } from 'lucide-react'
+
 import { Project } from '../../types/dashboard'
+
 import ProjectCard from './ProjectCard'
 
 interface ProjectGridProps {
@@ -29,8 +32,12 @@ export default function ProjectGrid({
 
   // Filter projects
   const filteredProjects = projects.filter(project => {
-    if (filter === 'active') return project.isActive
-    if (filter === 'inactive') return !project.isActive
+    if (filter === 'active') {
+return project.isActive
+}
+    if (filter === 'inactive') {
+return !project.isActive
+}
     return true
   })
 
@@ -42,9 +49,15 @@ export default function ProjectGrid({
       case 'progress':
         return b.progress - a.progress
       case 'dueDate':
-        if (!a.dueDate && !b.dueDate) return 0
-        if (!a.dueDate) return 1
-        if (!b.dueDate) return -1
+        if (!a.dueDate && !b.dueDate) {
+return 0
+}
+        if (!a.dueDate) {
+return 1
+}
+        if (!b.dueDate) {
+return -1
+}
         return a.dueDate.getTime() - b.dueDate.getTime()
       default: // 'updated'
         return b.updatedAt.getTime() - a.updatedAt.getTime()

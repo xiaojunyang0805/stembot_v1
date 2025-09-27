@@ -6,7 +6,9 @@
 'use client';
 
 import { useState } from 'react';
+
 import { Check, Crown, Users, Building } from 'lucide-react';
+
 import type { PricingTier } from '../../types/billing';
 
 interface PricingCardProps {
@@ -37,11 +39,11 @@ export function PricingCard({
     switch (tier.id) {
       case 'pro_monthly':
       case 'pro_annual':
-        return <Crown className="w-6 h-6 text-yellow-500" />;
+        return <Crown className="h-6 w-6 text-yellow-500" />;
       case 'department_license':
-        return <Users className="w-6 h-6 text-blue-500" />;
+        return <Users className="h-6 w-6 text-blue-500" />;
       case 'institution_license':
-        return <Building className="w-6 h-6 text-purple-500" />;
+        return <Building className="h-6 w-6 text-purple-500" />;
       default:
         return null;
     }
@@ -55,7 +57,7 @@ export function PricingCard({
       className={`
         relative rounded-2xl border-2 p-8 transition-all duration-300
         ${isPopular
-          ? 'border-blue-500 bg-blue-50 shadow-xl scale-105'
+          ? 'scale-105 border-blue-500 bg-blue-50 shadow-xl'
           : 'border-gray-200 bg-white hover:border-blue-300'
         }
         ${isHovered && !isPopular ? 'shadow-lg' : ''}
@@ -64,21 +66,21 @@ export function PricingCard({
       onMouseLeave={() => setIsHovered(false)}
     >
       {isPopular && (
-        <div className="absolute -top-4 left-1/2 transform -translate-x-1/2">
-          <span className="bg-blue-500 text-white px-4 py-1 rounded-full text-sm font-medium">
+        <div className="absolute -top-4 left-1/2 -translate-x-1/2 transform">
+          <span className="rounded-full bg-blue-500 px-4 py-1 text-sm font-medium text-white">
             Most Popular
           </span>
         </div>
       )}
 
-      <div className="text-center mb-6">
-        <div className="flex justify-center items-center mb-4">
+      <div className="mb-6 text-center">
+        <div className="mb-4 flex items-center justify-center">
           {getIcon()}
-          <h3 className="text-2xl font-bold ml-2">{tier.name}</h3>
+          <h3 className="ml-2 text-2xl font-bold">{tier.name}</h3>
         </div>
 
         {tier.requirements?.universityEmail && (
-          <div className="bg-green-100 text-green-800 px-3 py-1 rounded-full text-sm mb-4">
+          <div className="mb-4 rounded-full bg-green-100 px-3 py-1 text-sm text-green-800">
             University Email Required
           </div>
         )}
@@ -91,7 +93,7 @@ export function PricingCard({
               <span className="text-4xl font-bold">
                 {formatPrice(tier.price, tier.currency)}
               </span>
-              <span className="text-gray-600 ml-1">
+              <span className="ml-1 text-gray-600">
                 {tier.interval && `/${tier.interval}`}
               </span>
             </>
@@ -99,21 +101,21 @@ export function PricingCard({
         </div>
 
         {tier.features.savings && (
-          <div className="text-green-600 font-medium text-sm">
+          <div className="text-sm font-medium text-green-600">
             {tier.features.savings}
           </div>
         )}
 
         {!isFree && (
-          <div className="text-gray-600 text-sm mt-2">
+          <div className="mt-2 text-sm text-gray-600">
             7-day free trial
           </div>
         )}
       </div>
 
-      <div className="space-y-4 mb-8">
+      <div className="mb-8 space-y-4">
         <div className="flex items-center">
-          <Check className="w-5 h-5 text-green-500 mr-3" />
+          <Check className="mr-3 h-5 w-5 text-green-500" />
           <span>
             {typeof tier.features.projects === 'number'
               ? `${tier.features.projects} project${tier.features.projects !== 1 ? 's' : ''}`
@@ -123,7 +125,7 @@ export function PricingCard({
         </div>
 
         <div className="flex items-center">
-          <Check className="w-5 h-5 text-green-500 mr-3" />
+          <Check className="mr-3 h-5 w-5 text-green-500" />
           <span>
             {typeof tier.features.aiInteractions === 'number'
               ? `${tier.features.aiInteractions} AI interactions/month`
@@ -133,12 +135,12 @@ export function PricingCard({
         </div>
 
         <div className="flex items-center">
-          <Check className="w-5 h-5 text-green-500 mr-3" />
+          <Check className="mr-3 h-5 w-5 text-green-500" />
           <span>{tier.features.memoryType === 'basic' ? 'Basic' : 'Advanced'} memory system</span>
         </div>
 
         <div className="flex items-center">
-          <Check className="w-5 h-5 text-green-500 mr-3" />
+          <Check className="mr-3 h-5 w-5 text-green-500" />
           <span>
             {tier.limits.maxSourcesPerProject === -1
               ? 'Unlimited sources per project'
@@ -148,7 +150,7 @@ export function PricingCard({
         </div>
 
         <div className="flex items-center">
-          <Check className="w-5 h-5 text-green-500 mr-3" />
+          <Check className="mr-3 h-5 w-5 text-green-500" />
           <span>
             {tier.limits.maxFileSize === -1
               ? 'Unlimited file size'
@@ -159,48 +161,48 @@ export function PricingCard({
 
         {tier.features.exportFormats && (
           <div className="flex items-center">
-            <Check className="w-5 h-5 text-green-500 mr-3" />
+            <Check className="mr-3 h-5 w-5 text-green-500" />
             <span>Export to {tier.features.exportFormats.join(', ')}</span>
           </div>
         )}
 
         {tier.features.collaboration && (
           <div className="flex items-center">
-            <Check className="w-5 h-5 text-green-500 mr-3" />
+            <Check className="mr-3 h-5 w-5 text-green-500" />
             <span>Team collaboration</span>
           </div>
         )}
 
         {tier.features.adminDashboard && (
           <div className="flex items-center">
-            <Check className="w-5 h-5 text-green-500 mr-3" />
+            <Check className="mr-3 h-5 w-5 text-green-500" />
             <span>Admin dashboard</span>
           </div>
         )}
 
         {tier.features.usageAnalytics && (
           <div className="flex items-center">
-            <Check className="w-5 h-5 text-green-500 mr-3" />
+            <Check className="mr-3 h-5 w-5 text-green-500" />
             <span>Usage analytics & reporting</span>
           </div>
         )}
 
         {tier.features.customBranding && (
           <div className="flex items-center">
-            <Check className="w-5 h-5 text-green-500 mr-3" />
+            <Check className="mr-3 h-5 w-5 text-green-500" />
             <span>Custom branding</span>
           </div>
         )}
 
         {tier.features.sso && (
           <div className="flex items-center">
-            <Check className="w-5 h-5 text-green-500 mr-3" />
+            <Check className="mr-3 h-5 w-5 text-green-500" />
             <span>Single Sign-On (SSO)</span>
           </div>
         )}
 
         <div className="flex items-center">
-          <Check className="w-5 h-5 text-green-500 mr-3" />
+          <Check className="mr-3 h-5 w-5 text-green-500" />
           <span>
             {tier.features.support === 'community' ? 'Community support' :
              tier.features.support === 'priority' ? 'Priority support' :
@@ -211,7 +213,7 @@ export function PricingCard({
 
         {tier.features.seats && (
           <div className="flex items-center">
-            <Check className="w-5 h-5 text-green-500 mr-3" />
+            <Check className="mr-3 h-5 w-5 text-green-500" />
             <span>
               {typeof tier.features.seats === 'number'
                 ? `${tier.features.seats} student seats`
@@ -226,16 +228,16 @@ export function PricingCard({
         onClick={() => onSubscribe(tier.id)}
         disabled={loading || isCurrentTier}
         className={`
-          w-full py-3 px-6 rounded-lg font-medium transition-all duration-200
+          w-full rounded-lg px-6 py-3 font-medium transition-all duration-200
           ${isCurrentTier
-            ? 'bg-gray-100 text-gray-500 cursor-not-allowed'
+            ? 'cursor-not-allowed bg-gray-100 text-gray-500'
             : isFree
             ? 'bg-gray-900 text-white hover:bg-gray-800'
             : isPopular
             ? 'bg-blue-600 text-white hover:bg-blue-700'
             : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
           }
-          ${loading ? 'opacity-50 cursor-wait' : ''}
+          ${loading ? 'cursor-wait opacity-50' : ''}
         `}
       >
         {loading ? 'Processing...' :
@@ -245,7 +247,7 @@ export function PricingCard({
       </button>
 
       {!isFree && !isCurrentTier && (
-        <p className="text-xs text-gray-500 text-center mt-3">
+        <p className="mt-3 text-center text-xs text-gray-500">
           No commitment. Cancel anytime.
         </p>
       )}

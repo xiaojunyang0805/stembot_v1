@@ -6,6 +6,7 @@
 'use client'
 
 import { ArrowRight } from 'lucide-react'
+
 import { MemorySession } from '../../types/dashboard'
 
 interface MemoryRecallProps {

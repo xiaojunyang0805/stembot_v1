@@ -15,6 +15,7 @@ import {
   Clock,
   ChevronRight
 } from 'lucide-react'
+
 import { Activity } from '../../types/dashboard'
 
 interface ActivityFeedProps {

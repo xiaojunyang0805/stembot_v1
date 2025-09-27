@@ -17,6 +17,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+
 import {
   Zap,
   Crown,
@@ -175,7 +176,9 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   };
 
   const getUsagePercentage = (used: number, limit: number | 'unlimited'): number => {
-    if (limit === 'unlimited') return 0;
+    if (limit === 'unlimited') {
+return 0;
+}
     return Math.min((used / limit) * 100, 100);
   };
 
@@ -202,7 +205,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
   return (
     <div className={`academic-container ${className}`}>
       {/* Header */}
-      <div className="text-center mb-8">
+      <div className="mb-8 text-center">
         <h2 className="academic-heading-primary mb-4">
           Choose Your Research Plan
         </h2>
@@ -211,25 +214,25 @@ export const PricingCard: React.FC<PricingCardProps> = ({
         </p>
 
         {/* Billing Toggle */}
-        <div className="flex items-center justify-center gap-4 mb-6">
+        <div className="mb-6 flex items-center justify-center gap-4">
           <span className={`text-sm ${billingPeriod === 'monthly' ? 'text-academic-primary' : 'text-academic-muted'}`}>
             Monthly
           </span>
           <button
             onClick={() => onBillingPeriodChange?.(billingPeriod === 'monthly' ? 'yearly' : 'monthly')}
-            className={`relative w-12 h-6 rounded-full transition-colors ${
+            className={`relative h-6 w-12 rounded-full transition-colors ${
               billingPeriod === 'yearly' ? 'bg-academic-blue' : 'bg-academic-primary'
             }`}
           >
-            <div className={`absolute top-1 left-1 w-4 h-4 bg-white rounded-full transition-transform ${
-              billingPeriod === 'yearly' ? 'transform translate-x-6' : ''
+            <div className={`absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform ${
+              billingPeriod === 'yearly' ? 'translate-x-6 transform' : ''
             }`} />
           </button>
           <span className={`text-sm ${billingPeriod === 'yearly' ? 'text-academic-primary' : 'text-academic-muted'}`}>
             Yearly
           </span>
           {billingPeriod === 'yearly' && (
-            <span className="px-2 py-1 bg-semantic-success text-white text-xs rounded-full animate-pulse">
+            <span className="bg-semantic-success animate-pulse rounded-full px-2 py-1 text-xs text-white">
               Save 20%
             </span>
           )}
@@ -237,10 +240,10 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
         {/* Educational Discounts Banner */}
         {(isStudent || isUniversity) && (
-          <div className="p-4 bg-semantic-success rounded-lg mb-6 text-center">
-            <div className="flex items-center justify-center gap-2 mb-2">
+          <div className="bg-semantic-success mb-6 rounded-lg p-4 text-center">
+            <div className="mb-2 flex items-center justify-center gap-2">
               <GraduationCap className="h-5 w-5 text-white" />
-              <span className="text-white font-medium">
+              <span className="font-medium text-white">
                 {isStudent ? 'Student Discount' : 'University Discount'} Applied!
               </span>
             </div>
@@ -254,15 +257,15 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       {/* Usage Overview for Current Plan */}
       {currentPlan && (
         <div className="academic-research-card mb-8">
-          <div className="flex items-center gap-3 mb-4">
-            <div className={`p-2 rounded-lg ${tierConfig[currentTier].bgColor}`}>
+          <div className="mb-4 flex items-center gap-3">
+            <div className={`rounded-lg p-2 ${tierConfig[currentTier].bgColor}`}>
               <Brain className="h-5 w-5 text-white" />
             </div>
             <div>
               <h3 className="academic-heading-section mb-1">
                 Current Usage - {currentPlan.name}
               </h3>
-              <p className="text-sm text-academic-secondary">
+              <p className="text-academic-secondary text-sm">
                 Track your research activity and plan utilization
               </p>
             </div>
@@ -280,18 +283,18 @@ export const PricingCard: React.FC<PricingCardProps> = ({
               const isNearLimit = percentage > 80;
 
               return (
-                <div key={usage.label} className="p-3 bg-academic-primary rounded-lg">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Icon className="h-4 w-4 text-academic-blue" />
-                    <span className="text-sm font-medium text-academic-primary">
+                <div key={usage.label} className="bg-academic-primary rounded-lg p-3">
+                  <div className="mb-2 flex items-center gap-2">
+                    <Icon className="text-academic-blue h-4 w-4" />
+                    <span className="text-academic-primary text-sm font-medium">
                       {usage.label}
                     </span>
                   </div>
-                  <div className="flex items-center justify-between mb-2">
-                    <span className="text-lg font-bold text-academic-primary">
+                  <div className="mb-2 flex items-center justify-between">
+                    <span className="text-academic-primary text-lg font-bold">
                       {usage.used}{usage.unit && ` ${usage.unit}`}
                     </span>
-                    <span className="text-sm text-academic-muted">
+                    <span className="text-academic-muted text-sm">
                       / {usage.limit === 'unlimited' ? '∞' : `${usage.limit}${usage.unit ? ` ${usage.unit}` : ''}`}
                     </span>
                   </div>
@@ -304,7 +307,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                     </div>
                   )}
                   {isNearLimit && (
-                    <p className="text-xs text-semantic-warning mt-1">
+                    <p className="text-semantic-warning mt-1 text-xs">
                       Approaching limit - consider upgrading
                     </p>
                   )}
@@ -316,7 +319,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       )}
 
       {/* Pricing Plans */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+      <div className="mb-8 grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-4">
         {plans.map((plan) => {
           const config = tierConfig[plan.tier];
           const Icon = config.icon;
@@ -330,13 +333,13 @@ export const PricingCard: React.FC<PricingCardProps> = ({
               className={`relative rounded-lg border-2 transition-all ${
                 plan.popular ? 'border-academic-blue bg-academic-blue scale-105 transform' :
                 plan.recommended ? 'border-memory-purple bg-white' :
-                'border-academic-primary bg-white hover:border-academic-blue'
-              } ${isCurrentPlan ? 'ring-2 ring-semantic-success' : ''}`}
+                'border-academic-primary hover:border-academic-blue bg-white'
+              } ${isCurrentPlan ? 'ring-semantic-success ring-2' : ''}`}
             >
               {/* Popular Badge */}
               {plan.popular && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="px-3 py-1 bg-semantic-warning text-white text-xs font-medium rounded-full flex items-center gap-1">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
+                  <span className="bg-semantic-warning flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-white">
                     <Star className="h-3 w-3" />
                     Most Popular
                   </span>
@@ -345,8 +348,8 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
               {/* Recommended Badge */}
               {plan.recommended && (
-                <div className="absolute -top-3 left-1/2 transform -translate-x-1/2">
-                  <span className="px-3 py-1 bg-memory-purple text-white text-xs font-medium rounded-full flex items-center gap-1">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 transform">
+                  <span className="bg-memory-purple flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-white">
                     <Sparkles className="h-3 w-3" />
                     Recommended
                   </span>
@@ -356,7 +359,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
               {/* Current Plan Badge */}
               {isCurrentPlan && (
                 <div className="absolute -top-3 right-4">
-                  <span className="px-2 py-1 bg-semantic-success text-white text-xs font-medium rounded-full">
+                  <span className="bg-semantic-success rounded-full px-2 py-1 text-xs font-medium text-white">
                     Current
                   </span>
                 </div>
@@ -364,13 +367,13 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
               <div className={`p-6 ${plan.popular ? 'text-white' : ''}`}>
                 {/* Plan Header */}
-                <div className="text-center mb-6">
-                  <div className={`p-3 rounded-full inline-flex mb-3 ${
+                <div className="mb-6 text-center">
+                  <div className={`mb-3 inline-flex rounded-full p-3 ${
                     plan.popular ? 'bg-white bg-opacity-20' : config.bgColor
                   }`}>
                     <Icon className={`h-6 w-6 ${plan.popular ? 'text-white' : 'text-white'}`} />
                   </div>
-                  <h3 className={`text-xl font-bold mb-2 ${
+                  <h3 className={`mb-2 text-xl font-bold ${
                     plan.popular ? 'text-white' : 'text-academic-primary'
                   }`}>
                     {plan.name}
@@ -383,7 +386,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                 </div>
 
                 {/* Pricing */}
-                <div className="text-center mb-6">
+                <div className="mb-6 text-center">
                   {plan.tier === 'free' ? (
                     <div className={`text-3xl font-bold ${
                       plan.popular ? 'text-white' : 'text-academic-primary'
@@ -412,20 +415,20 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                       </div>
 
                       {pricing.discount && pricing.discount > 0 && (
-                        <div className="flex items-center justify-center gap-2 mt-1">
+                        <div className="mt-1 flex items-center justify-center gap-2">
                           <span className={`text-sm line-through ${
                             plan.popular ? 'text-blue-200' : 'text-academic-muted'
                           }`}>
                             ${billingPeriod === 'yearly' ? plan.price.yearly : plan.price.monthly}
                           </span>
-                          <span className="px-2 py-1 bg-semantic-success text-white text-xs rounded">
+                          <span className="bg-semantic-success rounded px-2 py-1 text-xs text-white">
                             {pricing.discount}% off
                           </span>
                         </div>
                       )}
 
                       {billingPeriod === 'yearly' && plan.price.discount && (
-                        <p className={`text-xs mt-1 ${
+                        <p className={`mt-1 text-xs ${
                           plan.popular ? 'text-blue-100' : 'text-academic-muted'
                         }`}>
                           Save {plan.price.discount}% annually
@@ -436,15 +439,15 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                 </div>
 
                 {/* Features */}
-                <div className="space-y-3 mb-6">
+                <div className="mb-6 space-y-3">
                   {plan.features.slice(0, 6).map((feature) => (
                     <div key={feature.id} className="flex items-start gap-2">
                       {feature.included ? (
-                        <Check className={`h-4 w-4 mt-0.5 ${
+                        <Check className={`mt-0.5 h-4 w-4 ${
                           plan.popular ? 'text-white' : 'text-semantic-success'
                         }`} />
                       ) : (
-                        <X className={`h-4 w-4 mt-0.5 ${
+                        <X className={`mt-0.5 h-4 w-4 ${
                           plan.popular ? 'text-blue-200' : 'text-academic-muted'
                         }`} />
                       )}
@@ -457,14 +460,14 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                           {feature.name}
                         </span>
                         {feature.limit && feature.limit !== 'unlimited' && (
-                          <span className={`text-xs ml-1 ${
+                          <span className={`ml-1 text-xs ${
                             plan.popular ? 'text-blue-100' : 'text-academic-muted'
                           }`}>
                             ({feature.limit})
                           </span>
                         )}
                         {feature.limit === 'unlimited' && (
-                          <span className={`text-xs ml-1 ${
+                          <span className={`ml-1 text-xs ${
                             plan.popular ? 'text-blue-100' : 'text-semantic-success'
                           }`}>
                             (unlimited)
@@ -479,7 +482,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                 {plan.highlights.length > 0 && (
                   <div className="mb-6">
                     {plan.highlights.map((highlight, index) => (
-                      <div key={index} className={`flex items-center gap-2 mb-2 p-2 rounded ${
+                      <div key={index} className={`mb-2 flex items-center gap-2 rounded p-2 ${
                         plan.popular ? 'bg-white bg-opacity-10' : 'bg-academic-primary'
                       }`}>
                         <Sparkles className={`h-3 w-3 ${
@@ -505,11 +508,11 @@ export const PricingCard: React.FC<PricingCardProps> = ({
                     }
                   }}
                   disabled={isCurrentPlan}
-                  className={`w-full py-3 px-4 rounded-lg font-medium transition-all ${
+                  className={`w-full rounded-lg px-4 py-3 font-medium transition-all ${
                     isCurrentPlan
-                      ? 'bg-semantic-success text-white cursor-not-allowed'
+                      ? 'bg-semantic-success cursor-not-allowed text-white'
                       : plan.popular
-                      ? 'bg-white text-academic-blue hover:bg-gray-100'
+                      ? 'text-academic-blue bg-white hover:bg-gray-100'
                       : 'academic-btn-primary hover:bg-academic-blue-700'
                   }`}
                 >
@@ -542,12 +545,12 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
                 {/* Additional Info */}
                 {plan.tier === 'free' && (
-                  <p className="text-xs text-center mt-3 text-academic-muted">
+                  <p className="text-academic-muted mt-3 text-center text-xs">
                     No credit card required
                   </p>
                 )}
                 {plan.tier === 'pro' && (
-                  <p className="text-xs text-center mt-3 text-academic-muted">
+                  <p className="text-academic-muted mt-3 text-center text-xs">
                     Cancel anytime
                   </p>
                 )}
@@ -567,12 +570,12 @@ export const PricingCard: React.FC<PricingCardProps> = ({
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-academic-primary">
-                  <th className="text-left py-3 pr-4 text-sm font-medium text-academic-primary">
+                <tr className="border-academic-primary border-b">
+                  <th className="text-academic-primary py-3 pr-4 text-left text-sm font-medium">
                     Features
                   </th>
                   {plans.map((plan) => (
-                    <th key={plan.id} className="text-center py-3 px-4 text-sm font-medium text-academic-primary">
+                    <th key={plan.id} className="text-academic-primary px-4 py-3 text-center text-sm font-medium">
                       {plan.name}
                     </th>
                   ))}
@@ -581,30 +584,30 @@ export const PricingCard: React.FC<PricingCardProps> = ({
               <tbody>
                 {/* Get unique features across all plans */}
                 {Array.from(new Set(plans.flatMap(plan => plan.features.map(f => f.name)))).map((featureName) => (
-                  <tr key={featureName} className="border-b border-academic-primary hover:bg-academic-primary">
-                    <td className="py-3 pr-4 text-sm text-academic-primary font-medium">
+                  <tr key={featureName} className="border-academic-primary hover:bg-academic-primary border-b">
+                    <td className="text-academic-primary py-3 pr-4 text-sm font-medium">
                       {featureName}
                     </td>
                     {plans.map((plan) => {
                       const feature = plan.features.find(f => f.name === featureName);
                       return (
-                        <td key={plan.id} className="text-center py-3 px-4">
+                        <td key={plan.id} className="px-4 py-3 text-center">
                           {feature?.included ? (
                             feature.limit === 'unlimited' ? (
                               <div className="flex items-center justify-center gap-1">
-                                <Check className="h-4 w-4 text-semantic-success" />
-                                <span className="text-xs text-semantic-success">Unlimited</span>
+                                <Check className="text-semantic-success h-4 w-4" />
+                                <span className="text-semantic-success text-xs">Unlimited</span>
                               </div>
                             ) : feature.limit ? (
                               <div className="flex items-center justify-center gap-1">
-                                <Check className="h-4 w-4 text-semantic-success" />
-                                <span className="text-xs text-academic-primary">{feature.limit}</span>
+                                <Check className="text-semantic-success h-4 w-4" />
+                                <span className="text-academic-primary text-xs">{feature.limit}</span>
                               </div>
                             ) : (
-                              <Check className="h-4 w-4 text-semantic-success mx-auto" />
+                              <Check className="text-semantic-success mx-auto h-4 w-4" />
                             )
                           ) : (
-                            <X className="h-4 w-4 text-academic-muted mx-auto" />
+                            <X className="text-academic-muted mx-auto h-4 w-4" />
                           )}
                         </td>
                       );
@@ -618,14 +621,14 @@ export const PricingCard: React.FC<PricingCardProps> = ({
       )}
 
       {/* Enterprise Contact */}
-      <div className="text-center mt-12">
-        <div className="p-8 bg-gradient-to-r from-academic-blue to-memory-purple rounded-lg text-white">
-          <Building className="h-12 w-12 mx-auto mb-4" />
-          <h3 className="text-2xl font-bold mb-2">Enterprise & Institutional</h3>
-          <p className="text-blue-100 mb-4">
+      <div className="mt-12 text-center">
+        <div className="from-academic-blue to-memory-purple rounded-lg bg-gradient-to-r p-8 text-white">
+          <Building className="mx-auto mb-4 h-12 w-12" />
+          <h3 className="mb-2 text-2xl font-bold">Enterprise & Institutional</h3>
+          <p className="mb-4 text-blue-100">
             Custom solutions for universities, research institutions, and large organizations
           </p>
-          <div className="flex flex-wrap justify-center gap-4 mb-6">
+          <div className="mb-6 flex flex-wrap justify-center gap-4">
             <span className="flex items-center gap-1 text-sm">
               <Shield className="h-4 w-4" />
               SSO Integration
@@ -645,7 +648,7 @@ export const PricingCard: React.FC<PricingCardProps> = ({
           </div>
           <button
             onClick={onContactSales}
-            className="bg-white text-academic-blue py-2 px-6 rounded-lg font-medium hover:bg-gray-100 transition-colors"
+            className="text-academic-blue rounded-lg bg-white px-6 py-2 font-medium transition-colors hover:bg-gray-100"
           >
             Contact Sales Team
           </button>
@@ -654,17 +657,17 @@ export const PricingCard: React.FC<PricingCardProps> = ({
 
       {/* Discount Banner */}
       {showYearlyDiscount && billingPeriod === 'monthly' && (
-        <div className="fixed bottom-4 right-4 p-4 bg-semantic-warning text-white rounded-lg shadow-lg max-w-sm animate-slide-in z-50">
+        <div className="bg-semantic-warning animate-slide-in fixed bottom-4 right-4 z-50 max-w-sm rounded-lg p-4 text-white shadow-lg">
           <div className="flex items-start gap-3">
-            <Gift className="h-5 w-5 mt-0.5" />
+            <Gift className="mt-0.5 h-5 w-5" />
             <div>
-              <h4 className="font-medium mb-1">Save 20% with Yearly Billing</h4>
-              <p className="text-sm text-yellow-100 mb-3">
+              <h4 className="mb-1 font-medium">Save 20% with Yearly Billing</h4>
+              <p className="mb-3 text-sm text-yellow-100">
                 Switch to yearly billing and save on your subscription
               </p>
               <button
                 onClick={() => onBillingPeriodChange?.('yearly')}
-                className="text-xs bg-white text-semantic-warning py-1 px-3 rounded font-medium hover:bg-gray-100"
+                className="text-semantic-warning rounded bg-white px-3 py-1 text-xs font-medium hover:bg-gray-100"
               >
                 Switch to Yearly
               </button>
