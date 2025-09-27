@@ -406,6 +406,151 @@ export default function DashboardPage() {
           </div>
         </div>
 
+        {/* Memory Insights */}
+        <div style={{marginBottom: '2rem'}}>
+          <h2 style={{
+            fontSize: '1.5rem',
+            fontWeight: 'bold',
+            color: '#111827',
+            marginBottom: '1rem'
+          }}>
+            🧠 Memory Insights
+          </h2>
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+            gap: '1rem',
+            marginBottom: '2rem'
+          }}>
+            {/* Learning Patterns */}
+            <div style={{
+              backgroundColor: '#fef3c7',
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              border: '1px solid #fde047'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem'
+              }}>
+                <span style={{fontSize: '1.25rem'}}>📈</span>
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#92400e'
+                }}>
+                  Learning Pattern Detected
+                </h3>
+              </div>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#92400e',
+                marginBottom: '0.75rem'
+              }}>
+                You tend to make breakthrough progress on literature reviews during morning sessions (9-11 AM).
+              </p>
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#a16207',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}>
+                <span>⚡</span>
+                <span>Confidence: 87%</span>
+              </div>
+            </div>
+
+            {/* Research Momentum */}
+            <div style={{
+              backgroundColor: '#dcfce7',
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              border: '1px solid #bbf7d0'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem'
+              }}>
+                <span style={{fontSize: '1.25rem'}}>🚀</span>
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#166534'
+                }}>
+                  Research Momentum
+                </h3>
+              </div>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#166534',
+                marginBottom: '0.75rem'
+              }}>
+                You've maintained consistent progress for 12 days. Your methodology planning momentum is accelerating.
+              </p>
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#15803d',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}>
+                <span>🔥</span>
+                <span>Streak: 12 days</span>
+              </div>
+            </div>
+
+            {/* Smart Suggestions */}
+            <div style={{
+              backgroundColor: '#f3e8ff',
+              padding: '1.5rem',
+              borderRadius: '0.5rem',
+              border: '1px solid #d8b4fe'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '1rem'
+              }}>
+                <span style={{fontSize: '1.25rem'}}>💡</span>
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#6b21a8'
+                }}>
+                  Smart Suggestion
+                </h3>
+              </div>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b21a8',
+                marginBottom: '0.75rem'
+              }}>
+                Based on your recent literature gaps, consider exploring sleep intervention studies in educational psychology journals.
+              </p>
+              <button
+                onClick={() => router.push('/projects/1/literature')}
+                style={{
+                  fontSize: '0.75rem',
+                  color: '#7c3aed',
+                  backgroundColor: 'white',
+                  border: '1px solid #d8b4fe',
+                  borderRadius: '0.25rem',
+                  padding: '0.25rem 0.75rem',
+                  cursor: 'pointer'
+                }}
+              >
+                Explore Now →
+              </button>
+            </div>
+          </div>
+        </div>
+
         {/* Quick Actions */}
         <div style={{marginBottom: '2rem'}}>
           <h2 style={{
