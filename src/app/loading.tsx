@@ -8,6 +8,8 @@
  * Shown during page transitions and initial app loading
  */
 
+'use client';
+
 export default function Loading() {
   return (
     <>

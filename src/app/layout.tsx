@@ -88,26 +88,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 borderRadius: '0.5rem',
                 backgroundColor: '#2563eb',
                 padding: '0.5rem 1rem',
-                color: 'white',
-                transition: 'colors 0.2s'
-              }}
-              onFocus={(e) => {
-                const target = e.target as HTMLAnchorElement;
-                target.style.position = 'absolute';
-                target.style.left = '1rem';
-                target.style.top = '1rem';
-                target.style.width = 'auto';
-                target.style.height = 'auto';
-                target.style.overflow = 'visible';
-              }}
-              onBlur={(e) => {
-                const target = e.target as HTMLAnchorElement;
-                target.style.position = 'absolute';
-                target.style.left = '-10000px';
-                target.style.top = 'auto';
-                target.style.width = '1px';
-                target.style.height = '1px';
-                target.style.overflow = 'hidden';
+                color: 'white'
               }}
             >
               Skip to main content
