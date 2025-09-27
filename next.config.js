@@ -2,7 +2,7 @@
 const path = require('path')
 
 const nextConfig = {
-  reactStrictMode: true,
+  reactStrictMode: false, // Temporarily disabled to test hydration issues
   poweredByHeader: false,
   eslint: {
     ignoreDuringBuilds: true,

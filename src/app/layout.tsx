@@ -8,7 +8,8 @@
  * Provides global providers, theme, authentication, and base HTML structure
  */
 
-import { Inter } from 'next/font/google';
+// Temporarily removed Inter font import to test FOUT issues
+// import { Inter } from 'next/font/google';
 
 import type { Metadata } from 'next';
 
@@ -17,7 +18,7 @@ import { AuthProvider } from '../providers/AuthProvider';
 import { ThemeProvider, ThemeErrorBoundary } from '../providers/ThemeProvider';
 import { VersionSync, VersionDisplay } from '../components/common/VersionSync';
 
-const inter = Inter({ subsets: ['latin'] });
+// const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
   title: 'StemBot - AI Research Mentor Platform',
@@ -61,11 +62,14 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <meta httpEquiv="Pragma" content="no-cache" />
         <meta httpEquiv="Expires" content="0" />
         <meta name="cache-bust" content={`f940f53-${Date.now()}`} />
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
+        {/* Temporarily removed Google Fonts preconnect to test FOUT issues */}
+        {/* <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" /> */}
       </head>
-      <body style={{height: '100%', backgroundColor: '#ffffff', color: '#0f172a', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', fontFamily: inter.style.fontFamily}}>
-        <ThemeErrorBoundary>
+      <body style={{height: '100%', backgroundColor: '#ffffff', color: '#0f172a', WebkitFontSmoothing: 'antialiased', MozOsxFontSmoothing: 'grayscale', fontFamily: 'system-ui, -apple-system, sans-serif'}}>
+        {/* Temporarily simplified providers to test hydration issues */}
+        <div style={{minHeight: '100vh'}}>
+          {/* <ThemeErrorBoundary>
           <ThemeProvider
             attribute="class"
             defaultTheme="system"
@@ -73,7 +77,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             disableTransitionOnChange={false}
             themes={['light', 'dark', 'system']}
             storageKey="stembot-theme"
-          >
+          > */}
             <AuthProvider>
               {/* TODO: Add ToastProvider for notifications */}
               {/* TODO: Add I18nProvider for internationalization */}
@@ -102,9 +106,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
                 {children}
               </div>
 
-              {/* Version synchronization for deployment consistency */}
-              <VersionSync />
-              <VersionDisplay />
+              {/* Temporarily disabled version components to test hydration issues */}
+              {/* <VersionSync />
+              <VersionDisplay /> */}
 
               {/* TODO: Add global modals portal */}
               <div id="modal-root" />
@@ -112,8 +116,9 @@ export default function RootLayout({ children }: RootLayoutProps) {
               {/* TODO: Add toast notifications portal */}
               <div id="toast-root" />
             </AuthProvider>
-          </ThemeProvider>
-        </ThemeErrorBoundary>
+          {/* </ThemeProvider>
+        </ThemeErrorBoundary> */}
+        </div>
       </body>
     </html>
   );
