@@ -3,7 +3,7 @@
   "buildCommand": "npm run build",
   "outputDirectory": ".next",
   "framework": "nextjs",
-  "regions": ["ams1", "iad1"],
+  "regions": ["iad1"],
   "functions": {
     "src/app/**/*.ts": {
       "maxDuration": 30,
@@ -21,7 +21,7 @@
       "NEXT_TELEMETRY_DISABLED": "1",
       "BUILD_VERSION": "$VERCEL_GIT_COMMIT_SHA",
       "DEPLOYMENT_ENV": "$VERCEL_ENV",
-      "FORCE_DOMAIN_UPDATE": "v15-GLOBAL-MAIN-DOMAIN-CDN-BYPASS"
+      "FORCE_DOMAIN_UPDATE": "v9-CRITICAL-DOMAIN-REASSIGNMENT-D74AA5E"
     }
   },
   "rewrites": [
@@ -52,19 +52,7 @@
         },
         {
           "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate, max-age=0, s-maxage=0, proxy-revalidate"
-        },
-        {
-          "key": "Surrogate-Control",
-          "value": "no-store"
-        },
-        {
-          "key": "Pragma",
-          "value": "no-cache"
-        },
-        {
-          "key": "Expires",
-          "value": "0"
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
         },
         {
           "key": "X-App-Version",
@@ -87,19 +75,5 @@
     }
   ],
   "cleanUrls": true,
-  "trailingSlash": false,
-  "crons": [
-    {
-      "path": "/api/invalidate-cache",
-      "schedule": "*/2 * * * *"
-    }
-  ],
-  "git": {
-    "deploymentEnabled": {
-      "main": true
-    }
-  },
-  "github": {
-    "autoAlias": false
-  }
+  "trailingSlash": false
 }
