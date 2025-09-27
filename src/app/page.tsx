@@ -157,7 +157,7 @@ export default function HomePage() {
             zIndex: '9999',
             position: 'relative'
           }}>
-            🚨 DEPLOYMENT VERIFICATION: Commit {process.env.NEXT_PUBLIC_APP_VERSION?.slice(0,8) || 'unknown'} | Domain: {typeof window !== 'undefined' ? window.location.hostname : 'server'} | Time: {new Date().toLocaleTimeString()}
+            🚀 MAIN BRANCH DEPLOY TEST: Commit {process.env.NEXT_PUBLIC_APP_VERSION?.slice(0,8) || 'unknown'} | Domain: {typeof window !== 'undefined' ? window.location.hostname : 'server'} | Time: {new Date().toLocaleTimeString()}
           </div>
 
           <HeaderNavigation />
