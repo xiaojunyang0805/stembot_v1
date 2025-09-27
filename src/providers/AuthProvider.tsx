@@ -17,19 +17,19 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Mock user for demo purposes
+  // Mock user for research environment
   const mockUser: AuthUser = {
-    id: 'mock-user-id',
-    email: 'demo@example.com',
+    id: 'research-user-id',
+    email: 'researcher@stembot.app',
     email_confirmed_at: new Date().toISOString(),
     created_at: new Date().toISOString(),
     updated_at: new Date().toISOString(),
     profile: {
-      id: 'mock-user-id',
-      email: 'demo@example.com',
-      first_name: 'Demo',
+      id: 'research-user-id',
+      email: 'researcher@stembot.app',
+      first_name: 'Research',
       last_name: 'User',
-      display_name: 'Demo User',
+      display_name: 'Research User',
       role: 'researcher',
       created_at: new Date().toISOString(),
       updated_at: new Date().toISOString()
