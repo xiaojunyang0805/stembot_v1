@@ -11,6 +11,8 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  // Cache-busting rebuild force - Sep 27, 2025
+
   // For now, allow access to dashboard regardless of auth state for testing
   // TODO: Re-enable auth protection once auth system is working properly
   const [uploadedFile, setUploadedFile] = useState<File | null>(null);
