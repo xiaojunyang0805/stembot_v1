@@ -46,6 +46,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   useEffect(() => {
     // Initialize as signed out - users need to explicitly sign in
+    console.log('AuthProvider: Initializing as signed out')
     setUser(null)
     setSession(null)
     setLoading(false)

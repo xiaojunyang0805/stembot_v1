@@ -5,6 +5,9 @@ import { useAuth } from '../providers/AuthProvider';
 function HeaderNavigation() {
   const { user, loading } = useAuth();
 
+  // Debug logging - remove in production
+  console.log('HeaderNavigation - loading:', loading, 'user:', user ? 'SIGNED IN' : 'SIGNED OUT');
+
   if (loading) {
     return (
       <div style={{display: 'flex', gap: '16px'}}>
