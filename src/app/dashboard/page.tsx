@@ -182,19 +182,23 @@ return;
 
   return (
     <div className="min-h-screen bg-gray-50">
-      {/* Force deployment refresh */}
+      {/* Diagnostic info */}
+      <div style={{padding: '10px', backgroundColor: '#f0f0f0', fontSize: '12px', borderBottom: '1px solid #ccc'}}>
+        🔍 Dashboard Debug: User={user ? 'YES' : 'NO'} | Loading={loading ? 'YES' : 'NO'} | ActiveTab={activeTab}
+      </div>
+
       {/* Header */}
-      <div className="border-b bg-white shadow-sm">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between py-4">
+      <div className="border-b bg-white shadow-sm" style={{borderBottom: '1px solid #e5e7eb', backgroundColor: 'white', boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'}}>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8" style={{maxWidth: '80rem', margin: '0 auto', padding: '0 1rem'}}>
+          <div className="flex items-center justify-between py-4" style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1rem 0'}}>
             <div>
-              <h1 className="text-2xl font-bold text-gray-900">Research Dashboard</h1>
-              <p className="text-sm text-gray-500">
+              <h1 className="text-2xl font-bold text-gray-900" style={{fontSize: '1.5rem', fontWeight: 'bold', color: '#111827'}}>Research Dashboard</h1>
+              <p className="text-sm text-gray-500" style={{fontSize: '0.875rem', color: '#6b7280'}}>
                 Welcome back, Research User
               </p>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800">
+            <div className="flex items-center gap-4" style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+              <span className="rounded-full bg-green-100 px-3 py-1 text-sm font-medium text-green-800" style={{borderRadius: '9999px', backgroundColor: '#dcfce7', padding: '0.25rem 0.75rem', fontSize: '0.875rem', fontWeight: '500', color: '#166534'}}>
                 Research Mode
               </span>
             </div>
