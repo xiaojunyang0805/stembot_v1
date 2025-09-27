@@ -1831,4 +1831,37 @@ Perfect! I have successfully implemented WP2 Step 1.3: Advanced Document Intelli
   The system provides genuine research guidance through real AI analysis, enabling sophisticated document intelligence that can identify research patterns, methodological issues, and knowledge gaps across multiple uploaded documents.
 # Deployment Status: Sat, Sep 27, 2025 10:08:40 AM
 
-# Auto-deploy verification test - Sat, Sep 27, 2025 12:25:36 PM
+12:40, 27/09, 2025
+Exposing Local Ollama to Vercel
+
+Since we're having TTY issues with ngrok in this environment, let me provide you with the exact steps to run manually, and we can proceed once you have the ngrok URL.
+
+  🔧 Manual ngrok Setup Required
+
+  Since the automated environment can't run ngrok interactively, please run these commands manually in your terminal:
+
+  Step 1: Start ngrok tunnel
+
+  ngrok http 11434
+
+  Step 2: Get the public URL
+
+  You'll see output like:
+  Forwarding    https://abc123-def456.ngrok-free.app -> http://localhost:11434
+
+  Step 3: Provide me the ngrok URL
+  https://unexecutorial-unappallingly-vernia.ngrok-free.dev -> http://localhost:11434
+
+13:00, 27/09, 2025
+ Perfect! I've created the AI chat API route with your improved code that uses environment variables instead of hardcoded localhost. The route now uses OLLAMA_BASE_URL environment variable with a
+  fallback to http://localhost:11434 for local development.
+
+  Now you can set the OLLAMA_BASE_URL environment variable in your deployment environment (like Vercel) to point to your ngrok URL: https://unexecutorial-unappallingly-vernia.ngrok-free.dev       
+
+  The API route includes:
+  - Environment variable configuration for flexible deployment
+  - Enhanced error handling with detailed logging
+  - Health check endpoint (GET) to verify Ollama connectivity
+  - Proper request validation and response formatting
+  - STEM research mentoring system prompt
+
