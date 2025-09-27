@@ -33,7 +33,7 @@ export function ThemeProvider({
   // Prevent flash of wrong theme during SSR
   if (!mounted) {
     return (
-      <div className="bg-background text-foreground">
+      <div style={{backgroundColor: '#ffffff', color: '#0f172a'}}>
         {children}
       </div>
     )
@@ -62,7 +62,7 @@ export function ThemeProvider({
  */
 function ThemeTransitionWrapper({ children }: { children: React.ReactNode }) {
   return (
-    <div className="transition-colors duration-300 ease-in-out">
+    <div style={{transition: 'color 300ms ease-in-out, background-color 300ms ease-in-out'}}>
       {children}
     </div>
   )
@@ -114,7 +114,7 @@ export class ThemeErrorBoundary extends React.Component<
     if (this.state.hasError) {
       return (
         this.props.fallback || (
-          <div className="min-h-screen bg-white text-gray-900">
+          <div style={{minHeight: '100vh', backgroundColor: '#ffffff', color: '#111827'}}>
             {this.props.children}
           </div>
         )
