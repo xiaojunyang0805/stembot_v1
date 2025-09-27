@@ -26,7 +26,7 @@ const nextConfig = {
     NEXT_PUBLIC_APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'local',
     NEXT_PUBLIC_BUILD_DATE: new Date().toISOString(),
     NEXT_PUBLIC_DEPLOYMENT_ENV: process.env.VERCEL_ENV || 'development',
-    FORCE_REFRESH: 'v16-FORCE-DEPLOYMENT-TRIGGER',
+    FORCE_REFRESH: 'v18-CRITICAL-CACHE-BUST-F940F53',
   },
   // Aggressive cache busting for immediate updates
   async headers() {
@@ -36,7 +36,11 @@ const nextConfig = {
         headers: [
           {
             key: 'Cache-Control',
-            value: 'no-cache, no-store, must-revalidate, max-age=0',
+            value: 'no-cache, no-store, must-revalidate, max-age=0, s-maxage=0, proxy-revalidate',
+          },
+          {
+            key: 'Surrogate-Control',
+            value: 'no-store',
           },
           {
             key: 'Pragma',
@@ -49,6 +53,14 @@ const nextConfig = {
           {
             key: 'X-Content-Type-Options',
             value: 'nosniff',
+          },
+          {
+            key: 'X-Cache-Bust',
+            value: `${Date.now()}-f940f53`,
+          },
+          {
+            key: 'Vary',
+            value: 'Accept-Encoding, User-Agent',
           },
         ],
       },

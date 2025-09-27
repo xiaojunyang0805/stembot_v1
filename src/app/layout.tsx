@@ -57,6 +57,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
         <meta name="color-scheme" content="light dark" />
         <meta name="theme-color" content="#2563eb" media="(prefers-color-scheme: light)" />
         <meta name="theme-color" content="#1e293b" media="(prefers-color-scheme: dark)" />
+        <meta httpEquiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+        <meta httpEquiv="Pragma" content="no-cache" />
+        <meta httpEquiv="Expires" content="0" />
+        <meta name="cache-bust" content={`f940f53-${Date.now()}`} />
         <link rel="preconnect" href="https://fonts.googleapis.com" />
         <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
       </head>
