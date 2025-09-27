@@ -5,8 +5,7 @@ import { useAuth } from '../providers/AuthProvider';
 function HeaderNavigation() {
   const { user, loading } = useAuth();
 
-  // Debug logging - remove in production
-  console.log('HeaderNavigation - loading:', loading, 'user:', user ? 'SIGNED IN' : 'SIGNED OUT');
+  // Clean production version
 
   if (loading) {
     return (
@@ -124,8 +123,8 @@ export default function HomePage() {
             marginBottom: '24px',
             lineHeight: '1.1'
           }}>
-*** TESTING DEPLOYMENT CHANGES ***<br />
-            <span style={{color: '#ff0000'}}>*** VERSION a299e04 DEPLOYED ***</span>
+AI Research Mentor That<br />
+            <span style={{color: '#2563eb'}}>Guides Your Academic Journey</span>
           </h1>
 
           <p style={{
