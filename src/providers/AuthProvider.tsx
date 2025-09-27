@@ -11,45 +11,45 @@ interface AuthProviderProps {
   children: ReactNode
 }
 
+// Mock user for research environment - moved outside component to prevent recreation
+const mockUser: AuthUser = {
+  id: 'research-user-id',
+  email: 'researcher@stembot.app',
+  email_confirmed_at: new Date().toISOString(),
+  created_at: new Date().toISOString(),
+  updated_at: new Date().toISOString(),
+  profile: {
+    id: 'research-user-id',
+    email: 'researcher@stembot.app',
+    first_name: 'Research',
+    last_name: 'User',
+    display_name: 'Research User',
+    role: 'researcher',
+    created_at: new Date().toISOString(),
+    updated_at: new Date().toISOString()
+  }
+}
+
+const mockSession: AuthSession = {
+  access_token: 'mock-access-token',
+  refresh_token: 'mock-refresh-token',
+  expires_in: 3600,
+  token_type: 'bearer',
+  user: mockUser
+}
+
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<AuthUser | null>(null)
   const [session, setSession] = useState<AuthSession | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
 
-  // Mock user for research environment
-  const mockUser: AuthUser = {
-    id: 'research-user-id',
-    email: 'researcher@stembot.app',
-    email_confirmed_at: new Date().toISOString(),
-    created_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
-    profile: {
-      id: 'research-user-id',
-      email: 'researcher@stembot.app',
-      first_name: 'Research',
-      last_name: 'User',
-      display_name: 'Research User',
-      role: 'researcher',
-      created_at: new Date().toISOString(),
-      updated_at: new Date().toISOString()
-    }
-  }
-
-  const mockSession: AuthSession = {
-    access_token: 'mock-access-token',
-    refresh_token: 'mock-refresh-token',
-    expires_in: 3600,
-    token_type: 'bearer',
-    user: mockUser
-  }
-
   useEffect(() => {
     // Mock initial auth check - immediate loading for better UX
     setUser(mockUser)
     setSession(mockSession)
     setLoading(false)
-  }, [mockSession, mockUser])
+  }, [])
 
   const signIn = async (email: string, password: string) => {
     setLoading(true)

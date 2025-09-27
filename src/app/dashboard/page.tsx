@@ -185,7 +185,7 @@ return;
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Research Dashboard</h1>
               <p className="text-sm text-gray-500">
-                Welcome back, {user?.profile?.display_name || user?.email || 'Researcher'}
+                Welcome back, {user?.profile?.display_name || user?.email || 'Research User'}
               </p>
             </div>
             <div className="flex items-center gap-4">
