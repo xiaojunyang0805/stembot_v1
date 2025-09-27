@@ -15,6 +15,7 @@ import type { Metadata } from 'next';
 import './globals.css';
 import { AuthProvider } from '../providers/AuthProvider';
 import { ThemeProvider, ThemeErrorBoundary } from '../providers/ThemeProvider';
+import { VersionSync, VersionDisplay } from '../components/common/VersionSync';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -84,6 +85,10 @@ export default function RootLayout({ children }: RootLayoutProps) {
               <div id="root" className="min-h-full">
                 {children}
               </div>
+
+              {/* Version synchronization for deployment consistency */}
+              <VersionSync />
+              <VersionDisplay />
 
               {/* TODO: Add global modals portal */}
               <div id="modal-root" />

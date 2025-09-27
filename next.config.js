@@ -16,7 +16,24 @@ const nextConfig = {
   // Force Vercel to use latest commit
   env: {
     BUILD_DATE: new Date().toISOString(),
-    FORCE_REFRESH: 'v3',
+    BUILD_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'development',
+    DEPLOYMENT_ENV: process.env.VERCEL_ENV || 'development',
+    APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'local',
+    FORCE_REFRESH: 'v4',
+  },
+  // Build optimizations
+  compiler: {
+    removeConsole: process.env.NODE_ENV === 'production',
+  },
+  // Enable concurrent builds and faster compilation
+  swcMinify: true,
+  modularizeImports: {
+    '@mui/icons-material': {
+      transform: '@mui/icons-material/{{member}}',
+    },
+    'lucide-react': {
+      transform: 'lucide-react/dist/esm/icons/{{kebabCase member}}',
+    },
   },
   webpack: (config, { isServer }) => {
     config.resolve.alias = {

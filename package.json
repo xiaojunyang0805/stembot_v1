@@ -6,6 +6,8 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
+    "build:analyze": "cross-env ANALYZE=true next build",
+    "build:production": "cross-env NODE_ENV=production next build",
     "start": "next start",
     "lint": "next lint",
     "lint:fix": "next lint --fix",
@@ -20,7 +22,10 @@
     "analyze": "cross-env ANALYZE=true next build",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
-    "postinstall": "next telemetry disable"
+    "postinstall": "next telemetry disable",
+    "vercel-build": "npm run build:production",
+    "deploy": "vercel --prod",
+    "deploy:preview": "vercel"
   },
   "dependencies": {
     "@hookform/resolvers": "^3.9.0",
