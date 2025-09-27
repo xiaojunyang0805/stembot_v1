@@ -61,7 +61,7 @@ export default function AITestPage() {
         },
         body: JSON.stringify({
           messages: [{ role: 'user', content: currentMessage }],
-          model: 'llama3.1:8b'
+          model: 'llama3.2:3b'
         }),
       });
 

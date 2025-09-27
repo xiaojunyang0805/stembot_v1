@@ -32,7 +32,7 @@ If students upload documents or data, help them analyze methodology, identify pa
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, model = 'llama3.1:8b' }: ChatRequest = await request.json();
+    const { messages, model = 'llama3.2:3b' }: ChatRequest = await request.json();
 
     console.log('AI Chat Request:', {
       messageCount: messages.length,
