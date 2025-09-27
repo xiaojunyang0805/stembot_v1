@@ -23,7 +23,7 @@ certificates/
 /src/lib/memory/
 /src/lib/embeddings/
 /src/lib/research/
-/src/app/api/
+# Note: /src/app/api/ is needed for AI integration - keeping in public repo
 
 # ====================================
 # CONFIG FILES WITH POTENTIAL SECRETS
