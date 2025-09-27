@@ -147,7 +147,7 @@ export default function HomePage() {
         fontSize: '14px',
         fontWeight: 'bold'
       }}>
-🌍 GLOBAL DOMAIN FIX v15 - Bypassing main domain CDN cache!
+🔄 DEPLOYMENT TRIGGER v16 - Forcing Vercel to deploy 9ed5671!
       </div>
       <div style={{minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '40px'}}>
       {/* Header */}
