@@ -26,50 +26,17 @@
   },
   "rewrites": [
     {
-      "source": "/dashboard/:path*",
-      "destination": "/dashboard/:path*"
-    },
-    {
       "source": "/api/:path*",
       "destination": "/api/:path*"
     }
   ],
   "headers": [
     {
-      "source": "/(.*)",
+      "source": "/dashboard",
       "headers": [
-        {
-          "key": "X-Content-Type-Options",
-          "value": "nosniff"
-        },
-        {
-          "key": "X-Frame-Options",
-          "value": "DENY"
-        },
-        {
-          "key": "X-XSS-Protection",
-          "value": "1; mode=block"
-        },
         {
           "key": "Cache-Control",
           "value": "no-cache, no-store, must-revalidate, max-age=0"
-        },
-        {
-          "key": "X-App-Version",
-          "value": "$VERCEL_GIT_COMMIT_SHA"
-        }
-      ]
-    },
-    {
-      "source": "/api/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "no-cache, no-store, must-revalidate"
-        },
-        {
-          "key": "X-API-Version",
-          "value": "$VERCEL_GIT_COMMIT_SHA"
         }
       ]
     }
