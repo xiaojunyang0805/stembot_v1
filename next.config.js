@@ -19,7 +19,7 @@ const nextConfig = {
     BUILD_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'development',
     DEPLOYMENT_ENV: process.env.VERCEL_ENV || 'development',
     APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'local',
-    FORCE_REFRESH: 'v4',
+    FORCE_REFRESH: 'v5-dashboard-fix',
   },
   // Build optimizations
   compiler: {
