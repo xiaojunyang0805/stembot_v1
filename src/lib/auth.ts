@@ -6,9 +6,9 @@ export interface AuthUser {
 }
 
 export const mockUser: AuthUser = {
-  id: 'mock-user-id',
-  email: 'demo@example.com',
-  name: 'Demo User'
+  id: 'research-user-id',
+  email: 'researcher@stembot.app',
+  name: 'Research User'
 };
 
 export const signIn = async (email: string, password: string) => {

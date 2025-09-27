@@ -13,7 +13,11 @@ const nextConfig = {
   experimental: {
     serverComponentsExternalPackages: ['@supabase/supabase-js'],
   },
-  // Force Vercel to use latest commit
+  // Force cache invalidation
+  generateBuildId: async () => {
+    // Use git commit SHA or timestamp for unique build IDs
+    return process.env.VERCEL_GIT_COMMIT_SHA || `build-${Date.now()}`;
+  },
   env: {
     BUILD_DATE: new Date().toISOString(),
     BUILD_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'development',
@@ -22,7 +26,23 @@ const nextConfig = {
     NEXT_PUBLIC_APP_VERSION: process.env.VERCEL_GIT_COMMIT_SHA || 'local',
     NEXT_PUBLIC_BUILD_DATE: new Date().toISOString(),
     NEXT_PUBLIC_DEPLOYMENT_ENV: process.env.VERCEL_ENV || 'development',
-    FORCE_REFRESH: 'v11-INLINE-STYLES-DEPLOYED-3DF9DB3',
+    FORCE_REFRESH: 'v12-CACHE-INVALIDATION-FIX',
+  },
+  // Disable caching in development and add proper headers
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'Cache-Control',
+            value: process.env.NODE_ENV === 'development'
+              ? 'no-cache, no-store, must-revalidate'
+              : 'public, max-age=31536000, immutable',
+          },
+        ],
+      },
+    ];
   },
   // Build optimizations
   compiler: {

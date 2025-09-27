@@ -134,7 +134,7 @@ export default function HomePage() {
         fontSize: '14px',
         fontWeight: 'bold'
       }}>
-        🚨 INLINE STYLES DEPLOYED 3df9db3 - Cache Bust v11 - If you see styling issues, hard refresh (Ctrl+F5)
+✅ INLINE STYLES WORKING - Cache Fix v12 Deployed - No more refresh needed!
       </div>
       <div style={{minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '40px'}}>
       {/* Header */}
