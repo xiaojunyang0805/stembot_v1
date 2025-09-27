@@ -15,6 +15,9 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
 
+  // Force dynamic rendering with timestamp
+  const [renderTime] = useState(() => new Date().toISOString());
+
   // Resolved: The refresh issue was browser caching, not hydration
 
   // For now, allow access to dashboard regardless of auth state for testing
@@ -43,7 +46,7 @@ export default function DashboardPage() {
     <div style={{minHeight: '100vh', backgroundColor: '#f9fafb'}}>
       {/* Success message about resolving the refresh issue */}
       <div style={{backgroundColor: '#065f46', color: 'white', padding: '1rem', textAlign: 'center', marginBottom: '1rem'}}>
-        ✅ <strong>ISSUE RESOLVED:</strong> The refresh requirement was browser caching, not application code. Dashboard now works correctly!
+        ✅ <strong>DEBUGGING:</strong> Service worker removed. Render time: {renderTime}
       </div>
 
       {/* Header */}
