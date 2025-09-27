@@ -45,9 +45,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    // Mock initial auth check - immediate loading for better UX
-    setUser(mockUser)
-    setSession(mockSession)
+    // Initialize as signed out - users need to explicitly sign in
+    setUser(null)
+    setSession(null)
     setLoading(false)
   }, [])
 
