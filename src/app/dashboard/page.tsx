@@ -43,44 +43,26 @@ export default function DashboardPage() {
     fetchProjects();
   }, [user]);
 
-  // Mock data for professional UI (fallback when no projects exist)
-  const mockProjects = [
-    {
-      id: '1',
-      title: '📊 Sleep & Memory Study',
-      phase: 'Literature Review',
-      progress: 78,
-      dueDate: 'Dec 15, 2025',
-      nextStep: 'Find 3 more sources on undergraduates',
-      subject: 'Psychology',
-      emoji: '📊'
-    },
-    {
-      id: '2',
-      title: '⚗️ Buffer Chemistry Analysis',
-      phase: 'Data Analysis',
-      progress: 28,
-      dueDate: 'Jan 30, 2026',
-      nextStep: 'Statistical significance testing',
-      subject: 'Chemistry',
-      emoji: '⚗️'
-    },
-    {
-      id: '3',
-      title: '🧬 Protein Folding Mechanisms',
-      phase: 'Question Formation',
-      progress: 45,
-      dueDate: 'Feb 14, 2026',
-      nextStep: 'Refine research hypothesis',
-      subject: 'Biochemistry',
-      emoji: '🧬'
-    }
-  ];
+  // Get the most recent project for memory recall
+  const recentProject = projects.length > 0 ? projects[0] : null;
 
-  const mockMemory = {
-    lastSession: "Refined sleep deprivation research question",
-    suggestedAction: "Start literature review",
-    confidence: 92
+  // Dynamic memory data based on actual projects
+  const memoryData = recentProject ? {
+    lastSession: `Worked on "${recentProject.title}"`,
+    suggestedAction: (() => {
+      switch (recentProject.current_phase) {
+        case 'question': return 'Refine your research question';
+        case 'literature': return 'Continue literature review';
+        case 'methodology': return 'Develop research methodology';
+        case 'writing': return 'Start academic writing';
+        default: return 'Continue your research';
+      }
+    })(),
+    confidence: 88
+  } : {
+    lastSession: "Ready to start your research journey",
+    suggestedAction: "Create your first research project",
+    confidence: 95
   };
 
   // User display name from email or fallback
@@ -304,7 +286,7 @@ export default function DashboardPage() {
                 color: '#1e40af',
                 marginBottom: '0.25rem'
               }}>
-                Last session: "{mockMemory.lastSession}"
+                Last session: "{memoryData.lastSession}"
               </p>
               <p style={{
                 fontSize: '0.875rem',
@@ -313,11 +295,17 @@ export default function DashboardPage() {
                 alignItems: 'center',
                 gap: '0.25rem'
               }}>
-                ⭐ Next suggested action: {mockMemory.suggestedAction}
+                ⭐ Next suggested action: {memoryData.suggestedAction}
               </p>
             </div>
             <button
-              onClick={() => router.push('/projects/1')}
+              onClick={() => {
+                if (recentProject) {
+                  router.push(`/projects/${recentProject.id}`);
+                } else {
+                  router.push('/projects/create');
+                }
+              }}
               style={{
                 backgroundColor: '#2563eb',
                 color: 'white',
@@ -334,7 +322,7 @@ export default function DashboardPage() {
               onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8'; }}
               onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb'; }}
             >
-              Continue Research →
+              {recentProject ? 'Continue Research →' : 'Start First Project →'}
             </button>
           </div>
         </div>
@@ -358,7 +346,7 @@ export default function DashboardPage() {
           gap: '1.5rem',
           marginBottom: '2rem'
         }}>
-          {(projects.length > 0 ? projects : mockProjects).map((project) => (
+          {projects.map((project) => (
             <div
               key={project.id}
               style={{
@@ -392,34 +380,26 @@ export default function DashboardPage() {
                   color: '#111827',
                   margin: 0
                 }}>
-                  {('current_phase' in project) ? `${project.subject_emoji || '📊'} ${project.title}` : project.title}
+                  {project.subject_emoji || '📊'} {project.title}
                 </h3>
                 <span style={{
-                  backgroundColor: (('current_phase' in project) ?
-                    (project.current_phase === 'question' ? '#eff6ff' :
+                  backgroundColor: (project.current_phase === 'question' ? '#eff6ff' :
                      project.current_phase === 'literature' ? '#dbeafe' :
                      project.current_phase === 'methodology' ? '#f3e8ff' :
-                     project.current_phase === 'writing' ? '#fef3c7' : '#f3f4f6') :
-                    (project.phase === 'Literature Review' ? '#dbeafe' :
-                     project.phase === 'Data Analysis' ? '#fef3c7' : '#f3e8ff')),
-                  color: (('current_phase' in project) ?
-                    (project.current_phase === 'question' ? '#2563eb' :
+                     project.current_phase === 'writing' ? '#fef3c7' : '#f3f4f6'),
+                  color: (project.current_phase === 'question' ? '#2563eb' :
                      project.current_phase === 'literature' ? '#1e40af' :
                      project.current_phase === 'methodology' ? '#6b21a8' :
-                     project.current_phase === 'writing' ? '#92400e' : '#6b7280') :
-                    (project.phase === 'Literature Review' ? '#1e40af' :
-                     project.phase === 'Data Analysis' ? '#92400e' : '#6b21a8')),
+                     project.current_phase === 'writing' ? '#92400e' : '#6b7280'),
                   padding: '0.25rem 0.75rem',
                   borderRadius: '9999px',
                   fontSize: '0.75rem',
                   fontWeight: '500'
                 }}>
-                  {('current_phase' in project) ?
-                    (project.current_phase === 'question' ? 'Question Formation' :
+                  {project.current_phase === 'question' ? 'Question Formation' :
                      project.current_phase === 'literature' ? 'Literature Review' :
                      project.current_phase === 'methodology' ? 'Methodology' :
-                     project.current_phase === 'writing' ? 'Academic Writing' : 'Active') :
-                    project.phase}
+                     project.current_phase === 'writing' ? 'Academic Writing' : 'Active'}
                 </span>
               </div>
 
@@ -442,11 +422,11 @@ export default function DashboardPage() {
                     color: '#111827'
                   }}>
                     {(() => {
-                      if ('current_phase' in project && project.progress_data) {
+                      if (project.progress_data) {
                         const progressData = project.progress_data as any;
                         return progressData[project.current_phase]?.progress || 0;
                       }
-                      return (project as any).progress || 0;
+                      return 0;
                     })()}%
                   </span>
                 </div>
@@ -459,20 +439,20 @@ export default function DashboardPage() {
                 }}>
                   <div style={{
                     width: `${(() => {
-                      if ('current_phase' in project && project.progress_data) {
+                      if (project.progress_data) {
                         const progressData = project.progress_data as any;
                         return progressData[project.current_phase]?.progress || 0;
                       }
-                      return (project as any).progress || 0;
+                      return 0;
                     })()}%`,
                     height: '100%',
                     backgroundColor: (() => {
                       const progress = (() => {
-                        if ('current_phase' in project && project.progress_data) {
+                        if (project.progress_data) {
                           const progressData = project.progress_data as any;
                           return progressData[project.current_phase]?.progress || 0;
                         }
-                        return (project as any).progress || 0;
+                        return 0;
                       })();
                       return progress >= 70 ? '#10b981' : progress >= 40 ? '#f59e0b' : '#ef4444';
                     })(),
@@ -486,12 +466,7 @@ export default function DashboardPage() {
                 color: '#6b7280',
                 marginBottom: '0.75rem'
               }}>
-                Due: {(() => {
-                  if ('due_date' in project && project.due_date) {
-                    return new Date(project.due_date).toLocaleDateString();
-                  }
-                  return (project as any).dueDate || 'No due date';
-                })()}
+                Due: {project.due_date ? new Date(project.due_date).toLocaleDateString() : 'No due date'}
               </div>
 
               <div style={{
@@ -503,16 +478,13 @@ export default function DashboardPage() {
                 borderLeft: '3px solid #2563eb'
               }}>
                 🎯 Next: {(() => {
-                  if ('current_phase' in project) {
-                    switch (project.current_phase) {
-                      case 'question': return 'Define your research question';
-                      case 'literature': return 'Conduct literature review';
-                      case 'methodology': return 'Design methodology';
-                      case 'writing': return 'Write research paper';
-                      default: return 'Continue research';
-                    }
+                  switch (project.current_phase) {
+                    case 'question': return 'Define your research question';
+                    case 'literature': return 'Conduct literature review';
+                    case 'methodology': return 'Design methodology';
+                    case 'writing': return 'Write research paper';
+                    default: return 'Continue research';
                   }
-                  return (project as any).nextStep || 'Continue research';
                 })()}
               </div>
             </div>
@@ -611,7 +583,9 @@ export default function DashboardPage() {
                 color: '#92400e',
                 marginBottom: '0.75rem'
               }}>
-                You tend to make breakthrough progress on literature reviews during morning sessions (9-11 AM).
+                {projects.length > 0
+                  ? 'Your most productive research sessions tend to be during focused work periods.'
+                  : 'AI will analyze your work patterns to provide personalized insights.'}
               </p>
               <div style={{
                 fontSize: '0.75rem',
@@ -621,7 +595,7 @@ export default function DashboardPage() {
                 gap: '0.25rem'
               }}>
                 <span>⚡</span>
-                <span>Confidence: 87%</span>
+                <span>Confidence: {projects.length > 0 ? '85%' : 'Learning...'}</span>
               </div>
             </div>
 
@@ -652,7 +626,9 @@ export default function DashboardPage() {
                 color: '#166534',
                 marginBottom: '0.75rem'
               }}>
-                You've maintained consistent progress for 12 days. Your methodology planning momentum is accelerating.
+                {projects.length > 0
+                  ? `You have ${projects.length} active project${projects.length !== 1 ? 's' : ''} showing steady progress.`
+                  : 'Start your research journey to build momentum and track progress.'}
               </p>
               <div style={{
                 fontSize: '0.75rem',
@@ -662,7 +638,7 @@ export default function DashboardPage() {
                 gap: '0.25rem'
               }}>
                 <span>🔥</span>
-                <span>Streak: 12 days</span>
+                <span>{projects.length > 0 ? `${projects.length} active project${projects.length !== 1 ? 's' : ''}` : 'Ready to start'}</span>
               </div>
             </div>
 
@@ -693,10 +669,18 @@ export default function DashboardPage() {
                 color: '#6b21a8',
                 marginBottom: '0.75rem'
               }}>
-                Based on your recent literature gaps, consider exploring sleep intervention studies in educational psychology journals.
+                {recentProject
+                  ? `Continue working on "${recentProject.title}" - your ${recentProject.current_phase} phase shows promise.`
+                  : 'Ready to discover personalized research suggestions? Create your first project to get started.'}
               </p>
               <button
-                onClick={() => router.push('/projects/1/literature')}
+                onClick={() => {
+                  if (recentProject) {
+                    router.push(`/projects/${recentProject.id}`);
+                  } else {
+                    router.push('/projects/create');
+                  }
+                }}
                 style={{
                   fontSize: '0.75rem',
                   color: '#7c3aed',
@@ -707,7 +691,7 @@ export default function DashboardPage() {
                   cursor: 'pointer'
                 }}
               >
-                Explore Now →
+                {recentProject ? 'Continue →' : 'Get Started →'}
               </button>
             </div>
           </div>
