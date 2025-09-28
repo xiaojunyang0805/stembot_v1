@@ -132,7 +132,6 @@ function HeaderNavigation() {
 export default function HomePage() {
   return (
     <>
-      <DeploymentDebugger />
       <div style={{minHeight: '100vh', backgroundColor: '#f8fafc'}}>
       {/* Header */}
       <header style={{

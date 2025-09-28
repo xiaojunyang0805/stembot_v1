@@ -12,6 +12,7 @@ export default function DashboardPage() {
   const { user, loading } = useAuth();
   const router = useRouter();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
+  const [showUserDropdown, setShowUserDropdown] = useState(false);
 
   // Mock data for professional UI (no AI backend needed)
   const mockProjects = [
@@ -108,33 +109,114 @@ export default function DashboardPage() {
             </select>
           </div>
 
-          {/* User Profile */}
-          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-            <div style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              color: '#374151'
-            }}>
-              {userName}
-            </div>
+          {/* User Profile Dropdown */}
+          <div style={{position: 'relative'}}>
             <button
-              onClick={() => router.push('/auth/logout')}
+              onClick={() => setShowUserDropdown(!showUserDropdown)}
               style={{
-                backgroundColor: '#dc2626',
-                color: 'white',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
                 padding: '0.5rem 1rem',
+                backgroundColor: '#f3f4f6',
                 borderRadius: '0.375rem',
-                border: 'none',
+                border: '1px solid #d1d5db',
                 fontSize: '0.875rem',
+                color: '#374151',
                 cursor: 'pointer'
               }}
-              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#b91c1c'; }}
-              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#dc2626'; }}
+              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#e5e7eb'; }}
+              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6'; }}
             >
-              Sign Out
+              <div style={{
+                width: '1.5rem',
+                height: '1.5rem',
+                borderRadius: '50%',
+                backgroundColor: '#2563eb',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                color: 'white',
+                fontSize: '0.75rem',
+                fontWeight: 'bold'
+              }}>
+                {userName.charAt(0).toUpperCase()}
+              </div>
+              <span>{userName}</span>
+              <span style={{fontSize: '0.75rem', color: '#9ca3af'}}>
+                {showUserDropdown ? '▲' : '▼'}
+              </span>
             </button>
+
+            {showUserDropdown && (
+              <div style={{
+                position: 'absolute',
+                top: '100%',
+                right: 0,
+                marginTop: '0.5rem',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)',
+                zIndex: 50,
+                minWidth: '180px'
+              }}>
+                <div style={{padding: '0.5rem'}}>
+                  <div style={{
+                    padding: '0.5rem',
+                    fontSize: '0.75rem',
+                    color: '#6b7280',
+                    borderBottom: '1px solid #f3f4f6'
+                  }}>
+                    User ID: {user?.id?.slice(0, 8) || 'guest'}...
+                  </div>
+
+                  <button
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      router.push('/settings');
+                    }}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '0.75rem 0.5rem',
+                      fontSize: '0.875rem',
+                      color: '#374151',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '0.25rem'
+                    }}
+                    onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6'; }}
+                    onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+                  >
+                    ⚙️ Settings
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setShowUserDropdown(false);
+                      router.push('/auth/logout');
+                    }}
+                    style={{
+                      width: '100%',
+                      textAlign: 'left',
+                      padding: '0.75rem 0.5rem',
+                      fontSize: '0.875rem',
+                      color: '#dc2626',
+                      backgroundColor: 'transparent',
+                      border: 'none',
+                      cursor: 'pointer',
+                      borderRadius: '0.25rem'
+                    }}
+                    onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#fef2f2'; }}
+                    onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = 'transparent'; }}
+                  >
+                    🚪 Sign Out
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </header>
@@ -551,83 +633,6 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Quick Actions */}
-        <div style={{marginBottom: '2rem'}}>
-          <h2 style={{
-            fontSize: '1.5rem',
-            fontWeight: 'bold',
-            color: '#111827',
-            marginBottom: '1rem'
-          }}>
-            Quick Actions
-          </h2>
-          <div style={{
-            display: 'flex',
-            gap: '1rem',
-            flexWrap: 'wrap'
-          }}>
-            <button
-              onClick={() => router.push('/projects/1/literature')}
-              style={{
-                backgroundColor: '#2563eb',
-                color: 'white',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '0.375rem',
-                border: 'none',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8'; }}
-              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb'; }}
-            >
-              📚 Upload Documents
-            </button>
-            <button
-              onClick={() => router.push('/projects/1')}
-              style={{
-                backgroundColor: '#f97316',
-                color: 'white',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '0.375rem',
-                border: 'none',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#ea580c'; }}
-              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#f97316'; }}
-            >
-              💬 Ask Research Question
-            </button>
-            <button
-              onClick={() => router.push('/projects/1/methodology')}
-              style={{
-                backgroundColor: '#10b981',
-                color: 'white',
-                padding: '0.75rem 1.5rem',
-                borderRadius: '0.375rem',
-                border: 'none',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                cursor: 'pointer',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#059669'; }}
-              onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#10b981'; }}
-            >
-              📈 View Progress
-            </button>
-          </div>
-        </div>
       </main>
     </div>
   );

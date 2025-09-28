@@ -49,10 +49,10 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     question: 'How does sleep deprivation affect memory consolidation in undergraduate students compared to older adults?',
     phase: 'Literature Review',
     progress: {
-      question: 'completed',
-      literature: 'active',
-      methodology: 'pending',
-      writing: 'pending'
+      question: { status: 'completed', percentage: 100 },
+      literature: { status: 'active', percentage: 65 },
+      methodology: { status: 'pending', percentage: 0 },
+      writing: { status: 'pending', percentage: 0 }
     },
     sources: [
       { name: 'Smith (2024)', type: 'pdf' },
@@ -210,6 +210,55 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         </div>
       </header>
 
+      {/* Navigation Banner */}
+      <div style={{
+        backgroundColor: '#f8fafc',
+        borderBottom: '1px solid #e5e7eb',
+        padding: '1rem 2rem'
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto',
+          display: 'flex',
+          gap: '0.5rem'
+        }}>
+          {[
+            { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, active: true },
+            { id: 'literature', label: 'Literature Review', path: `/projects/${params.id}/literature`, active: false },
+            { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, active: false },
+            { id: 'writing', label: 'Academic Writing', path: `/projects/${params.id}/writing`, active: false }
+          ].map((nav) => (
+            <button
+              key={nav.id}
+              onClick={() => nav.active ? null : router.push(nav.path)}
+              style={{
+                padding: '0.75rem 1.5rem',
+                backgroundColor: nav.active ? '#2563eb' : 'white',
+                color: nav.active ? 'white' : '#6b7280',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.375rem',
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                cursor: nav.active ? 'default' : 'pointer',
+                opacity: nav.active ? 1 : 0.8
+              }}
+              onMouseEnter={(e) => {
+                if (!nav.active) {
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                }
+              }}
+              onMouseLeave={(e) => {
+                if (!nav.active) {
+                  (e.target as HTMLButtonElement).style.backgroundColor = 'white';
+                }
+              }}
+            >
+              {nav.label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Main Content */}
       <div style={{
         display: 'flex',
@@ -327,32 +376,67 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                   Progress
                 </h3>
               </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {[
-                  { phase: 'Question', status: projectData.progress.question },
-                  { phase: 'Literature', status: projectData.progress.literature },
-                  { phase: 'Methodology', status: projectData.progress.methodology },
-                  { phase: 'Writing', status: projectData.progress.writing }
-                ].map(({ phase, status }) => (
+                  { phase: 'Question', data: projectData.progress.question },
+                  { phase: 'Literature', data: projectData.progress.literature },
+                  { phase: 'Methodology', data: projectData.progress.methodology },
+                  { phase: 'Writing', data: projectData.progress.writing }
+                ].map(({ phase, data }) => (
                   <div key={phase} style={{
                     display: 'flex',
-                    alignItems: 'center',
+                    flexDirection: 'column',
                     gap: '0.5rem'
                   }}>
-                    <span style={{
-                      color: status === 'completed' ? '#10b981' :
-                             status === 'active' ? '#3b82f6' : '#9ca3af',
-                      fontSize: '0.875rem'
+                    <div style={{
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'space-between'
                     }}>
-                      {getPhaseIcon(phase, status)}
-                    </span>
-                    <span style={{
-                      fontSize: '0.875rem',
-                      color: status === 'active' ? '#3b82f6' : '#6b7280',
-                      fontWeight: status === 'active' ? '600' : '400'
+                      <div style={{
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: '0.5rem'
+                      }}>
+                        <span style={{
+                          color: data.status === 'completed' ? '#10b981' :
+                                 data.status === 'active' ? '#3b82f6' : '#9ca3af',
+                          fontSize: '0.875rem'
+                        }}>
+                          {getPhaseIcon(phase, data.status)}
+                        </span>
+                        <span style={{
+                          fontSize: '0.875rem',
+                          color: data.status === 'active' ? '#3b82f6' : '#6b7280',
+                          fontWeight: data.status === 'active' ? '600' : '400'
+                        }}>
+                          {phase}
+                        </span>
+                      </div>
+                      <span style={{
+                        fontSize: '0.75rem',
+                        color: '#9ca3af',
+                        fontWeight: '600'
+                      }}>
+                        {data.percentage}%
+                      </span>
+                    </div>
+                    <div style={{
+                      width: '100%',
+                      height: '6px',
+                      backgroundColor: '#e5e7eb',
+                      borderRadius: '3px',
+                      overflow: 'hidden'
                     }}>
-                      {phase}
-                    </span>
+                      <div style={{
+                        width: `${data.percentage}%`,
+                        height: '100%',
+                        backgroundColor: data.status === 'completed' ? '#10b981' :
+                                         data.status === 'active' ? '#3b82f6' : '#9ca3af',
+                        borderRadius: '3px',
+                        transition: 'width 0.3s ease'
+                      }} />
+                    </div>
                   </div>
                 ))}
               </div>
