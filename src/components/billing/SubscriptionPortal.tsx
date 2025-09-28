@@ -7,7 +7,7 @@ import { Badge } from '../ui/Badge'
 import { Progress } from '../ui/progress'
 import { Separator } from '../ui/separator'
 import { AlertCircle, Calendar, CreditCard, Users, Zap } from 'lucide-react'
-import { useAuth } from '@/providers/AuthProvider'
+import { useAuth } from '../../providers/AuthProvider'
 
 interface Subscription {
   id: string
