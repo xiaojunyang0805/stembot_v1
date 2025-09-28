@@ -58,6 +58,55 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
         maxWidth: '1200px',
         margin: '0 auto'
       }}>
+        {/* Navigation Banner */}
+        <div style={{
+          backgroundColor: '#f8fafc',
+          borderBottom: '1px solid #e5e7eb',
+          padding: '1rem 2rem',
+          marginBottom: '2rem',
+          borderRadius: '0.5rem'
+        }}>
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem'
+          }}>
+            {[
+              { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, active: false },
+              { id: 'literature', label: 'Literature Review', path: `/projects/${params.id}/literature`, active: false },
+              { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, active: true },
+              { id: 'writing', label: 'Academic Writing', path: `/projects/${params.id}/writing`, active: false }
+            ].map((nav) => (
+              <button
+                key={nav.id}
+                onClick={() => nav.active ? null : router.push(nav.path)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: nav.active ? '#2563eb' : 'white',
+                  color: nav.active ? 'white' : '#6b7280',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: nav.active ? 'default' : 'pointer',
+                  opacity: nav.active ? 1 : 0.8
+                }}
+                onMouseEnter={(e) => {
+                  if (!nav.active) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!nav.active) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = 'white';
+                  }
+                }}
+              >
+                {nav.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
         <div style={{
           marginBottom: '2rem'
         }}>

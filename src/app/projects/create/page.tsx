@@ -9,65 +9,73 @@ export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
 export default function CreateProjectPage() {
-  const { user, loading } = useAuth();
+  const { user } = useAuth();
   const router = useRouter();
-  const [step, setStep] = useState(1);
+  const [isCreating, setIsCreating] = useState(false);
   const [formData, setFormData] = useState({
     title: '',
-    subject: '',
-    description: '',
     researchQuestion: '',
-    methodology: '',
-    timeline: ''
+    field: 'psychology',
+    timeline: '3-6 months'
   });
 
-  const subjects = [
-    { value: 'psychology', label: 'Psychology', emoji: '🧠', color: '#2563eb' },
-    { value: 'biology', label: 'Biology', emoji: '🧬', color: '#10b981' },
-    { value: 'chemistry', label: 'Chemistry', emoji: '⚗️', color: '#f59e0b' },
-    { value: 'physics', label: 'Physics', emoji: '🔬', color: '#8b5cf6' },
-    { value: 'neuroscience', label: 'Neuroscience', emoji: '🧠', color: '#ec4899' },
-    { value: 'medicine', label: 'Medicine', emoji: '⚕️', color: '#ef4444' },
-    { value: 'engineering', label: 'Engineering', emoji: '⚙️', color: '#6b7280' },
-    { value: 'computer-science', label: 'Computer Science', emoji: '💻', color: '#3b82f6' }
+  const researchFields = [
+    { value: 'psychology', label: 'Psychology & Cognitive Science' },
+    { value: 'education', label: 'Educational Research' },
+    { value: 'neuroscience', label: 'Neuroscience' },
+    { value: 'biology', label: 'Biology & Life Sciences' },
+    { value: 'medicine', label: 'Medical Research' },
+    { value: 'social', label: 'Social Sciences' },
+    { value: 'other', label: 'Other STEM Field' }
+  ];
+
+  const timelineOptions = [
+    { value: '1-3 months', label: '1-3 months (Course Project)' },
+    { value: '3-6 months', label: '3-6 months (Semester Thesis)' },
+    { value: '6-12 months', label: '6-12 months (Master\'s Thesis)' },
+    { value: '1-2 years', label: '1-2 years (PhD Chapter)' },
+    { value: '2+ years', label: '2+ years (Major Research)' }
   ];
 
   const userName = user?.email?.split('@')[0] || 'Research User';
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
+    setFormData(prev => ({
+      ...prev,
+      [field]: value
+    }));
   };
 
-  const handleNext = () => {
-    if (step < 3) setStep(step + 1);
-  };
+  const handleCreateProject = async () => {
+    if (!formData.title.trim() || !formData.researchQuestion.trim()) {
+      alert('Please fill in both the project title and research question.');
+      return;
+    }
 
-  const handleBack = () => {
-    if (step > 1) setStep(step - 1);
-  };
+    setIsCreating(true);
 
-  const handleSubmit = () => {
-    // Mock project creation - in real app would save to database
-    console.log('Creating project:', formData);
-    router.push('/projects/4'); // Navigate to new project
-  };
+    try {
+      // Mock project creation - will be replaced with Supabase integration
+      await new Promise(resolve => setTimeout(resolve, 1500));
 
-  const isStepValid = () => {
-    switch (step) {
-      case 1:
-        return formData.title && formData.subject && formData.description;
-      case 2:
-        return formData.researchQuestion;
-      case 3:
-        return formData.methodology && formData.timeline;
-      default:
-        return false;
+      const mockProjectId = 'proj_' + Date.now();
+      console.log('Creating project:', { ...formData, userId: user?.id, projectId: mockProjectId });
+
+      // Redirect to the new project workspace
+      router.push(`/projects/${mockProjectId}`);
+    } catch (error) {
+      console.error('Failed to create project:', error);
+      alert('Failed to create project. Please try again.');
+    } finally {
+      setIsCreating(false);
     }
   };
 
+  const isFormValid = formData.title.trim() && formData.researchQuestion.trim();
+
   return (
-    <div style={{minHeight: '100vh', backgroundColor: '#ffffff'}}>
-      {/* Professional Header */}
+    <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+      {/* Header */}
       <header style={{
         backgroundColor: 'white',
         borderBottom: '1px solid #e5e7eb',
@@ -78,11 +86,10 @@ export default function CreateProjectPage() {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          maxWidth: '1200px',
+          maxWidth: '1400px',
           margin: '0 auto'
         }}>
-          {/* Logo and Navigation */}
-          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <button
               onClick={() => router.push('/dashboard')}
               style={{
@@ -109,26 +116,45 @@ export default function CreateProjectPage() {
               🧠 StemBot
             </div>
             <div style={{
-              fontSize: '1rem',
-              color: '#6b7280',
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              color: '#111827',
               borderLeft: '1px solid #d1d5db',
               paddingLeft: '1rem'
             }}>
-              New Research Project
+              ✨ Create New Project
             </div>
           </div>
 
-          {/* User Profile */}
-          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            padding: '0.5rem 1rem',
+            backgroundColor: '#f3f4f6',
+            borderRadius: '0.375rem'
+          }}>
             <div style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '0.375rem',
+              width: '1.5rem',
+              height: '1.5rem',
+              borderRadius: '50%',
+              backgroundColor: '#2563eb',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              color: 'white',
+              fontSize: '0.75rem',
+              fontWeight: 'bold'
+            }}>
+              {userName.charAt(0).toUpperCase()}
+            </div>
+            <span style={{
               fontSize: '0.875rem',
-              color: '#374151'
+              color: '#374151',
+              fontWeight: '500'
             }}>
               {userName}
-            </div>
+            </span>
           </div>
         </div>
       </header>
@@ -139,428 +165,274 @@ export default function CreateProjectPage() {
         margin: '0 auto',
         padding: '3rem 2rem'
       }}>
-        {/* Progress Indicator */}
-        <div style={{marginBottom: '3rem'}}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            marginBottom: '2rem'
+        {/* Welcome Section */}
+        <div style={{
+          textAlign: 'center',
+          marginBottom: '3rem'
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>🚀</div>
+          <h1 style={{
+            fontSize: '2.5rem',
+            fontWeight: 'bold',
+            color: '#111827',
+            marginBottom: '1rem'
           }}>
-            {[1, 2, 3].map((stepNumber) => (
-              <div key={stepNumber} style={{display: 'flex', alignItems: 'center'}}>
-                <div style={{
-                  width: '2.5rem',
-                  height: '2.5rem',
-                  borderRadius: '50%',
-                  backgroundColor: step >= stepNumber ? '#2563eb' : '#e5e7eb',
-                  color: step >= stepNumber ? 'white' : '#9ca3af',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  fontSize: '1rem',
-                  fontWeight: 'bold'
-                }}>
-                  {stepNumber}
-                </div>
-                {stepNumber < 3 && (
-                  <div style={{
-                    width: '4rem',
-                    height: '2px',
-                    backgroundColor: step > stepNumber ? '#2563eb' : '#e5e7eb',
-                    margin: '0 1rem'
-                  }} />
-                )}
-              </div>
-            ))}
-          </div>
-          <div style={{
-            textAlign: 'center',
-            fontSize: '0.875rem',
-            color: '#6b7280'
+            Start Your Research Journey
+          </h1>
+          <p style={{
+            fontSize: '1.125rem',
+            color: '#6b7280',
+            lineHeight: '1.6',
+            maxWidth: '600px',
+            margin: '0 auto'
           }}>
-            Step {step} of 3: {
-              step === 1 ? 'Basic Information' :
-              step === 2 ? 'Research Question' :
-              'Methodology & Timeline'
-            }
-          </div>
+            Create a new research project with AI-powered guidance. Just provide the essential information
+            to get started - you can add more details as your research evolves.
+          </p>
         </div>
 
-        {/* Step 1: Basic Information */}
-        {step === 1 && (
+        {/* Project Creation Form */}
+        <div style={{
+          backgroundColor: 'white',
+          borderRadius: '1rem',
+          border: '1px solid #e5e7eb',
+          padding: '2.5rem',
+          boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)'
+        }}>
           <div style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '0.5rem',
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
+            display: 'flex',
+            flexDirection: 'column',
+            gap: '2rem'
           }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              color: '#111827',
-              marginBottom: '1.5rem'
-            }}>
-              🎯 Project Basics
-            </h2>
-
             {/* Project Title */}
-            <div style={{marginBottom: '1.5rem'}}>
+            <div>
               <label style={{
                 display: 'block',
-                fontSize: '0.875rem',
+                fontSize: '1rem',
                 fontWeight: '600',
                 color: '#374151',
-                marginBottom: '0.5rem'
+                marginBottom: '0.75rem'
               }}>
-                Project Title *
+                📝 Project Title *
               </label>
               <input
                 type="text"
                 value={formData.title}
                 onChange={(e) => handleInputChange('title', e.target.value)}
-                placeholder="e.g., Sleep Patterns and Memory in College Students"
+                placeholder="e.g., Sleep Patterns and Memory Performance in College Students"
                 style={{
                   width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem'
+                  padding: '1rem',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '0.5rem',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => { (e.target as HTMLInputElement).style.borderColor = '#2563eb'; }}
+                onBlur={(e) => { (e.target as HTMLInputElement).style.borderColor = '#e5e7eb'; }}
               />
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                marginTop: '0.5rem'
+              }}>
+                Give your research project a clear, descriptive title.
+              </p>
             </div>
 
-            {/* Subject Selection */}
-            <div style={{marginBottom: '1.5rem'}}>
+            {/* Research Question */}
+            <div>
               <label style={{
                 display: 'block',
-                fontSize: '0.875rem',
+                fontSize: '1rem',
                 fontWeight: '600',
                 color: '#374151',
-                marginBottom: '0.5rem'
+                marginBottom: '0.75rem'
               }}>
-                Research Subject *
-              </label>
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-                gap: '0.75rem'
-              }}>
-                {subjects.map((subject) => (
-                  <button
-                    key={subject.value}
-                    onClick={() => handleInputChange('subject', subject.value)}
-                    style={{
-                      padding: '1rem',
-                      border: formData.subject === subject.value ?
-                        `2px solid ${subject.color}` : '1px solid #e5e7eb',
-                      borderRadius: '0.5rem',
-                      backgroundColor: formData.subject === subject.value ?
-                        `${subject.color}10` : 'white',
-                      cursor: 'pointer',
-                      textAlign: 'left',
-                      transition: 'all 0.2s ease'
-                    }}
-                    onMouseEnter={(e) => {
-                      if (formData.subject !== subject.value) {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = '#f9fafb';
-                      }
-                    }}
-                    onMouseLeave={(e) => {
-                      if (formData.subject !== subject.value) {
-                        (e.currentTarget as HTMLElement).style.backgroundColor = 'white';
-                      }
-                    }}
-                  >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                      marginBottom: '0.25rem'
-                    }}>
-                      <span style={{fontSize: '1.25rem'}}>{subject.emoji}</span>
-                      <span style={{
-                        fontSize: '0.875rem',
-                        fontWeight: '600',
-                        color: formData.subject === subject.value ? subject.color : '#374151'
-                      }}>
-                        {subject.label}
-                      </span>
-                    </div>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Project Description */}
-            <div style={{marginBottom: '2rem'}}>
-              <label style={{
-                display: 'block',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '0.5rem'
-              }}>
-                Brief Description *
-              </label>
-              <textarea
-                value={formData.description}
-                onChange={(e) => handleInputChange('description', e.target.value)}
-                placeholder="Briefly describe what you want to research and why it interests you..."
-                rows={4}
-                style={{
-                  width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                  resize: 'vertical'
-                }}
-              />
-            </div>
-          </div>
-        )}
-
-        {/* Step 2: Research Question */}
-        {step === 2 && (
-          <div style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '0.5rem',
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              color: '#111827',
-              marginBottom: '1.5rem'
-            }}>
-              ❓ Research Question
-            </h2>
-
-            <div style={{
-              backgroundColor: '#eff6ff',
-              padding: '1rem',
-              borderRadius: '0.375rem',
-              border: '1px solid #bfdbfe',
-              marginBottom: '1.5rem'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.5rem'
-              }}>
-                <span style={{fontSize: '1rem'}}>💡</span>
-                <span style={{
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  color: '#1e40af'
-                }}>
-                  Tips for a Good Research Question
-                </span>
-              </div>
-              <ul style={{
-                fontSize: '0.875rem',
-                color: '#1e40af',
-                margin: 0,
-                paddingLeft: '1.25rem'
-              }}>
-                <li>Specific and focused</li>
-                <li>Answerable through research</li>
-                <li>Relevant to your field</li>
-                <li>Not too broad or too narrow</li>
-              </ul>
-            </div>
-
-            <div style={{marginBottom: '2rem'}}>
-              <label style={{
-                display: 'block',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '0.5rem'
-              }}>
-                Your Research Question *
+                ❓ Research Question *
               </label>
               <textarea
                 value={formData.researchQuestion}
                 onChange={(e) => handleInputChange('researchQuestion', e.target.value)}
-                placeholder="e.g., How do different sleep schedules affect memory retention and academic performance in college students?"
-                rows={6}
+                placeholder="e.g., How does sleep deprivation affect memory consolidation in undergraduate students compared to older adults?"
+                rows={4}
                 style={{
                   width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                  resize: 'vertical'
+                  padding: '1rem',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '0.5rem',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  resize: 'vertical',
+                  transition: 'border-color 0.2s'
                 }}
+                onFocus={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = '#2563eb'; }}
+                onBlur={(e) => { (e.target as HTMLTextAreaElement).style.borderColor = '#e5e7eb'; }}
               />
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                marginTop: '0.5rem'
+              }}>
+                What specific question are you trying to answer? This can be refined later.
+              </p>
             </div>
-          </div>
-        )}
 
-        {/* Step 3: Methodology & Timeline */}
-        {step === 3 && (
-          <div style={{
-            backgroundColor: 'white',
-            padding: '2rem',
-            borderRadius: '0.5rem',
-            border: '1px solid #e5e7eb',
-            boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
-          }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              color: '#111827',
-              marginBottom: '1.5rem'
-            }}>
-              📋 Methodology & Timeline
-            </h2>
-
-            {/* Methodology */}
-            <div style={{marginBottom: '1.5rem'}}>
+            {/* Research Field */}
+            <div>
               <label style={{
                 display: 'block',
-                fontSize: '0.875rem',
+                fontSize: '1rem',
                 fontWeight: '600',
                 color: '#374151',
-                marginBottom: '0.5rem'
+                marginBottom: '0.75rem'
               }}>
-                Research Methodology *
+                🔬 Research Field
               </label>
-              <textarea
-                value={formData.methodology}
-                onChange={(e) => handleInputChange('methodology', e.target.value)}
-                placeholder="Describe your research approach: quantitative, qualitative, mixed methods, experimental design, etc."
-                rows={5}
+              <select
+                value={formData.field}
+                onChange={(e) => handleInputChange('field', e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                  resize: 'vertical'
+                  padding: '1rem',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '0.5rem',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  backgroundColor: 'white',
+                  cursor: 'pointer'
                 }}
-              />
+              >
+                {researchFields.map((field) => (
+                  <option key={field.value} value={field.value}>
+                    {field.label}
+                  </option>
+                ))}
+              </select>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                marginTop: '0.5rem'
+              }}>
+                This helps us provide relevant research guidance and templates.
+              </p>
             </div>
 
             {/* Timeline */}
-            <div style={{marginBottom: '2rem'}}>
+            <div>
               <label style={{
                 display: 'block',
-                fontSize: '0.875rem',
+                fontSize: '1rem',
                 fontWeight: '600',
                 color: '#374151',
-                marginBottom: '0.5rem'
+                marginBottom: '0.75rem'
               }}>
-                Project Timeline *
+                ⏰ Expected Timeline
               </label>
               <select
                 value={formData.timeline}
                 onChange={(e) => handleInputChange('timeline', e.target.value)}
                 style={{
                   width: '100%',
-                  padding: '0.75rem',
-                  border: '1px solid #d1d5db',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                  backgroundColor: 'white'
+                  padding: '1rem',
+                  border: '2px solid #e5e7eb',
+                  borderRadius: '0.5rem',
+                  fontSize: '1rem',
+                  outline: 'none',
+                  backgroundColor: 'white',
+                  cursor: 'pointer'
                 }}
               >
-                <option value="">Select timeline...</option>
-                <option value="1-month">1 Month</option>
-                <option value="2-months">2 Months</option>
-                <option value="3-months">3 Months</option>
-                <option value="6-months">6 Months</option>
-                <option value="1-year">1 Year</option>
-                <option value="custom">Custom</option>
+                {timelineOptions.map((option) => (
+                  <option key={option.value} value={option.value}>
+                    {option.label}
+                  </option>
+                ))}
               </select>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                marginTop: '0.5rem'
+              }}>
+                This helps us create appropriate milestones and deadlines.
+              </p>
             </div>
           </div>
-        )}
 
-        {/* Navigation Buttons */}
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          marginTop: '2rem'
-        }}>
-          <button
-            onClick={handleBack}
-            disabled={step === 1}
-            style={{
-              padding: '0.75rem 1.5rem',
-              backgroundColor: step === 1 ? '#f3f4f6' : 'white',
-              color: step === 1 ? '#9ca3af' : '#374151',
-              border: '1px solid #d1d5db',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              fontWeight: '600',
-              cursor: step === 1 ? 'not-allowed' : 'pointer'
-            }}
-          >
-            ← Back
-          </button>
-
-          {step < 3 ? (
+          {/* Create Button */}
+          <div style={{
+            marginTop: '2.5rem',
+            paddingTop: '2rem',
+            borderTop: '1px solid #e5e7eb'
+          }}>
             <button
-              onClick={handleNext}
-              disabled={!isStepValid()}
+              onClick={handleCreateProject}
+              disabled={!isFormValid || isCreating}
               style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: isStepValid() ? '#2563eb' : '#9ca3af',
+                width: '100%',
+                padding: '1rem 2rem',
+                backgroundColor: isFormValid && !isCreating ? '#2563eb' : '#9ca3af',
                 color: 'white',
                 border: 'none',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem',
+                borderRadius: '0.5rem',
+                fontSize: '1.125rem',
                 fontWeight: '600',
-                cursor: isStepValid() ? 'pointer' : 'not-allowed'
+                cursor: isFormValid && !isCreating ? 'pointer' : 'not-allowed',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                gap: '0.75rem'
               }}
               onMouseEnter={(e) => {
-                if (isStepValid()) {
+                if (isFormValid && !isCreating) {
                   (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
                 }
               }}
               onMouseLeave={(e) => {
-                if (isStepValid()) {
+                if (isFormValid && !isCreating) {
                   (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
                 }
               }}
             >
-              Next →
+              {isCreating ? (
+                <>
+                  <span style={{ fontSize: '1rem' }}>⏳</span>
+                  Creating Your Project...
+                </>
+              ) : (
+                <>
+                  <span style={{ fontSize: '1rem' }}>🚀</span>
+                  Create Project & Start Research
+                </>
+              )}
             </button>
-          ) : (
-            <button
-              onClick={handleSubmit}
-              disabled={!isStepValid()}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: isStepValid() ? '#10b981' : '#9ca3af',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.375rem',
+
+            {!isFormValid && (
+              <p style={{
+                textAlign: 'center',
                 fontSize: '0.875rem',
-                fontWeight: '600',
-                cursor: isStepValid() ? 'pointer' : 'not-allowed'
-              }}
-              onMouseEnter={(e) => {
-                if (isStepValid()) {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#059669';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (isStepValid()) {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#10b981';
-                }
-              }}
-            >
-              🚀 Create Project
-            </button>
-          )}
+                color: '#dc2626',
+                marginTop: '0.75rem'
+              }}>
+                Please fill in the required fields (marked with *) to continue.
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Help Section */}
+        <div style={{
+          marginTop: '2rem',
+          textAlign: 'center'
+        }}>
+          <p style={{
+            fontSize: '0.875rem',
+            color: '#6b7280'
+          }}>
+            💡 <strong>Pro tip:</strong> Don't worry about getting everything perfect.
+            You can refine your research question and add more details as you work through the literature review and methodology phases.
+          </p>
         </div>
       </main>
     </div>

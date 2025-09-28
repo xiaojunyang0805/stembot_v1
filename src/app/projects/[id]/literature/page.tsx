@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../providers/AuthProvider';
+import ResearchLayout from '../../../../components/layout/ResearchLayout';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -19,6 +20,31 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
   const [selectedTab, setSelectedTab] = useState('upload');
 
   const userName = user?.email?.split('@')[0] || 'Research User';
+
+  const memoryHints = [
+    {
+      id: 'hint-1',
+      title: 'Research Gap Identified',
+      content: 'Limited studies on undergraduate populations compared to older adults in sleep-memory research',
+      type: 'insight' as const,
+      confidence: 0.92
+    },
+    {
+      id: 'hint-2',
+      title: 'Methodology Trend',
+      content: 'Most recent studies (2023-2024) use cross-sectional designs with validated sleep questionnaires',
+      type: 'suggestion' as const,
+      confidence: 0.88
+    }
+  ];
+
+  // Convert AuthUser to User format expected by ResearchLayout
+  const layoutUser = user ? {
+    id: user.id,
+    name: user.email?.split('@')[0] || 'Researcher',
+    email: user.email || '',
+    avatar: undefined
+  } : undefined;
 
   const mockAnalysis = {
     keyThemes: [
@@ -65,81 +91,87 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
   };
 
   return (
-    <div style={{minHeight: '100vh', backgroundColor: '#ffffff'}}>
-      {/* Professional Header */}
-      <header style={{
-        backgroundColor: 'white',
-        borderBottom: '1px solid #e5e7eb',
-        padding: '1rem 2rem',
-        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+    <ResearchLayout
+      currentPhase="literature"
+      projectTitle="Sleep & Memory Research Study"
+      projectId={params.id}
+      user={layoutUser}
+      memoryHints={memoryHints}
+    >
+      <div style={{
+        padding: '2rem',
+        maxWidth: '1200px',
+        margin: '0 auto'
       }}>
+        {/* Navigation Banner */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          maxWidth: '1400px',
-          margin: '0 auto'
+          backgroundColor: '#f8fafc',
+          borderBottom: '1px solid #e5e7eb',
+          padding: '1rem 2rem',
+          marginBottom: '2rem',
+          borderRadius: '0.5rem'
         }}>
-          {/* Navigation */}
-          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-            <button
-              onClick={() => router.push(`/projects/${params.id}`)}
-              style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                backgroundColor: 'transparent',
-                border: 'none',
-                color: '#6b7280',
-                fontSize: '0.875rem',
-                cursor: 'pointer',
-                padding: '0.5rem'
-              }}
-              onMouseEnter={(e) => { (e.target as HTMLElement).style.color = '#2563eb'; }}
-              onMouseLeave={(e) => { (e.target as HTMLElement).style.color = '#6b7280'; }}
-            >
-              ← Back to Project
-            </button>
-            <div style={{
-              fontSize: '1.25rem',
-              fontWeight: 'bold',
-              color: '#111827'
-            }}>
-              📚 Literature Review
-            </div>
-            <span style={{
-              backgroundColor: '#dbeafe',
-              color: '#1e40af',
-              padding: '0.25rem 0.75rem',
-              borderRadius: '9999px',
-              fontSize: '0.75rem',
-              fontWeight: '500'
-            }}>
-              Sleep & Memory Study
-            </span>
-          </div>
-
-          {/* User Profile */}
-          <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-            <div style={{
-              padding: '0.5rem 1rem',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '0.375rem',
-              fontSize: '0.875rem',
-              color: '#374151'
-            }}>
-              {userName}
-            </div>
+          <div style={{
+            display: 'flex',
+            gap: '0.5rem'
+          }}>
+            {[
+              { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, active: false },
+              { id: 'literature', label: 'Literature Review', path: `/projects/${params.id}/literature`, active: true },
+              { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, active: false },
+              { id: 'writing', label: 'Academic Writing', path: `/projects/${params.id}/writing`, active: false }
+            ].map((nav) => (
+              <button
+                key={nav.id}
+                onClick={() => nav.active ? null : router.push(nav.path)}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: nav.active ? '#2563eb' : 'white',
+                  color: nav.active ? 'white' : '#6b7280',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: nav.active ? 'default' : 'pointer',
+                  opacity: nav.active ? 1 : 0.8
+                }}
+                onMouseEnter={(e) => {
+                  if (!nav.active) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!nav.active) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = 'white';
+                  }
+                }}
+              >
+                {nav.label}
+              </button>
+            ))}
           </div>
         </div>
-      </header>
 
-      {/* Main Content */}
-      <main style={{
-        maxWidth: '1400px',
-        margin: '0 auto',
-        padding: '2rem'
-      }}>
+        <div style={{
+          marginBottom: '2rem'
+        }}>
+          <h1 style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#111827',
+            marginBottom: '0.5rem'
+          }}>
+            📚 Literature Review & Source Analysis
+          </h1>
+          <p style={{
+            fontSize: '1rem',
+            color: '#6b7280',
+            lineHeight: '1.5'
+          }}>
+            Systematically review existing research to identify gaps, themes, and methodological approaches.
+            Our AI helps you synthesize findings and build a comprehensive foundation for your study.
+          </p>
+        </div>
         {/* Tab Navigation */}
         <div style={{
           display: 'flex',
@@ -563,7 +595,7 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
             </div>
           </div>
         )}
-      </main>
-    </div>
+      </div>
+    </ResearchLayout>
   );
 }
