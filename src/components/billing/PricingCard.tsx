@@ -32,7 +32,7 @@ export function PricingCard({
     return new Intl.NumberFormat('en-EU', {
       style: 'currency',
       currency: currency.toUpperCase(),
-    }).format(price / 100);
+    }).format(price);
   };
 
   const getIcon = () => {
@@ -154,7 +154,7 @@ export function PricingCard({
           <span>
             {tier.limits.maxFileSize === -1
               ? 'Unlimited file size'
-              : `${Math.round(tier.limits.maxFileSize / (1024 * 1024))}MB max file size`
+              : `${tier.limits.maxFileSize}MB max file size`
             }
           </span>
         </div>

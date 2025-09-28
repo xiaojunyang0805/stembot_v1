@@ -14,54 +14,35 @@ export const plans = [
     id: 'free',
     name: 'Free',
     price: 0,
-    currency: 'USD',
+    currency: 'EUR',
     interval: 'month',
+    trialDays: 7,
     features: {
-      projects: 3,
-      aiInteractions: 100,
+      projects: 1,
+      aiInteractions: 50,
       memoryType: 'basic',
       support: 'community',
       exportFormats: ['pdf'],
       collaboration: false,
       adminDashboard: false,
-      usageAnalytics: false
+      usageAnalytics: false,
+      advancedMemory: false
     },
     limits: {
-      maxProjects: 3,
-      monthlyAiInteractions: 100,
-      maxSourcesPerProject: 10,
-      maxFileSize: 5
+      maxProjects: 1,
+      monthlyAiInteractions: 50,
+      maxSourcesPerProject: 5,
+      maxFileSize: 5,
+      memoryRetention: 30 // days
     }
   },
   {
     id: 'pro_monthly',
-    name: 'Pro Monthly',
-    price: 19,
-    currency: 'USD',
-    interval: 'month',
-    features: {
-      projects: 'unlimited',
-      aiInteractions: 'unlimited',
-      memoryType: 'advanced',
-      support: 'priority',
-      exportFormats: ['pdf', 'docx', 'latex'],
-      collaboration: true,
-      adminDashboard: false,
-      usageAnalytics: true
-    },
-    limits: {
-      maxProjects: -1,
-      monthlyAiInteractions: -1,
-      maxSourcesPerProject: 100,
-      maxFileSize: 50
-    }
-  },
-  {
-    id: 'pro_annual',
-    name: 'Pro Annual',
+    name: 'Pro',
     price: 15,
-    currency: 'USD',
+    currency: 'EUR',
     interval: 'month',
+    trialDays: 7,
     features: {
       projects: 'unlimited',
       aiInteractions: 'unlimited',
@@ -71,48 +52,84 @@ export const plans = [
       collaboration: true,
       adminDashboard: false,
       usageAnalytics: true,
-      savings: '17%'
+      advancedMemory: true,
+      prioritySupport: true
     },
     limits: {
       maxProjects: -1,
       monthlyAiInteractions: -1,
       maxSourcesPerProject: 100,
-      maxFileSize: 50
+      maxFileSize: 50,
+      memoryRetention: -1 // unlimited
+    }
+  },
+  {
+    id: 'pro_annual',
+    name: 'Pro Annual',
+    price: 10, // €120/year = €10/month equivalent
+    yearlyPrice: 120,
+    currency: 'EUR',
+    interval: 'year',
+    trialDays: 7,
+    features: {
+      projects: 'unlimited',
+      aiInteractions: 'unlimited',
+      memoryType: 'advanced',
+      support: 'priority',
+      exportFormats: ['pdf', 'docx', 'latex'],
+      collaboration: true,
+      adminDashboard: false,
+      usageAnalytics: true,
+      advancedMemory: true,
+      prioritySupport: true,
+      savings: '33% off (2 months free)'
+    },
+    limits: {
+      maxProjects: -1,
+      monthlyAiInteractions: -1,
+      maxSourcesPerProject: 100,
+      maxFileSize: 50,
+      memoryRetention: -1
     }
   },
   {
     id: 'student_monthly',
-    name: 'Student Monthly',
-    price: 9,
-    currency: 'USD',
+    name: 'Student',
+    price: 10,
+    currency: 'EUR',
     interval: 'month',
+    trialDays: 7,
     features: {
-      projects: 10,
+      projects: 'unlimited',
       aiInteractions: 'unlimited',
       memoryType: 'advanced',
       support: 'standard',
       exportFormats: ['pdf', 'docx'],
       collaboration: true,
       adminDashboard: false,
-      usageAnalytics: false
+      usageAnalytics: false,
+      advancedMemory: true,
+      discount: 'Student discount'
     },
     limits: {
-      maxProjects: 10,
+      maxProjects: -1,
       monthlyAiInteractions: -1,
       maxSourcesPerProject: 50,
-      maxFileSize: 25
+      maxFileSize: 25,
+      memoryRetention: -1
     },
     requirements: {
       universityEmail: true,
-      verification: 'Student verification required'
+      verification: 'University email verification required'
     }
   },
   {
     id: 'department_license',
     name: 'Department License',
-    price: 499,
-    currency: 'USD',
-    interval: 'month',
+    price: 42, // €500/year = ~€42/month
+    yearlyPrice: 500,
+    currency: 'EUR',
+    interval: 'year',
     features: {
       projects: 'unlimited',
       aiInteractions: 'unlimited',
@@ -123,21 +140,26 @@ export const plans = [
       adminDashboard: true,
       usageAnalytics: true,
       customBranding: false,
-      seats: 100
+      seats: 50,
+      bulkManagement: true,
+      dedicatedSupport: true
     },
     limits: {
       maxProjects: -1,
       monthlyAiInteractions: -1,
       maxSourcesPerProject: 500,
-      maxFileSize: 100
+      maxFileSize: 100,
+      memoryRetention: -1,
+      maxUsers: 50
     }
   },
   {
     id: 'institution_license',
     name: 'Institution License',
-    price: 999,
-    currency: 'USD',
-    interval: 'month',
+    price: 167, // €2000/year = ~€167/month
+    yearlyPrice: 2000,
+    currency: 'EUR',
+    interval: 'year',
     features: {
       projects: 'unlimited',
       aiInteractions: 'unlimited',
@@ -149,13 +171,18 @@ export const plans = [
       usageAnalytics: true,
       customBranding: true,
       sso: true,
-      seats: 'unlimited'
+      seats: 'unlimited',
+      bulkManagement: true,
+      dedicatedSupport: true,
+      customIntegrations: true
     },
     limits: {
       maxProjects: -1,
       monthlyAiInteractions: -1,
       maxSourcesPerProject: 1000,
-      maxFileSize: 500
+      maxFileSize: 500,
+      memoryRetention: -1,
+      maxUsers: -1
     }
   }
 ];

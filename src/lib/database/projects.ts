@@ -1,4 +1,5 @@
 import { supabase } from '../supabase'
+import { UsageTracker } from '../usage-tracking'
 import type { Database, ProjectInsert, ProjectUpdate, Project } from '../../types/database'
 
 // Create a new project
@@ -36,6 +37,24 @@ export async function createProject(projectData: {
     if (!useMocks && (authError || !user)) {
       console.error('❌ Authentication failed:', authError)
       return { data: null, error: authError || new Error('User not authenticated') }
+    }
+
+    // Check usage limits before creating project
+    if (!useMocks) {
+      try {
+        const usageTracker = new UsageTracker(user.id)
+        const canCreate = await usageTracker.canPerformAction('create_project')
+
+        if (!canCreate.allowed) {
+          console.error('❌ Project creation blocked:', canCreate.reason)
+          return {
+            data: null,
+            error: new Error(canCreate.reason || 'Project limit reached')
+          }
+        }
+      } catch (usageError) {
+        console.warn('⚠️ Usage tracking failed, allowing project creation:', usageError)
+      }
     }
 
     // Prepare project data
@@ -93,6 +112,19 @@ export async function createProject(projectData: {
       }
 
       console.log('✅ Mock project created:', mockProject)
+
+      // Track usage for mock mode
+      try {
+        const usageTracker = new UsageTracker(user.id)
+        await usageTracker.trackUsage('project_created', {
+          projectId: mockProject.id,
+          title: projectData.title,
+          field: projectData.field
+        })
+      } catch (usageError) {
+        console.warn('⚠️ Failed to track project creation usage:', usageError)
+      }
+
       return { data: mockProject, error: null }
     }
 
@@ -105,6 +137,21 @@ export async function createProject(projectData: {
       .single()
 
     console.log('💾 Database insert result:', { data, error })
+
+    // Track usage for successful real project creation
+    if (data && !error) {
+      try {
+        const usageTracker = new UsageTracker(user.id)
+        await usageTracker.trackUsage('project_created', {
+          projectId: data.id,
+          title: projectData.title,
+          field: projectData.field
+        })
+      } catch (usageError) {
+        console.warn('⚠️ Failed to track project creation usage:', usageError)
+      }
+    }
+
     return { data, error }
   } catch (error) {
     console.error('💥 Error creating project:', error)
