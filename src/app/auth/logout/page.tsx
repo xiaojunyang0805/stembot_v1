@@ -1,29 +1,31 @@
 'use client';
 
 import { useEffect } from 'react';
-
 import { useRouter } from 'next/navigation';
-// Mock import for UI-only components
+import { useAuth } from '../../../providers/AuthProvider';
 
 export default function LogoutPage() {
   const router = useRouter();
+  const { signOut } = useAuth();
 
   useEffect(() => {
     const handleLogout = async () => {
       try {
-        // Mock logout for UI-only demo
-        await new Promise(resolve => setTimeout(resolve, 1000));
-        // Redirect to home page after mock logout
+        console.log('🚪 Logging out user...');
+        // Call the actual signOut method from AuthProvider
+        await signOut();
+        console.log('✅ Logout successful, redirecting to home');
+        // Redirect to home page after logout
         router.push('/');
       } catch (error) {
-        console.error('Error signing out:', error);
+        console.error('❌ Error signing out:', error);
         // Still redirect to home even if there's an error
         router.push('/');
       }
     };
 
     handleLogout();
-  }, [router]);
+  }, [router, signOut]);
 
   return (
     <div style={{

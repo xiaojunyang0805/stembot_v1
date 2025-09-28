@@ -3,6 +3,8 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
+import { getProject } from '../../../lib/database/projects';
+import type { Project } from '../../../types/database';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -18,6 +20,9 @@ interface Message {
 export default function ProjectWorkspace({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
+  const [project, setProject] = useState<Project | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState('');
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -42,39 +47,95 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  // Mock project data
-  const projectData = {
-    id: params.id,
-    title: 'Sleep & Memory Study',
-    question: 'How does sleep deprivation affect memory consolidation in undergraduate students compared to older adults?',
-    phase: 'Literature Review',
+  // Fetch project data
+  useEffect(() => {
+    const fetchProjectData = async () => {
+      if (!user) return;
+
+      try {
+        setLoading(true);
+        const { data, error } = await getProject(params.id);
+
+        if (error) {
+          console.error('Error fetching project:', error);
+          setError('Failed to load project');
+        } else if (data) {
+          setProject(data);
+          // Update initial messages with project-specific content
+          setMessages([
+            {
+              id: '1',
+              role: 'ai',
+              content: `Welcome back to your project "${data.title}". I'm here to help you with your ${data.current_phase} phase. What would you like to work on today?`,
+              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            }
+          ]);
+        } else {
+          setError('Project not found');
+        }
+      } catch (err) {
+        console.error('Error fetching project:', err);
+        setError('Failed to load project');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProjectData();
+  }, [user, params.id]);
+
+  // Dynamic project data based on fetched project
+  const projectData = project ? {
+    id: project.id,
+    title: project.title,
+    question: project.research_question,
+    phase: (() => {
+      switch (project.current_phase) {
+        case 'question': return 'Question Formation';
+        case 'literature': return 'Literature Review';
+        case 'methodology': return 'Methodology';
+        case 'writing': return 'Academic Writing';
+        default: return 'Active';
+      }
+    })(),
     progress: {
-      question: { status: 'completed', percentage: 100 },
-      literature: { status: 'active', percentage: 65 },
-      methodology: { status: 'pending', percentage: 0 },
-      writing: { status: 'pending', percentage: 0 }
+      question: {
+        status: project.current_phase === 'question' ? 'active' :
+                project.progress_data && (project.progress_data as any).question?.completed ? 'completed' : 'pending',
+        percentage: project.progress_data ? (project.progress_data as any).question?.progress || 0 : 0
+      },
+      literature: {
+        status: project.current_phase === 'literature' ? 'active' :
+                project.progress_data && (project.progress_data as any).literature?.completed ? 'completed' : 'pending',
+        percentage: project.progress_data ? (project.progress_data as any).literature?.progress || 0 : 0
+      },
+      methodology: {
+        status: project.current_phase === 'methodology' ? 'active' :
+                project.progress_data && (project.progress_data as any).methodology?.completed ? 'completed' : 'pending',
+        percentage: project.progress_data ? (project.progress_data as any).methodology?.progress || 0 : 0
+      },
+      writing: {
+        status: project.current_phase === 'writing' ? 'active' :
+                project.progress_data && (project.progress_data as any).writing?.completed ? 'completed' : 'pending',
+        percentage: project.progress_data ? (project.progress_data as any).writing?.progress || 0 : 0
+      }
     },
     sources: [
-      { name: 'Smith (2024)', type: 'pdf' },
-      { name: 'Johnson et al. (2023)', type: 'pdf' },
-      { name: 'Chen & Williams (2024)', type: 'pdf' },
-      { name: 'Taylor Research (2023)', type: 'pdf' },
-      { name: 'Brown Study (2024)', type: 'pdf' }
+      { name: 'Research sources will appear here', type: 'pdf' }
     ],
     documents: [
-      { name: 'Lab_notes.pdf', size: '2.3 MB', type: 'pdf' },
-      { name: 'Data.xlsx', size: '1.1 MB', type: 'excel' }
+      { name: 'Project documents will appear here', size: '0 MB', type: 'pdf' }
     ],
     memory: {
-      lastSession: 'Last week you mentioned wanting to focus on undergraduate-specific studies. Your literature search strategy has been effective.',
+      lastSession: `Working on "${project.title}" - ${project.current_phase} phase`,
       contextHints: [
-        'Your question has evolved 3 times - good progress!',
-        '2 methodology gaps identified from your sources',
-        'Statistical power calculation needed for sample size',
-        'Consider ethics approval timeline for your institution'
+        `Current phase: ${project.current_phase}`,
+        `Project created: ${new Date(project.created_at).toLocaleDateString()}`,
+        `Subject: ${project.subject}`,
+        'Continue your research with AI guidance'
       ]
     }
-  };
+  } : null;
 
   const handleSendMessage = () => {
     if (!message.trim()) return;
@@ -117,6 +178,80 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     if (isActive) return '◉';
     return '◯';
   };
+
+  // Show loading state
+  if (loading) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffffff'
+      }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '48px',
+            height: '48px',
+            border: '4px solid #f3f4f6',
+            borderTop: '4px solid #3b82f6',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 16px'
+          }}></div>
+          <p style={{ color: '#6b7280', fontSize: '14px' }}>Loading project...</p>
+        </div>
+        <style jsx>{`
+          @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Show error state
+  if (error) {
+    return (
+      <div style={{
+        minHeight: '100vh',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        backgroundColor: '#ffffff'
+      }}>
+        <div style={{ textAlign: 'center', maxWidth: '400px', padding: '2rem' }}>
+          <div style={{ fontSize: '48px', marginBottom: '16px' }}>❌</div>
+          <h1 style={{ fontSize: '24px', fontWeight: 'bold', color: '#dc2626', marginBottom: '8px' }}>
+            {error}
+          </h1>
+          <p style={{ color: '#6b7280', marginBottom: '16px' }}>
+            The project you're looking for doesn't exist or you don't have access to it.
+          </p>
+          <button
+            onClick={() => router.push('/dashboard')}
+            style={{
+              padding: '12px 24px',
+              backgroundColor: '#3b82f6',
+              color: 'white',
+              border: 'none',
+              borderRadius: '8px',
+              fontSize: '14px',
+              cursor: 'pointer'
+            }}
+          >
+            Back to Dashboard
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  // Show nothing if project data isn't loaded yet
+  if (!projectData) {
+    return null;
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column' }}>
