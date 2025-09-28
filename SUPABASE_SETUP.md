@@ -1,21 +1,46 @@
 # 🚀 StemBot Supabase Database Setup
 
-## Quick Start Guide
+## 🚨 Current Status: Database Not Connected
 
-### Option 1: Automated Setup (Recommended)
-Run the setup script to automatically create all database tables:
+**Issue:** The project creation is failing because the Supabase credentials are invalid.
+**Status:** Currently running in **mock mode** for development.
 
-```bash
-npm run db:setup
-```
+## Quick Start Options
 
-### Option 2: Manual Setup via Supabase Dashboard
+### Option 1: Create New Supabase Project (Recommended for Production)
 
-1. **Go to your Supabase Dashboard**: https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq
-2. **Navigate to SQL Editor** (left sidebar)
-3. **Copy the migration file**: Open `supabase/migrations/001_create_research_database.sql`
-4. **Paste and execute** the SQL code in the Supabase SQL Editor
-5. **Verify setup** by checking the Tables section
+1. **Create a new Supabase project:**
+   - Go to [supabase.com](https://supabase.com)
+   - Click "New Project"
+   - Name: `stembot-mvp`
+   - Choose region and database password
+
+2. **Get your credentials:**
+   - Go to Settings → API
+   - Copy the **Project URL** and **anon public key**
+
+3. **Update your environment variables:**
+   ```bash
+   # Create/update .env.local
+   NEXT_PUBLIC_SUPABASE_URL=your-new-project-url
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-new-anon-key
+   NEXT_PUBLIC_INTEGRATION_METHOD=env-based
+   NEXT_PUBLIC_USE_MOCKS=false
+   ```
+
+4. **Run the database migration:**
+   - Go to Supabase Dashboard → SQL Editor
+   - Copy content from `supabase/migrations/001_create_research_database.sql`
+   - Paste and execute in SQL Editor
+
+### Option 2: Continue with Mock Mode (Development)
+
+The app is currently running with mock data. This is perfect for:
+- UI/UX testing
+- Frontend development
+- Demonstrating functionality
+
+To keep using mocks, no action needed! The `.env.local` is already configured.
 
 ## ✅ What Gets Created
 

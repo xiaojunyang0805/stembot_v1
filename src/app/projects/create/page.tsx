@@ -56,7 +56,29 @@ export default function CreateProjectPage() {
     setIsCreating(true);
 
     try {
-      // Create project in Supabase
+      // Check if we should use mocks (fallback for development)
+      const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' ||
+                      process.env.NEXT_PUBLIC_INTEGRATION_METHOD === 'mock';
+
+      if (useMocks) {
+        // Mock project creation for development
+        console.log('🎭 Using mock project creation (development mode)');
+        const mockProject = {
+          id: `mock-${Date.now()}`,
+          title: formData.title,
+          researchQuestion: formData.researchQuestion,
+          field: formData.field,
+          timeline: formData.timeline
+        };
+
+        setTimeout(() => {
+          console.log('Mock project created:', mockProject);
+          router.push(`/projects/${mockProject.id}`);
+        }, 1500);
+        return;
+      }
+
+      // Try real Supabase project creation
       const { data: project, error } = await createProject({
         title: formData.title,
         researchQuestion: formData.researchQuestion,
@@ -66,13 +88,36 @@ export default function CreateProjectPage() {
 
       if (error) {
         console.error('Failed to create project:', error);
-        alert('Failed to create project. Please try again.');
+
+        // If Supabase fails, check if we should fallback to mocks
+        if (process.env.NEXT_PUBLIC_FALLBACK_TO_MOCKS === 'true') {
+          console.log('🎭 Falling back to mock project creation');
+          const mockProject = {
+            id: `mock-fallback-${Date.now()}`,
+            title: formData.title,
+            researchQuestion: formData.researchQuestion,
+            field: formData.field,
+            timeline: formData.timeline
+          };
+
+          setTimeout(() => {
+            console.log('Fallback mock project created:', mockProject);
+            router.push(`/projects/${mockProject.id}`);
+          }, 1500);
+          return;
+        }
+
+        // Show specific error messages
+        if (error.message?.includes('Invalid API key')) {
+          alert('⚠️ Database not configured. Please set up Supabase or enable mock mode. See SUPABASE_SETUP.md for instructions.');
+        } else {
+          alert(`Failed to create project: ${error.message || 'Please try again.'}`);
+        }
         return;
       }
 
       if (project) {
         console.log('Project created successfully:', project);
-        // Redirect to the new project workspace
         router.push(`/projects/${project.id}`);
       } else {
         alert('Failed to create project. Please try again.');

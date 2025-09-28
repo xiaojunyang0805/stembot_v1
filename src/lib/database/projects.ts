@@ -9,10 +9,14 @@ export async function createProject(projectData: {
   timeline: string
 }): Promise<{ data: Project | null; error: any }> {
   try {
+    console.log('🚀 Starting project creation...', projectData)
+
     // Get current user
     const { data: { user }, error: authError } = await supabase.auth.getUser()
+    console.log('👤 Auth check:', { user: user?.id, authError })
 
     if (authError || !user) {
+      console.error('❌ Authentication failed:', authError)
       return { data: null, error: authError || new Error('User not authenticated') }
     }
 
@@ -38,6 +42,8 @@ export async function createProject(projectData: {
       }
     }
 
+    console.log('📝 Project data prepared:', newProject)
+
     // Insert project
     const { data, error } = await supabase
       .from('projects')
@@ -45,9 +51,10 @@ export async function createProject(projectData: {
       .select()
       .single()
 
+    console.log('💾 Database insert result:', { data, error })
     return { data, error }
   } catch (error) {
-    console.error('Error creating project:', error)
+    console.error('💥 Error creating project:', error)
     return { data: null, error }
   }
 }
