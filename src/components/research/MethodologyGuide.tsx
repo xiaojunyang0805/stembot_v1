@@ -213,7 +213,7 @@ export default function MethodologyGuide({
             fontSize: '0.75rem',
             fontWeight: '600'
           }}>
-            AI-Powered Design Review
+            AI-Powered Design Review v2.1
           </div>
         </div>
 
