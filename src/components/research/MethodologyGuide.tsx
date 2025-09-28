@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import { generateMockAIResponse, simulateAITypingDelay } from '@/lib/mockAI';
 
 interface MethodologyStep {
   id: string;
@@ -174,7 +173,8 @@ export default function MethodologyGuide({
 
   const handleRunValidation = async () => {
     setIsAnalyzing(true);
-    await simulateAITypingDelay();
+    // Simulate AI processing delay
+    await new Promise(resolve => setTimeout(resolve, 1500));
     setDetectedFlaws(mockDesignFlaws);
     setIsAnalyzing(false);
   };
