@@ -1,8 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../providers/AuthProvider';
+import { getUserProjects } from '../../lib/database/projects';
+import type { Project } from '../../types/database';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -13,8 +15,35 @@ export default function DashboardPage() {
   const router = useRouter();
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
 
-  // Mock data for professional UI (no AI backend needed)
+  // Fetch user projects from Supabase
+  useEffect(() => {
+    const fetchProjects = async () => {
+      if (!user) return;
+
+      try {
+        const { data, error } = await getUserProjects();
+        if (error) {
+          console.error('Error fetching projects:', error);
+          // Fall back to mock data if there's an error
+          setProjects([]);
+        } else {
+          setProjects(data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching projects:', error);
+        setProjects([]);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchProjects();
+  }, [user]);
+
+  // Mock data for professional UI (fallback when no projects exist)
   const mockProjects = [
     {
       id: '1',
@@ -329,7 +358,7 @@ export default function DashboardPage() {
           gap: '1.5rem',
           marginBottom: '2rem'
         }}>
-          {mockProjects.map((project) => (
+          {(projects.length > 0 ? projects : mockProjects).map((project) => (
             <div
               key={project.id}
               style={{
@@ -363,19 +392,34 @@ export default function DashboardPage() {
                   color: '#111827',
                   margin: 0
                 }}>
-                  {project.title}
+                  {('current_phase' in project) ? `${project.subject_emoji || '📊'} ${project.title}` : project.title}
                 </h3>
                 <span style={{
-                  backgroundColor: project.phase === 'Literature Review' ? '#dbeafe' :
-                                   project.phase === 'Data Analysis' ? '#fef3c7' : '#f3e8ff',
-                  color: project.phase === 'Literature Review' ? '#1e40af' :
-                         project.phase === 'Data Analysis' ? '#92400e' : '#6b21a8',
+                  backgroundColor: (('current_phase' in project) ?
+                    (project.current_phase === 'question' ? '#eff6ff' :
+                     project.current_phase === 'literature' ? '#dbeafe' :
+                     project.current_phase === 'methodology' ? '#f3e8ff' :
+                     project.current_phase === 'writing' ? '#fef3c7' : '#f3f4f6') :
+                    (project.phase === 'Literature Review' ? '#dbeafe' :
+                     project.phase === 'Data Analysis' ? '#fef3c7' : '#f3e8ff')),
+                  color: (('current_phase' in project) ?
+                    (project.current_phase === 'question' ? '#2563eb' :
+                     project.current_phase === 'literature' ? '#1e40af' :
+                     project.current_phase === 'methodology' ? '#6b21a8' :
+                     project.current_phase === 'writing' ? '#92400e' : '#6b7280') :
+                    (project.phase === 'Literature Review' ? '#1e40af' :
+                     project.phase === 'Data Analysis' ? '#92400e' : '#6b21a8')),
                   padding: '0.25rem 0.75rem',
                   borderRadius: '9999px',
                   fontSize: '0.75rem',
                   fontWeight: '500'
                 }}>
-                  {project.phase}
+                  {('current_phase' in project) ?
+                    (project.current_phase === 'question' ? 'Question Formation' :
+                     project.current_phase === 'literature' ? 'Literature Review' :
+                     project.current_phase === 'methodology' ? 'Methodology' :
+                     project.current_phase === 'writing' ? 'Academic Writing' : 'Active') :
+                    project.phase}
                 </span>
               </div>
 
@@ -397,7 +441,13 @@ export default function DashboardPage() {
                     fontWeight: '600',
                     color: '#111827'
                   }}>
-                    {project.progress}%
+                    {(() => {
+                      if ('current_phase' in project && project.progress_data) {
+                        const progressData = project.progress_data as any;
+                        return progressData[project.current_phase]?.progress || 0;
+                      }
+                      return (project as any).progress || 0;
+                    })()}%
                   </span>
                 </div>
                 <div style={{
@@ -408,10 +458,24 @@ export default function DashboardPage() {
                   overflow: 'hidden'
                 }}>
                   <div style={{
-                    width: `${project.progress}%`,
+                    width: `${(() => {
+                      if ('current_phase' in project && project.progress_data) {
+                        const progressData = project.progress_data as any;
+                        return progressData[project.current_phase]?.progress || 0;
+                      }
+                      return (project as any).progress || 0;
+                    })()}%`,
                     height: '100%',
-                    backgroundColor: project.progress >= 70 ? '#10b981' :
-                                     project.progress >= 40 ? '#f59e0b' : '#ef4444',
+                    backgroundColor: (() => {
+                      const progress = (() => {
+                        if ('current_phase' in project && project.progress_data) {
+                          const progressData = project.progress_data as any;
+                          return progressData[project.current_phase]?.progress || 0;
+                        }
+                        return (project as any).progress || 0;
+                      })();
+                      return progress >= 70 ? '#10b981' : progress >= 40 ? '#f59e0b' : '#ef4444';
+                    })(),
                     transition: 'width 0.3s ease'
                   }} />
                 </div>
@@ -422,7 +486,12 @@ export default function DashboardPage() {
                 color: '#6b7280',
                 marginBottom: '0.75rem'
               }}>
-                Due: {project.dueDate}
+                Due: {(() => {
+                  if ('due_date' in project && project.due_date) {
+                    return new Date(project.due_date).toLocaleDateString();
+                  }
+                  return (project as any).dueDate || 'No due date';
+                })()}
               </div>
 
               <div style={{
@@ -433,7 +502,18 @@ export default function DashboardPage() {
                 borderRadius: '0.25rem',
                 borderLeft: '3px solid #2563eb'
               }}>
-                🎯 Next: {project.nextStep}
+                🎯 Next: {(() => {
+                  if ('current_phase' in project) {
+                    switch (project.current_phase) {
+                      case 'question': return 'Define your research question';
+                      case 'literature': return 'Conduct literature review';
+                      case 'methodology': return 'Design methodology';
+                      case 'writing': return 'Write research paper';
+                      default: return 'Continue research';
+                    }
+                  }
+                  return (project as any).nextStep || 'Continue research';
+                })()}
               </div>
             </div>
           ))}

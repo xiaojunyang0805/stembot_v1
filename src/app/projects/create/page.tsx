@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
+import { createProject } from '../../../lib/database/projects';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -55,14 +56,27 @@ export default function CreateProjectPage() {
     setIsCreating(true);
 
     try {
-      // Mock project creation - will be replaced with Supabase integration
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Create project in Supabase
+      const { data: project, error } = await createProject({
+        title: formData.title,
+        researchQuestion: formData.researchQuestion,
+        field: formData.field,
+        timeline: formData.timeline
+      });
 
-      const mockProjectId = 'proj_' + Date.now();
-      console.log('Creating project:', { ...formData, userId: user?.id, projectId: mockProjectId });
+      if (error) {
+        console.error('Failed to create project:', error);
+        alert('Failed to create project. Please try again.');
+        return;
+      }
 
-      // Redirect to the new project workspace
-      router.push(`/projects/${mockProjectId}`);
+      if (project) {
+        console.log('Project created successfully:', project);
+        // Redirect to the new project workspace
+        router.push(`/projects/${project.id}`);
+      } else {
+        alert('Failed to create project. Please try again.');
+      }
     } catch (error) {
       console.error('Failed to create project:', error);
       alert('Failed to create project. Please try again.');
