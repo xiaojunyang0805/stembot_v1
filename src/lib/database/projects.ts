@@ -11,11 +11,29 @@ export async function createProject(projectData: {
   try {
     console.log('🚀 Starting project creation...', projectData)
 
-    // Get current user
-    const { data: { user }, error: authError } = await supabase.auth.getUser()
-    console.log('👤 Auth check:', { user: user?.id, authError })
+    // Check if we're in mock mode
+    const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' ||
+                    process.env.NEXT_PUBLIC_INTEGRATION_METHOD === 'mock'
 
-    if (authError || !user) {
+    let user: any = null
+    let authError: any = null
+
+    if (useMocks) {
+      console.log('🎭 Using mock user for project creation')
+      // Use mock user data that matches the AuthProvider
+      user = {
+        id: 'research-user-id',  // Same ID as in AuthProvider
+        email: 'researcher@stembot.app'
+      }
+    } else {
+      // Try to get real user from Supabase
+      const { data: { user: supabaseUser }, error } = await supabase.auth.getUser()
+      user = supabaseUser
+      authError = error
+      console.log('👤 Real auth check:', { user: user?.id, authError })
+    }
+
+    if (!useMocks && (authError || !user)) {
       console.error('❌ Authentication failed:', authError)
       return { data: null, error: authError || new Error('User not authenticated') }
     }
@@ -44,7 +62,42 @@ export async function createProject(projectData: {
 
     console.log('📝 Project data prepared:', newProject)
 
-    // Insert project
+    // Handle database insertion based on mode
+    if (useMocks) {
+      console.log('🎭 Mock database: Creating project with mock data')
+      // Return mock project data
+      const mockProject: Project = {
+        id: `research-project-${Date.now()}`,
+        user_id: user.id,
+        title: projectData.title,
+        research_question: projectData.researchQuestion,
+        subject: projectData.field,
+        subject_emoji: getSubjectEmoji(projectData.field),
+        status: 'active' as any,
+        current_phase: 'question' as any,
+        due_date: null,
+        memory_context: {},
+        progress_data: {
+          question: { completed: false, progress: 10 },
+          literature: { completed: false, progress: 0, sources_count: 0 },
+          methodology: { completed: false, progress: 0 },
+          writing: { completed: false, progress: 0, word_count: 0 }
+        },
+        metadata: {
+          field: projectData.field,
+          timeline: projectData.timeline,
+          created_from: 'web_app'
+        },
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString()
+      }
+
+      console.log('✅ Mock project created:', mockProject)
+      return { data: mockProject, error: null }
+    }
+
+    // Real database insertion
+    console.log('💾 Real database: Inserting project')
     const { data, error } = await supabase
       .from('projects')
       .insert(newProject)
