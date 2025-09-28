@@ -133,23 +133,7 @@ export default function HomePage() {
   return (
     <>
       <DeploymentDebugger />
-      {/* URGENT DEBUG: Inline styles deployment verification */}
-      <div style={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        backgroundColor: '#dc2626',
-        color: 'white',
-        padding: '8px',
-        textAlign: 'center',
-        zIndex: 9999,
-        fontSize: '14px',
-        fontWeight: 'bold'
-      }}>
-🚨 RED ALERT v17 - Manual deployment test - Should appear immediately!
-      </div>
-      <div style={{minHeight: '100vh', backgroundColor: '#f8fafc', paddingTop: '40px'}}>
+      <div style={{minHeight: '100vh', backgroundColor: '#f8fafc'}}>
       {/* Header */}
       <header style={{
         backgroundColor: 'white',
