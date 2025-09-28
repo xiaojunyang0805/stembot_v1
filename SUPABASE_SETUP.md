@@ -1,13 +1,49 @@
 # 🚀 StemBot Supabase Database Setup
 
-## 🚨 Current Status: Database Not Connected
+## 🚨 Current Issue: Need Your Real Supabase Credentials
 
-**Issue:** The project creation is failing because the Supabase credentials are invalid.
-**Status:** Currently running in **mock mode** for development.
+**Problem:** You have a Google account registered in Supabase, but the app is using **invalid/old credentials**.
+**Error:** `Auth session missing!` when creating projects.
+**Root Cause:** App tries real Supabase auth but can't connect with current credentials.
 
-## Quick Start Options
+## ✅ Solution Ready - Just Need Your Credentials
 
-### Option 1: Create New Supabase Project (Recommended for Production)
+## 🎯 Quick Fix (2 Minutes)
+
+Since you already have a Google account registered in Supabase, you have a working Supabase project. We just need to connect to it:
+
+### Step 1: Get Your Supabase Project Credentials
+
+1. **Go to your Supabase Dashboard:** [supabase.com/dashboard](https://supabase.com/dashboard)
+2. **Select your project** (the one where your Google account is registered)
+3. **Go to Settings → API** (left sidebar)
+4. **Copy these two values:**
+   - `Project URL` (looks like: `https://your-project-id.supabase.co`)
+   - `anon public` API key (long string starting with `eyJ...`)
+
+### Step 2: Update Environment Variables
+
+Update your `.env.local` file with YOUR credentials:
+
+```bash
+# Replace with YOUR actual Supabase project credentials
+NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your-actual-anon-key-here
+
+# Keep these settings for real authentication
+NEXT_PUBLIC_INTEGRATION_METHOD=env-based
+NEXT_PUBLIC_USE_MOCKS=false
+NEXT_PUBLIC_FALLBACK_TO_MOCKS=true
+```
+
+### Step 3: Test the Fix
+
+1. **Restart your development server:** `npm run dev`
+2. **Try Google login again**
+3. **Check browser console** for authentication logs
+4. **Create a project** - should now work! ✅
+
+## Alternative Options
 
 1. **Create a new Supabase project:**
    - Go to [supabase.com](https://supabase.com)
