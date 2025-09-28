@@ -1,11 +1,11 @@
 'use client'
 
 import { useState, useEffect } from 'react'
-import { Button } from '@/components/ui/Button'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/Card'
-import { Badge } from '@/components/ui/Badge'
-import { Progress } from '@/components/ui/progress'
-import { Separator } from '@/components/ui/separator'
+import { Button } from '../ui/Button'
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '../ui/Card'
+import { Badge } from '../ui/Badge'
+import { Progress } from '../ui/progress'
+import { Separator } from '../ui/separator'
 import { AlertCircle, Calendar, CreditCard, Users, Zap } from 'lucide-react'
 import { useAuth } from '@/providers/AuthProvider'
 
