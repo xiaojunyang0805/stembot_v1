@@ -4,6 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
 import { getProject } from '../../../lib/database/projects';
+import { getProjectConversations, saveConversation, convertToMessages } from '../../../lib/database/conversations';
 import type { Project } from '../../../types/database';
 
 // Disable Next.js caching for this route
@@ -24,26 +25,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState('');
-  const [messages, setMessages] = useState<Message[]>([
-    {
-      id: '1',
-      role: 'ai',
-      content: "I see you've uploaded 5 sources about sleep and memory. I notice most focus on adults 25+. Should we explore undergraduate-specific studies?",
-      timestamp: '2:34 PM'
-    },
-    {
-      id: '2',
-      role: 'user',
-      content: "Yes, that's exactly what I was thinking. I found some gaps in the undergraduate research area.",
-      timestamp: '2:35 PM'
-    },
-    {
-      id: '3',
-      role: 'ai',
-      content: "Perfect! Let's plan a survey methodology. Based on your timeline and resources, I suggest starting with a pilot study of 30-50 undergraduate students to test your sleep assessment questionnaire before scaling up.",
-      timestamp: '2:35 PM'
-    }
-  ]);
+  const [messages, setMessages] = useState<Message[]>([]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const useEnhancedAI = true;
   const [isAITyping, setIsAITyping] = useState(false);
@@ -63,15 +45,37 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           setError('Failed to load project');
         } else if (data) {
           setProject(data);
-          // Update initial messages with project-specific content
-          setMessages([
-            {
-              id: '1',
-              role: 'ai',
-              content: `Welcome back to your project "${data.title}". I'm here to help you with your ${data.current_phase} phase. What would you like to work on today?`,
-              timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-            }
-          ]);
+
+          // Load conversation history
+          const { data: conversations, error: convError } = await getProjectConversations(params.id);
+
+          if (convError) {
+            console.warn('Error loading conversations:', convError);
+            // Set welcome message if no conversations could be loaded
+            setMessages([
+              {
+                id: 'welcome-1',
+                role: 'ai',
+                content: `Welcome back to your project "${data.title}". I'm here to help you with your ${data.current_phase} phase. What would you like to work on today?`,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              }
+            ]);
+          } else if (conversations && conversations.length > 0) {
+            // Convert database conversations to messages format
+            const loadedMessages = convertToMessages(conversations);
+            setMessages(loadedMessages);
+            console.log(`Loaded ${conversations.length} conversations (${loadedMessages.length} messages)`);
+          } else {
+            // No previous conversations - show welcome message
+            setMessages([
+              {
+                id: 'welcome-1',
+                role: 'ai',
+                content: `Welcome to your project "${data.title}"! I'm here to help you with your ${data.current_phase} phase. What would you like to work on today?`,
+                timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+              }
+            ]);
+          }
         } else {
           setError('Project not found');
         }
@@ -187,34 +191,93 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         };
         setMessages(prev => [...prev, aiResponse]);
         setIsAITyping(false);
+
+        // Save conversation to database
+        try {
+          await saveConversation({
+            projectId: params.id,
+            userMessage: currentMessage,
+            aiResponse: formattedContent,
+            modelUsed: data.model || 'gpt-4o-mini',
+            tokensUsed: data.usage?.total_tokens || 0,
+            metadata: {
+              enhanced: data.enhanced || false,
+              fallback: data.fallback || null,
+              timestamp: new Date().toISOString()
+            }
+          });
+          console.log('Conversation saved to database');
+        } catch (saveError) {
+          console.warn('Failed to save conversation:', saveError);
+        }
         return;
       }
 
       // Fallback to original mock behavior (preserves existing functionality)
-      setTimeout(() => {
+      setTimeout(async () => {
+        const aiResponseContent = "I understand your question about " + currentMessage.toLowerCase() + ". Let me help you think through this systematically. What specific aspect would you like to explore first?";
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           role: 'ai',
-          content: "I understand your question about " + currentMessage.toLowerCase() + ". Let me help you think through this systematically. What specific aspect would you like to explore first?",
+          content: aiResponseContent,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages(prev => [...prev, aiResponse]);
         setIsAITyping(false);
+
+        // Save fallback conversation to database
+        try {
+          await saveConversation({
+            projectId: params.id,
+            userMessage: currentMessage,
+            aiResponse: aiResponseContent,
+            modelUsed: 'fallback-mock',
+            tokensUsed: 0,
+            metadata: {
+              enhanced: false,
+              fallback: 'ollama-unavailable',
+              timestamp: new Date().toISOString()
+            }
+          });
+          console.log('Fallback conversation saved to database');
+        } catch (saveError) {
+          console.warn('Failed to save fallback conversation:', saveError);
+        }
       }, 1000);
 
     } catch (error) {
       console.error('Enhanced AI error, falling back to mock:', error);
 
       // Always fallback to original mock behavior to prevent breaking anything
-      setTimeout(() => {
+      setTimeout(async () => {
+        const aiResponseContent = "I understand your question about " + currentMessage.toLowerCase() + ". Let me help you think through this systematically. What specific aspect would you like to explore first?";
         const aiResponse: Message = {
           id: (Date.now() + 1).toString(),
           role: 'ai',
-          content: "I understand your question about " + currentMessage.toLowerCase() + ". Let me help you think through this systematically. What specific aspect would you like to explore first?",
+          content: aiResponseContent,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages(prev => [...prev, aiResponse]);
         setIsAITyping(false);
+
+        // Save error fallback conversation to database
+        try {
+          await saveConversation({
+            projectId: params.id,
+            userMessage: currentMessage,
+            aiResponse: aiResponseContent,
+            modelUsed: 'error-fallback',
+            tokensUsed: 0,
+            metadata: {
+              enhanced: false,
+              fallback: 'api-error',
+              timestamp: new Date().toISOString()
+            }
+          });
+          console.log('Error fallback conversation saved to database');
+        } catch (saveError) {
+          console.warn('Failed to save error fallback conversation:', saveError);
+        }
       }, 1000);
     }
   };
