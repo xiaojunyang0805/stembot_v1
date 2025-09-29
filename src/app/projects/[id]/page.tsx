@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
 import { getProject } from '../../../lib/database/projects';
 import { getProjectConversations, saveConversation, convertToMessages } from '../../../lib/database/conversations';
+import { validateConversationStorage } from '../../../lib/storage/validation';
+import StorageIndicator from '../../../components/storage/StorageIndicator';
 import type { Project } from '../../../types/database';
 
 // Disable Next.js caching for this route
@@ -145,6 +147,19 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
   const handleSendMessage = async () => {
     if (!message.trim() || isAITyping) return;
+
+    // Pre-validate storage for conversation (estimate AI response size)
+    const estimatedResponseLength = message.length * 3; // Rough estimate: AI response 3x user message
+    const storageCheck = await validateConversationStorage(message.length, estimatedResponseLength);
+
+    if (!storageCheck.canSave) {
+      alert(`Storage limit reached: ${storageCheck.error}`);
+      return;
+    }
+
+    if (storageCheck.warning) {
+      console.warn('Storage warning:', storageCheck.warning);
+    }
 
     const newMessage: Message = {
       id: Date.now().toString(),

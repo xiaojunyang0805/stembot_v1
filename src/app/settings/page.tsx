@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../providers/AuthProvider';
+import StorageIndicator from '../../components/storage/StorageIndicator';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -146,6 +147,7 @@ export default function SettingsPage() {
             {[
               { id: 'profile', label: 'Profile', icon: '👤' },
               { id: 'notifications', label: 'Notifications', icon: '🔔' },
+              { id: 'storage', label: 'Storage & Usage', icon: '💾' },
               { id: 'research', label: 'Research Preferences', icon: '🔬' },
               { id: 'privacy', label: 'Privacy & Security', icon: '🔒' },
               { id: 'billing', label: 'Billing & Plans', icon: '💳' }
@@ -417,6 +419,22 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {/* Storage & Usage Tab */}
+            {activeTab === 'storage' && (
+              <div>
+                <h2 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  color: '#111827',
+                  marginBottom: '1.5rem'
+                }}>
+                  💾 Storage & Usage
+                </h2>
+
+                <StorageIndicator showDetails={true} />
+              </div>
+            )}
+
             {/* Other Tabs Placeholder */}
             {['research', 'privacy', 'billing'].includes(activeTab) && (
               <div style={{
@@ -444,7 +462,7 @@ export default function SettingsPage() {
             )}
 
             {/* Save Button */}
-            {['profile', 'notifications'].includes(activeTab) && (
+            {['profile', 'notifications', 'storage'].includes(activeTab) && (
               <div style={{
                 marginTop: '2rem',
                 paddingTop: '1.5rem',

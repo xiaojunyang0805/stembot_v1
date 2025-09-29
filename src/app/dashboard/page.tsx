@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../providers/AuthProvider';
 import { getUserProjects } from '../../lib/database/projects';
 import { getMostRecentlyActiveProject } from '../../lib/database/activity';
+import StorageIndicator from '../../components/storage/StorageIndicator';
 import type { Project } from '../../types/database';
 
 // Disable Next.js caching for this route
@@ -119,7 +120,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* University Selector */}
+          {/* University Selector and Storage */}
           <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
             <select style={{
               padding: '0.5rem 1rem',
@@ -134,6 +135,7 @@ export default function DashboardPage() {
               <option>MIT</option>
               <option>Cambridge</option>
             </select>
+            <StorageIndicator showDetails={false} />
           </div>
 
           {/* User Profile Dropdown */}
