@@ -102,7 +102,7 @@ class GPT5NanoClient {
           'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-4o-mini',
+          model: 'gpt-5-nano-2025-08-07',
           messages: enhancedMessages,
           temperature: 0.7,
           max_tokens: 2048,
@@ -265,7 +265,7 @@ export async function POST(request: NextRequest) {
             role: 'assistant',
             content: gptResult.response
           },
-          model: 'gpt-4o-mini',
+          model: 'gpt-5-nano-2025-08-07',
           enhanced: true,
           usage: gptResult.usage,
           timestamp: new Date().toISOString()

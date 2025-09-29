@@ -12,7 +12,7 @@ CREATE TABLE IF NOT EXISTS conversations (
     ai_response TEXT NOT NULL,
     context_recall JSONB DEFAULT '{}',
     tokens_used INTEGER DEFAULT 0,
-    model_used TEXT DEFAULT 'gpt-4o-mini',
+    model_used TEXT DEFAULT 'gpt-5-nano-2025-08-07',
     conversation_metadata JSONB DEFAULT '{}',
     attachments JSONB DEFAULT '[]',
     feedback JSONB DEFAULT '{}',
