@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../providers/AuthProvider';
 import { getUserProjects } from '../../lib/database/projects';
+import { getMostRecentlyActiveProject } from '../../lib/database/activity';
 import type { Project } from '../../types/database';
 
 // Disable Next.js caching for this route
@@ -16,35 +17,50 @@ export default function DashboardPage() {
   const [selectedProject, setSelectedProject] = useState<string | null>(null);
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [mostRecentProject, setMostRecentProject] = useState<Project | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Fetch user projects from Supabase
+  // Fetch user projects and most recent activity from Supabase
   useEffect(() => {
-    const fetchProjects = async () => {
+    const fetchData = async () => {
       if (!user) return;
 
       try {
-        const { data, error } = await getUserProjects();
-        if (error) {
-          console.error('Error fetching projects:', error);
-          // Fall back to mock data if there's an error
+        // Fetch all projects and most recently active project in parallel
+        const [projectsResult, recentProjectResult] = await Promise.all([
+          getUserProjects(),
+          getMostRecentlyActiveProject()
+        ]);
+
+        if (projectsResult.error) {
+          console.error('Error fetching projects:', projectsResult.error);
           setProjects([]);
         } else {
-          setProjects(data || []);
+          setProjects(projectsResult.data || []);
         }
+
+        if (recentProjectResult.error) {
+          console.error('Error fetching most recent project:', recentProjectResult.error);
+          // Fall back to first project if recent activity fetch fails
+          setMostRecentProject(projectsResult.data?.[0] || null);
+        } else {
+          setMostRecentProject(recentProjectResult.data);
+        }
+
       } catch (error) {
-        console.error('Error fetching projects:', error);
+        console.error('Error fetching dashboard data:', error);
         setProjects([]);
+        setMostRecentProject(null);
       } finally {
         setIsLoading(false);
       }
     };
 
-    fetchProjects();
+    fetchData();
   }, [user]);
 
-  // Get the most recent project for memory recall
-  const recentProject = projects.length > 0 ? projects[0] : null;
+  // Use the most recently active project (based on conversations) for memory recall
+  const recentProject = mostRecentProject;
 
   // Dynamic memory data based on actual projects
   const memoryData = recentProject ? {
