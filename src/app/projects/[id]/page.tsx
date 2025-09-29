@@ -46,6 +46,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   ]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [useEnhancedAI, setUseEnhancedAI] = useState(false);
+  const [isAITyping, setIsAITyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch project data
@@ -139,7 +140,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   } : null;
 
   const handleSendMessage = async () => {
-    if (!message.trim()) return;
+    if (!message.trim() || isAITyping) return;
 
     const newMessage: Message = {
       id: Date.now().toString(),
@@ -151,6 +152,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     setMessages(prev => [...prev, newMessage]);
     const currentMessage = message;
     setMessage('');
+    setIsAITyping(true);
 
     try {
       // Use enhanced chat route if toggle is enabled, otherwise use original mock behavior
@@ -174,13 +176,18 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
         if (response.ok) {
           const data = await response.json();
+
+          // Format AI response with proper paragraph breaks
+          const formattedContent = formatAIResponse(data.message.content);
+
           const aiResponse: Message = {
             id: (Date.now() + 1).toString(),
             role: 'ai',
-            content: data.message.content,
+            content: formattedContent,
             timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
           };
           setMessages(prev => [...prev, aiResponse]);
+          setIsAITyping(false);
           return;
         }
       }
@@ -194,6 +201,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages(prev => [...prev, aiResponse]);
+        setIsAITyping(false);
       }, 1000);
 
     } catch (error) {
@@ -208,8 +216,25 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
         setMessages(prev => [...prev, aiResponse]);
+        setIsAITyping(false);
       }, 1000);
     }
+  };
+
+  // Function to format AI responses with proper paragraph breaks
+  const formatAIResponse = (content: string): string => {
+    return content
+      // Add line breaks before numbered lists
+      .replace(/(\d+\.\s)/g, '\n$1')
+      // Add line breaks before bullet points
+      .replace(/([•\-\*]\s)/g, '\n$1')
+      // Add line breaks before headers (words in ALL CAPS followed by colon)
+      .replace(/([A-Z\s]{3,}:)/g, '\n\n$1')
+      // Add line breaks after question marks and periods when followed by capital letter
+      .replace(/([.?!])\s*([A-Z])/g, '$1\n\n$2')
+      // Clean up extra line breaks
+      .replace(/\n{3,}/g, '\n\n')
+      .trim();
   };
 
   const scrollToBottom = () => {
@@ -735,13 +760,14 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                   backgroundColor: msg.role === 'user' ? '#3b82f6' : '#f3f4f6',
                   color: msg.role === 'user' ? 'white' : '#374151'
                 }}>
-                  <p style={{
+                  <div style={{
                     margin: 0,
                     fontSize: '0.875rem',
-                    lineHeight: '1.5'
+                    lineHeight: '1.6',
+                    whiteSpace: 'pre-line'
                   }}>
                     {msg.content}
-                  </p>
+                  </div>
                 </div>
                 <div style={{
                   fontSize: '0.75rem',
@@ -756,7 +782,85 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                 </div>
               </div>
             ))}
+
+            {/* AI Typing Indicator */}
+            {isAITyping && (
+              <div style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'flex-start'
+              }}>
+                <div style={{
+                  maxWidth: '70%',
+                  padding: '1rem',
+                  borderRadius: '1rem',
+                  backgroundColor: '#f3f4f6',
+                  color: '#374151'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    fontSize: '0.875rem'
+                  }}>
+                    <div style={{
+                      display: 'flex',
+                      gap: '0.25rem'
+                    }}>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: '#9ca3af',
+                        animation: 'typing 1.4s infinite ease-in-out'
+                      }}></div>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: '#9ca3af',
+                        animation: 'typing 1.4s infinite ease-in-out 0.2s'
+                      }}></div>
+                      <div style={{
+                        width: '6px',
+                        height: '6px',
+                        borderRadius: '50%',
+                        backgroundColor: '#9ca3af',
+                        animation: 'typing 1.4s infinite ease-in-out 0.4s'
+                      }}></div>
+                    </div>
+                    <span>AI is thinking...</span>
+                  </div>
+                </div>
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: '#9ca3af',
+                  marginTop: '0.25rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>AI</span>
+                  <span>•••</span>
+                </div>
+              </div>
+            )}
+
             <div ref={messagesEndRef} />
+
+            {/* CSS Animation for typing indicator */}
+            <style jsx>{`
+              @keyframes typing {
+                0%, 60%, 100% {
+                  transform: translateY(0);
+                  opacity: 0.4;
+                }
+                30% {
+                  transform: translateY(-10px);
+                  opacity: 1;
+                }
+              }
+            `}</style>
           </div>
 
           {/* Message Input */}
@@ -836,23 +940,29 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               </button>
               <button
                 onClick={handleSendMessage}
+                disabled={isAITyping}
                 style={{
                   padding: '0.75rem 1.5rem',
-                  backgroundColor: '#3b82f6',
+                  backgroundColor: isAITyping ? '#9ca3af' : '#3b82f6',
                   color: 'white',
                   border: 'none',
                   borderRadius: '0.5rem',
                   fontSize: '0.875rem',
-                  cursor: 'pointer'
+                  cursor: isAITyping ? 'not-allowed' : 'pointer',
+                  opacity: isAITyping ? 0.6 : 1
                 }}
                 onMouseEnter={(e) => {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                  if (!isAITyping) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                  }
                 }}
                 onMouseLeave={(e) => {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
+                  if (!isAITyping) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
+                  }
                 }}
               >
-                Send
+                {isAITyping ? 'AI Thinking...' : 'Send'}
               </button>
             </div>
 
