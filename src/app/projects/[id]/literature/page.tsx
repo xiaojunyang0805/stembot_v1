@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../providers/AuthProvider';
 import { getProject } from '../../../../lib/database/projects';
-import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
+import { getProjectDocuments, deleteDocument, type DocumentMetadata } from '../../../../lib/database/documents';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
@@ -19,6 +19,7 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
 
   // Fetch project data and documents
   useEffect(() => {
@@ -54,6 +55,29 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
 
     fetchData();
   }, [params.id, user]);
+
+  const handleDeleteDocument = async (docId: string) => {
+    if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
+      return;
+    }
+
+    setDeletingDoc(docId);
+    try {
+      const { error } = await deleteDocument(docId);
+      if (error) {
+        console.error('Error deleting document:', error);
+        alert('Failed to delete document');
+      } else {
+        // Remove from local state
+        setDocuments(docs => docs.filter(doc => doc.id !== docId));
+      }
+    } catch (err) {
+      console.error('Delete error:', err);
+      alert('Failed to delete document');
+    } finally {
+      setDeletingDoc(null);
+    }
+  };
 
   if (loading) {
     return (
@@ -165,7 +189,7 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
           <div style={{ display: 'flex', gap: '1.5rem' }}>
             {[
               { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, progress: 85, active: false },
-              { id: 'literature', label: 'Doc Center', path: `/projects/${params.id}/literature`, progress: 65, active: true },
+              { id: 'literature', label: 'Document Center', path: `/projects/${params.id}/literature`, progress: 65, active: true },
               { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, progress: 40, active: false },
               { id: 'writing', label: 'Writing', path: `/projects/${params.id}/writing`, progress: 15, active: false }
             ].map((section) => (
@@ -263,7 +287,7 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
 
               {[
                 { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: false, icon: '💬' },
-                { id: 'documents', label: '📚 Doc Center', path: `/projects/${params.id}/literature`, active: true, icon: '📚' },
+                { id: 'documents', label: '📚 Document Center', path: `/projects/${params.id}/literature`, active: true, icon: '📚' },
                 { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
                 { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' }
               ].map((nav) => (
@@ -472,80 +496,209 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
             {documents.length > 0 && (
               <div style={{
                 display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))',
-                gap: '1rem',
+                gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
+                gap: '1.5rem',
                 marginTop: '2rem'
               }}>
-                {documents.map((doc) => (
-                  <div key={doc.id} style={{
-                    backgroundColor: 'white',
-                    border: '1px solid #e5e7eb',
-                    borderRadius: '0.5rem',
-                    padding: '1rem',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLDivElement).style.boxShadow = '0 4px 6px -1px rgba(0, 0, 0, 0.1)';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.target as HTMLDivElement).style.boxShadow = 'none';
-                  }}
-                  >
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'flex-start',
-                      gap: '0.75rem'
+                {documents.map((doc) => {
+                  const analysis = doc.analysis_result as any;
+                  return (
+                    <div key={doc.id} style={{
+                      backgroundColor: 'white',
+                      border: '1px solid #e5e7eb',
+                      borderRadius: '0.75rem',
+                      padding: '1.5rem',
+                      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
                     }}>
-                      <span style={{ fontSize: '1.5rem' }}>📄</span>
-                      <div style={{ flex: 1 }}>
-                        <h3 style={{
-                          fontSize: '1rem',
-                          fontWeight: '600',
-                          color: '#111827',
-                          margin: '0 0 0.5rem 0',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap'
+                      {/* Document Header */}
+                      <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'flex-start',
+                        marginBottom: '1rem'
+                      }}>
+                        <div style={{
+                          display: 'flex',
+                          alignItems: 'flex-start',
+                          gap: '0.75rem',
+                          flex: 1
                         }}>
-                          {doc.original_name}
-                        </h3>
-                        <p style={{
-                          fontSize: '0.875rem',
-                          color: '#6b7280',
-                          margin: '0 0 0.5rem 0'
-                        }}>
-                          {(doc.file_size / (1024 * 1024)).toFixed(1)} MB
-                        </p>
-                        <p style={{
-                          fontSize: '0.75rem',
-                          color: '#9ca3af',
-                          margin: 0
-                        }}>
-                          Uploaded {new Date(doc.created_at).toLocaleDateString()}
-                        </p>
+                          <span style={{ fontSize: '1.5rem' }}>📄</span>
+                          <div style={{ flex: 1 }}>
+                            <h3 style={{
+                              fontSize: '1.125rem',
+                              fontWeight: '600',
+                              color: '#111827',
+                              margin: '0 0 0.5rem 0',
+                              lineHeight: '1.4'
+                            }}>
+                              {doc.original_name}
+                            </h3>
+                            <div style={{
+                              display: 'flex',
+                              gap: '1rem',
+                              fontSize: '0.875rem',
+                              color: '#6b7280'
+                            }}>
+                              <span>{(doc.file_size / (1024 * 1024)).toFixed(1)} MB</span>
+                              <span>•</span>
+                              <span>{new Date(doc.created_at).toLocaleDateString()}</span>
+                            </div>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleDeleteDocument(doc.id);
+                          }}
+                          disabled={deletingDoc === doc.id}
+                          style={{
+                            padding: '0.5rem',
+                            backgroundColor: deletingDoc === doc.id ? '#f3f4f6' : '#fee2e2',
+                            border: '1px solid #fecaca',
+                            borderRadius: '0.375rem',
+                            color: deletingDoc === doc.id ? '#9ca3af' : '#dc2626',
+                            fontSize: '0.875rem',
+                            cursor: deletingDoc === doc.id ? 'not-allowed' : 'pointer',
+                            opacity: deletingDoc === doc.id ? 0.5 : 1
+                          }}
+                          onMouseEnter={(e) => {
+                            if (deletingDoc !== doc.id) {
+                              (e.target as HTMLButtonElement).style.backgroundColor = '#fecaca';
+                            }
+                          }}
+                          onMouseLeave={(e) => {
+                            if (deletingDoc !== doc.id) {
+                              (e.target as HTMLButtonElement).style.backgroundColor = '#fee2e2';
+                            }
+                          }}
+                        >
+                          {deletingDoc === doc.id ? '🔄' : '🗑️'}
+                        </button>
                       </div>
+
+                      {/* AI Analysis Section */}
+                      {analysis ? (
+                        <div style={{
+                          backgroundColor: '#f8fafc',
+                          border: '1px solid #e2e8f0',
+                          borderRadius: '0.5rem',
+                          padding: '1rem'
+                        }}>
+                          <h4 style={{
+                            fontSize: '1rem',
+                            fontWeight: '600',
+                            color: '#1e293b',
+                            margin: '0 0 0.75rem 0',
+                            display: 'flex',
+                            alignItems: 'center',
+                            gap: '0.5rem'
+                          }}>
+                            🤖 AI Analysis
+                          </h4>
+
+                          {/* Summary */}
+                          {analysis.summary && (
+                            <div style={{ marginBottom: '0.75rem' }}>
+                              <p style={{
+                                fontSize: '0.875rem',
+                                color: '#475569',
+                                lineHeight: '1.5',
+                                margin: 0
+                              }}>
+                                {typeof analysis.summary === 'string' ? analysis.summary : 'Analysis completed'}
+                              </p>
+                            </div>
+                          )}
+
+                          {/* Key Points */}
+                          {analysis.keyPoints && Array.isArray(analysis.keyPoints) && analysis.keyPoints.length > 0 && (
+                            <div style={{ marginBottom: '0.75rem' }}>
+                              <p style={{
+                                fontSize: '0.75rem',
+                                fontWeight: '600',
+                                color: '#64748b',
+                                margin: '0 0 0.375rem 0'
+                              }}>
+                                Key Points:
+                              </p>
+                              <ul style={{
+                                fontSize: '0.75rem',
+                                color: '#475569',
+                                margin: 0,
+                                paddingLeft: '1rem'
+                              }}>
+                                {analysis.keyPoints.slice(0, 3).map((point: string, index: number) => (
+                                  <li key={index} style={{ margin: '0.25rem 0' }}>
+                                    {typeof point === 'string' ? point : 'Key insight identified'}
+                                  </li>
+                                ))}
+                              </ul>
+                            </div>
+                          )}
+
+                          {/* Document Type */}
+                          {analysis.documentType && (
+                            <div style={{
+                              display: 'inline-block',
+                              backgroundColor: '#dbeafe',
+                              color: '#1e40af',
+                              fontSize: '0.75rem',
+                              fontWeight: '500',
+                              padding: '0.25rem 0.5rem',
+                              borderRadius: '0.25rem'
+                            }}>
+                              {analysis.documentType}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div style={{
+                          backgroundColor: '#fef3c7',
+                          border: '1px solid #fcd34d',
+                          borderRadius: '0.5rem',
+                          padding: '1rem',
+                          textAlign: 'center'
+                        }}>
+                          <p style={{
+                            fontSize: '0.875rem',
+                            color: '#92400e',
+                            margin: 0
+                          }}>
+                            ⚠️ No AI analysis available for this document
+                          </p>
+                        </div>
+                      )}
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
 
             {documents.length === 0 && (
               <div style={{
                 textAlign: 'center',
-                padding: '3rem',
+                padding: '4rem',
                 color: '#9ca3af'
               }}>
-                <span style={{ fontSize: '3rem', display: 'block', marginBottom: '1rem' }}>📚</span>
+                <span style={{ fontSize: '4rem', display: 'block', marginBottom: '1.5rem' }}>📚</span>
                 <p style={{
-                  fontSize: '1.125rem',
-                  fontWeight: '500',
-                  marginBottom: '0.5rem'
+                  fontSize: '1.25rem',
+                  fontWeight: '600',
+                  marginBottom: '0.75rem',
+                  color: '#374151'
                 }}>
-                  No documents yet
+                  No documents uploaded yet
                 </p>
                 <p style={{
-                  fontSize: '0.875rem'
+                  fontSize: '1rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  Upload your first research document to get AI-powered analysis
+                </p>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280'
                 }}>
                   Upload documents using the 📎 button in the Workspace chat
                 </p>

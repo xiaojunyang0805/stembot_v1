@@ -614,7 +614,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           <div style={{ display: 'flex', gap: '1.5rem' }}>
             {[
               { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, progress: 85, active: true },
-              { id: 'literature', label: 'Doc Center', path: `/projects/${params.id}/literature`, progress: 65, active: false },
+              { id: 'literature', label: 'Document Center', path: `/projects/${params.id}/literature`, progress: 65, active: false },
               { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, progress: 40, active: false },
               { id: 'writing', label: 'Writing', path: `/projects/${params.id}/writing`, progress: 15, active: false }
             ].map((section) => (
@@ -713,7 +713,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
               {[
                 { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: true, icon: '💬' },
-                { id: 'documents', label: '📚 Doc Center', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
+                { id: 'documents', label: '📚 Document Center', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
                 { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
                 { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' }
               ].map((nav) => (
