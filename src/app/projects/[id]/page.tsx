@@ -700,6 +700,60 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           transition: 'all 0.3s ease'
         }}>
           <div style={{ padding: '1.5rem' }}>
+            {/* Navigation Menu */}
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: '#374151',
+                margin: '0 0 1rem 0'
+              }}>
+                Project Navigation
+              </h3>
+
+              {[
+                { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: true, icon: '💬' },
+                { id: 'documents', label: '📚 Documents Hub', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
+                { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
+                { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' }
+              ].map((nav) => (
+                <button
+                  key={nav.id}
+                  onClick={() => nav.active ? null : router.push(nav.path)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    marginBottom: '0.5rem',
+                    backgroundColor: nav.active ? '#eff6ff' : 'transparent',
+                    color: nav.active ? '#3b82f6' : '#6b7280',
+                    border: nav.active ? '1px solid #3b82f6' : '1px solid transparent',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: nav.active ? '600' : '500',
+                    cursor: nav.active ? 'default' : 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!nav.active) {
+                      (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!nav.active) {
+                      (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  <span>{nav.icon}</span>
+                  <span>{nav.label.replace(/.*\s/, '')}</span>
+                </button>
+              ))}
+            </div>
+
             {/* Research Question */}
             <div style={{ marginBottom: '2rem' }}>
               <div style={{
@@ -715,7 +769,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                   color: '#374151',
                   margin: 0
                 }}>
-                  Question
+                  Research Question
                 </h3>
               </div>
               <p style={{
@@ -728,7 +782,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               </p>
             </div>
 
-            {/* Sources */}
+            {/* Recent Documents */}
             <div style={{ marginBottom: '2rem' }}>
               <div style={{
                 display: 'flex',
@@ -741,41 +795,68 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                   alignItems: 'center',
                   gap: '0.5rem'
                 }}>
-                  <span style={{ fontSize: '1.25rem' }}>📚</span>
+                  <span style={{ fontSize: '1.25rem' }}>📄</span>
                   <h3 style={{
                     fontSize: '1rem',
                     fontWeight: '600',
                     color: '#374151',
                     margin: 0
                   }}>
-                    Sources ({projectData.sources.length})
+                    Recent Documents ({documents.length})
                   </h3>
                 </div>
-                <button style={{
-                  fontSize: '0.75rem',
-                  color: '#3b82f6',
-                  backgroundColor: 'transparent',
-                  border: 'none',
-                  cursor: 'pointer'
-                }}>
+                <button
+                  onClick={() => router.push(`/projects/${params.id}/literature`)}
+                  style={{
+                    fontSize: '0.75rem',
+                    color: '#3b82f6',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
                   View All
                 </button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                {projectData.sources.slice(0, 2).map((source, index) => (
-                  <div key={index} style={{
+                {documents.length > 0 ? documents.slice(0, 3).map((doc, index) => (
+                  <div key={doc.id} style={{
                     fontSize: '0.75rem',
-                    color: '#6b7280'
-                  }}>
-                    • {source.name}
+                    color: '#6b7280',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.25rem',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+                  }}
+                  >
+                    <span>📄</span>
+                    <span style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      flex: 1
+                    }}>
+                      {doc.original_name}
+                    </span>
                   </div>
-                ))}
-                {projectData.sources.length > 2 && (
+                )) : (
                   <div style={{
                     fontSize: '0.75rem',
-                    color: '#9ca3af'
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    textAlign: 'center',
+                    padding: '1rem 0'
                   }}>
-                    ... and {projectData.sources.length - 2} more
+                    No documents uploaded yet.
+                    Use 📎 in chat to upload files.
                   </div>
                 )}
               </div>

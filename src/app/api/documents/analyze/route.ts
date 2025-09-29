@@ -137,11 +137,33 @@ export async function POST(request: NextRequest) {
 async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
     const pdfParse = (await import('pdf-parse')).default
-    const data = await pdfParse(buffer)
-    return data.text || 'No text found in PDF'
+
+    // Enhanced PDF parsing with options
+    const data = await pdfParse(buffer, {
+      // Increase page processing limit
+      max: 50
+      // Note: Removed invalid options that were causing TypeScript errors
+    })
+
+    const extractedText = data.text?.trim()
+
+    if (extractedText && extractedText.length > 10) {
+      console.log(`PDF extraction successful: ${extractedText.length} characters extracted`)
+      return extractedText
+    } else {
+      // If minimal text found, might be a scanned PDF
+      console.warn('PDF appears to contain minimal text - may be scanned document')
+      return `PDF processed successfully but contains minimal extractable text (${extractedText?.length || 0} characters). This may be a scanned document or image-based PDF that would benefit from OCR processing.`
+    }
+
   } catch (error) {
     console.error('PDF extraction error:', error)
-    throw new Error('Failed to extract text from PDF')
+
+    // More detailed error information
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    console.error('PDF extraction failed with error:', errorMessage)
+
+    throw new Error(`Failed to extract text from PDF: ${errorMessage}`)
   }
 }
 
