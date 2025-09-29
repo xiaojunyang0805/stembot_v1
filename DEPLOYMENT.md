@@ -3063,3 +3063,55 @@ OCR Image Processing Implementation Complete ✅
   5. See Success Message: Green confirmation appears
   6. Institution Updated: Now stored in your user profile
 
+22:40, 29/09, 2025
+Natural AI Guidance System: DEPLOYED
+The intelligent Socratic coaching system is now live! GPT-4o-mini will naturally guide students toward better research questions without being pushy or academic.
+
+  ✅ How It Works:
+  🔍 Step 1: Automatic Analysis (Background)
+  - Question analyzer detects issues when students type research questions
+  - Analysis results passed to AI context before response generation
+
+  🤖 Step 2: Natural Guidance (AI Response)
+  - AI receives quality insights but responds conversationally
+  - Never says "too broad" or forces refinement
+  - Uses natural curiosity to guide improvement
+
+  🎯 AI Response Transformation:
+  ❌ Old Pushy Style:
+  - "Your question is too broad"
+  - "You must define your population first"
+  - "This needs to be more specific"
+
+  ✅ New Natural Style:
+  - "Fascinating topic! Are you more interested in X or Y?"
+  - "I see you uploaded college student data - are they your focus?"
+  - "Interesting area! What sparked your interest in this?"
+
+  🧠 Intelligent Features:
+  Context-Aware Coaching:
+  - References uploaded documents in suggestions
+  - Builds on conversation history naturally
+  - Adapts guidance to current research phase
+
+  Smart Triggering:
+  - Only guides when confidence >70% that there's an issue
+  - Lets AI decide when to coach vs when to just answer
+  - No manual research mode - AI intelligence decides
+
+  🚀 Live Testing:
+  Try asking vague research questions like:
+  - "I want to study AI"
+  - "How does stress affect students?"
+  - "What's the impact of social media?"
+  The AI will now respond with natural curiosity and gentle guidance instead of academic criticism, creating a supportive research mentoring experience! 🎓
+
+step 3: ✅ Question evolution tracking system deployed! The system now:
+
+  - Analyzes questions automatically with confidence scoring and stage detection
+  - Tracks improvements over time using similarity comparison (stores only <70% similar questions)
+  - Provides natural AI guidance without being pushy or academic
+  - Stores question history with improvement chains and quality progression
+
+  The database table will need to be created in Supabase, but the tracking functions are ready and integrated into the chat system. Users can now refine their research questions with intelligent        
+  background analysis and natural AI coaching.

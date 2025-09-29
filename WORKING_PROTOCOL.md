@@ -215,6 +215,69 @@ npm run type-check && npm run build
 git add . && git commit -m "..." && git push origin main
 ```
 
+## 🔍 **VERCEL DEPLOYMENT STATUS CHECKING**
+
+### **Method 1: Direct Site Testing (Recommended)**
+```bash
+# Check main site availability
+curl -s -o /dev/null -w "%{http_code}" "https://stembotv1.vercel.app"
+# Expected: 200
+
+# Verify API endpoints work
+curl -s "https://stembotv1.vercel.app/api/version"
+# Expected: JSON with version info
+
+# Test specific project pages
+curl -s -o /dev/null -w "%{http_code}" "https://stembotv1.vercel.app/projects/[PROJECT_ID]"
+# Expected: 200
+```
+
+### **Method 2: Vercel CLI (Requires Authentication)**
+```bash
+# Login (opens browser - may timeout)
+npx vercel login
+
+# Check deployments (after login)
+npx vercel ls
+
+# Get deployment info
+npx vercel --prod
+```
+
+### **Method 3: Chrome DevTools MCP (Automated UI Testing)**
+```bash
+# Full page inspection
+"Check performance, console logs, and visual layout for https://stembotv1.vercel.app"
+
+# Screenshot for visual verification
+"Take screenshot of https://stembotv1.vercel.app"
+
+# Network request monitoring
+"Monitor network requests and check for errors on https://stembotv1.vercel.app"
+```
+
+### **Quick Deployment Verification Protocol**
+```bash
+# 1. Basic availability check
+curl -s -I "https://stembotv1.vercel.app" | head -1
+
+# 2. API health check
+curl -s "https://stembotv1.vercel.app/api/version" | jq '.status'
+
+# 3. Automated UI inspection (Chrome DevTools MCP)
+"Check console errors and performance for https://stembotv1.vercel.app"
+
+# 4. Visual confirmation
+"Take screenshot to verify layout and styling"
+```
+
+### **Build Success Indicators**
+- ✅ HTTP 200 status codes
+- ✅ API endpoints return valid JSON
+- ✅ No console errors in Chrome DevTools
+- ✅ Visual layout renders correctly
+- ✅ Authentication flows work
+
 ## ⚡ **QUICK REFERENCE COMMANDS**
 
 ```bash
@@ -224,6 +287,9 @@ git log --oneline -5
 
 # Test before deploy (enhanced with Chrome DevTools MCP)
 npm run type-check && npm run build
+
+# Verify deployment success
+curl -s -w "%{http_code}" "https://stembotv1.vercel.app" -o /dev/null
 
 # Emergency rollback
 git reset --hard [WORKING_COMMIT]
