@@ -3134,3 +3134,57 @@ The complete intelligent Socratic coaching system is now live with:
   - Tracks improvement chains and quality progression
   - Provides statistics on research question development
   The system will now help students naturally refine their research questions through intelligent conversation!
+
+23:28, 29/09, 2025
+🎉 Successfully implemented comprehensive document-triggered suggestions and stuck student monitoring system!
+  🎯 Document-Triggered Question Suggestions
+  WHEN STUDENTS UPLOAD:
+  1. 📊 Excel/CSV Data Files:
+    - Automatically detects column names as potential variables
+    - Finds patterns like sleep hours vs test scores correlations
+    - Suggests: "Your data shows sleep affects performance - want to explore that relationship in college students?"
+  2. 📄 PDF Research Papers (5+ papers):
+    - Identifies common themes across literature
+    - Detects research gaps mentioned by authors
+    - Suggests: "Your papers focus on adults - interested in studying students instead?"
+  3. 🔬 Lab Notes/Methodology Files:
+    - Extracts experimental setup details
+    - Matches methodology to appropriate research questions
+    - Suggests compatible study designs
+
+  🚨 Proactive Help for Stuck Students
+  STUCK INDICATORS DETECTED:
+  - ✅ 30+ minutes in project with question still vague
+  - ✅ Documents uploaded but question unchanged for 20+ minutes
+  - ✅ Has good data files but question lacks specificity
+  - ✅ Time-based progress tracking per project
+
+  PROACTIVE HELP EXAMPLES:
+  - "I notice you've uploaded some great data on sleep patterns. Would it help to frame a specific question around that dataset?"
+  - "I see you've uploaded several research papers. Would you like me to help identify potential research gaps?"
+  - Natural, contextual guidance that never mentions "being stuck"
+
+  🧠 Intelligent Integration
+  GPT-4o-mini Integration:
+  - Generates specific questions in format: "How does X affect Y in Z population?"
+  - Only shows high-confidence suggestions (>70%)
+  - Provides reasoning and document basis for each suggestion
+
+  Background Monitoring:
+  - Runs every 10 minutes automatically
+  - Flags stuck patterns for next AI response
+  - Seamlessly integrates suggestions into natural conversation
+
+  Enhanced Chat Experience:
+  - Question suggestions appear naturally after document upload
+  - AI responses adapt dynamically based on stuck patterns
+  - Cross-document analysis for comprehensive literature reviews
+
+  🛠 Technical Features
+  - Pattern Detection: Analyzes data columns, research themes, methodology elements
+  - Similarity Algorithms: Prevents duplicate suggestions using text analysis
+  - Progress Tracking: Time-based monitoring with gentle intervention
+  - API Integration: Seamless document upload → analysis → suggestion pipeline
+
+  The system now provides intelligent, contextual help exactly when students need it - transforming passive document storage into active research guidance!
+  Students get specific, actionable suggestions based on their actual content, while the system proactively identifies when they need help and provides natural guidance to move their research forward.

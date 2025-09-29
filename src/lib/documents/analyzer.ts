@@ -51,14 +51,27 @@ export function analyzeDocumentPattern(document: DocumentMetadata): DocumentPatt
     };
   }
 
-  // Research papers (PDF)
-  if (mimeType.includes('pdf') && isResearchPaper(text, analysis)) {
-    const literaturePatterns = extractLiteraturePatterns(text, analysis);
-    return {
-      type: 'literature',
-      confidence: literaturePatterns.length > 0 ? 80 : 65,
-      keyElements: literaturePatterns
-    };
+  // Research papers (PDF) - improved handling for failed text extraction
+  if (mimeType.includes('pdf')) {
+    const hasMinimalText = !text || text.length < 100;
+    const seemsLikeResearchPaper = hasMinimalText ? isLikelyResearchPaperFromTitle(filename) : isResearchPaper(text, analysis);
+
+    if (seemsLikeResearchPaper) {
+      let literaturePatterns: string[];
+
+      if (hasMinimalText) {
+        // Use filename-based pattern extraction for failed text extraction
+        literaturePatterns = extractPatternsFromFilename(filename);
+      } else {
+        literaturePatterns = extractLiteraturePatterns(text, analysis);
+      }
+
+      return {
+        type: 'literature',
+        confidence: literaturePatterns.length > 0 ? 75 : 60, // Slightly lower confidence for title-based
+        keyElements: literaturePatterns
+      };
+    }
   }
 
   // Lab notes or methodology
@@ -268,6 +281,65 @@ function extractGeneralPatterns(text: string): string[] {
   return patterns;
 }
 
+function isLikelyResearchPaperFromTitle(filename: string): boolean {
+  const researchIndicators = [
+    'review', 'study', 'analysis', 'research', 'investigation',
+    'journal', 'paper', 'article', 'proceedings', 'conference',
+    'effect', 'impact', 'influence', 'relationship', 'comparison'
+  ];
+
+  const academicPatterns = [
+    /\d{4}[_\-\s]/,  // Year pattern (e.g., "2021_", "2023-")
+    /[_\-\s](review|study|analysis)[_\-\s]/i,
+    /[_\-\s](effect|impact|influence)[_\-\s]/i
+  ];
+
+  const hasResearchWords = researchIndicators.some(indicator =>
+    filename.toLowerCase().includes(indicator)
+  );
+
+  const hasAcademicPattern = academicPatterns.some(pattern =>
+    pattern.test(filename)
+  );
+
+  return hasResearchWords || hasAcademicPattern;
+}
+
+function extractPatternsFromFilename(filename: string): string[] {
+  const patterns: string[] = [];
+
+  // Extract potential research topic from filename
+  const cleanTitle = filename
+    .replace(/\.pdf$/i, '')
+    .replace(/\d{4}[_\-\s]/g, '') // Remove years
+    .replace(/[_\-]/g, ' ')
+    .trim();
+
+  // Look for research themes in title
+  const electrochemicalTerms = ['electrode', 'electrochemical', 'sensor', 'detection', 'analytical'];
+  const biomedicalTerms = ['biomedical', 'diagnostic', 'medical', 'clinical', 'health'];
+  const environmentalTerms = ['environmental', 'monitoring', 'field', 'portable', 'real-time'];
+
+  if (electrochemicalTerms.some(term => filename.toLowerCase().includes(term))) {
+    patterns.push('Electrochemical research focus');
+  }
+
+  if (biomedicalTerms.some(term => filename.toLowerCase().includes(term))) {
+    patterns.push('Biomedical applications');
+  }
+
+  if (environmentalTerms.some(term => filename.toLowerCase().includes(term))) {
+    patterns.push('Environmental monitoring applications');
+  }
+
+  // Add the cleaned title as a research area
+  if (cleanTitle.length > 10) {
+    patterns.push(`Research area: ${cleanTitle}`);
+  }
+
+  return patterns;
+}
+
 function isResearchPaper(text: string, analysis: any): boolean {
   const academicKeywords = [
     'abstract', 'introduction', 'methodology', 'results', 'discussion',
@@ -299,7 +371,16 @@ async function generateSpecificSuggestion(
     const documentType = pattern.type;
     const keyElements = pattern.keyElements.join('. ');
 
-    const prompt = createSuggestionPrompt(documentType, analysisText, keyElements, currentQuestion);
+    // If text extraction failed but we have a descriptive filename, use title-based analysis
+    const hasMinimalContent = !analysisText || analysisText.length < 100;
+    const hasDescriptiveTitle = document.original_name.length > 10;
+
+    let prompt: string;
+    if (hasMinimalContent && hasDescriptiveTitle) {
+      prompt = createTitleBasedSuggestionPrompt(document.original_name, currentQuestion);
+    } else {
+      prompt = createSuggestionPrompt(documentType, analysisText, keyElements, currentQuestion);
+    }
 
     const response = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
@@ -402,6 +483,27 @@ async function generateCrossDocumentSuggestion(
     console.error('Error generating cross-document suggestion:', error);
     return null;
   }
+}
+
+function createTitleBasedSuggestionPrompt(
+  filename: string,
+  currentQuestion?: string
+): string {
+  let prompt = `Based on this research document title: "${filename}"
+
+This appears to be a research paper. Based on the title alone, suggest a specific research question that could:
+1. Build on this research area
+2. Address potential gaps or applications
+3. Be feasible for a student researcher
+4. Follow the format "How does X affect Y in Z population?" when possible
+
+Focus on practical applications, student-accessible populations, or extensions of the work implied by the title.`;
+
+  if (currentQuestion) {
+    prompt += `\n\nCurrent question: "${currentQuestion}". If this is vague, suggest how to make it more specific based on the research area indicated by the document title.`;
+  }
+
+  return prompt;
 }
 
 function createSuggestionPrompt(
