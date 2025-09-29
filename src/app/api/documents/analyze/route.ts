@@ -5,6 +5,7 @@ import { validateStorageForUpload, validateFile } from '../../../../lib/storage/
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
+export const maxDuration = 60 // 60 seconds timeout for PDF processing
 
 // Document analysis API endpoint
 export async function POST(request: NextRequest) {
@@ -97,13 +98,33 @@ export async function POST(request: NextRequest) {
 
     } catch (extractionError) {
       console.error('Text extraction failed:', extractionError)
-      // Fallback to basic file info
-      extractedText = `File: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type}`
-      analysis = {
-        summary: 'Text extraction failed - showing basic file information only.',
-        keyPoints: [`File name: ${file.name}`, `File size: ${(file.size / 1024).toFixed(1)} KB`],
-        documentType: 'Unknown',
-        error: 'Text extraction failed'
+
+      // Still try to get some analysis even with extraction error
+      const errorMessage = extractionError instanceof Error ? extractionError.message : 'Unknown error'
+      extractedText = `Document Processing Status: ${errorMessage}\n\nFile Information:\n` +
+        `- Name: ${file.name}\n` +
+        `- Size: ${(file.size / 1024).toFixed(1)} KB\n` +
+        `- Type: ${file.type}\n` +
+        `- Upload Date: ${new Date().toISOString()}\n\n` +
+        `Note: Text extraction encountered an issue, but the file was successfully uploaded.`
+
+      // Try to generate analysis even with limited info
+      try {
+        analysis = await generateDocumentAnalysis(extractedText, file.name)
+      } catch (analysisError) {
+        console.error('Analysis also failed:', analysisError)
+        analysis = {
+          summary: `Document uploaded but text extraction failed: ${errorMessage}. The file appears to be a ${file.type} document of ${(file.size / (1024 * 1024)).toFixed(2)} MB.`,
+          keyPoints: [
+            `Document name: ${file.name}`,
+            `File size: ${(file.size / (1024 * 1024)).toFixed(2)} MB`,
+            `File type: ${file.type}`,
+            `Extraction issue: ${errorMessage}`
+          ],
+          documentType: file.type.includes('pdf') ? 'PDF Document' : 'Document',
+          researchRelevance: 'Unable to analyze content due to extraction issue',
+          error: 'Text extraction failed but file uploaded successfully'
+        }
       }
     }
 
@@ -136,24 +157,47 @@ export async function POST(request: NextRequest) {
  */
 async function extractPdfText(buffer: Buffer): Promise<string> {
   try {
+    console.log('Starting PDF text extraction...');
     const pdfParse = (await import('pdf-parse')).default
 
-    // Enhanced PDF parsing with options
-    const data = await pdfParse(buffer, {
-      // Increase page processing limit
-      max: 50
-      // Note: Removed invalid options that were causing TypeScript errors
-    })
+    console.log(`Processing PDF buffer of size: ${buffer.length} bytes`);
 
+    // Enhanced PDF parsing with options - try different configurations
+    let data;
+    try {
+      // First attempt with standard options
+      data = await pdfParse(buffer, {
+        max: 50  // Increase page processing limit
+      })
+    } catch (parseError) {
+      console.log('Standard parsing failed, trying with different options:', parseError);
+      // Fallback attempt with minimal options
+      data = await pdfParse(buffer)
+    }
+
+    console.log(`PDF parsing completed. Pages: ${data.numpages}, Info:`, data.info);
     const extractedText = data.text?.trim()
+    console.log(`Extracted text length: ${extractedText?.length || 0} characters`);
 
     if (extractedText && extractedText.length > 10) {
-      console.log(`PDF extraction successful: ${extractedText.length} characters extracted`)
+      console.log(`PDF extraction successful: ${extractedText.length} characters extracted`);
+      // Log first 200 characters for debugging
+      console.log('First 200 characters:', extractedText.substring(0, 200));
       return extractedText
     } else {
-      // If minimal text found, might be a scanned PDF
-      console.warn('PDF appears to contain minimal text - may be scanned document')
-      return `PDF processed successfully but contains minimal extractable text (${extractedText?.length || 0} characters). This may be a scanned document or image-based PDF that would benefit from OCR processing.`
+      // If minimal text found, might be a scanned PDF - still return what we have
+      console.warn(`PDF contains minimal text (${extractedText?.length || 0} characters) - may be scanned document`);
+
+      // Return metadata info if no text content
+      const metadataText = `PDF Document Analysis\n` +
+        `Pages: ${data.numpages}\n` +
+        `Title: ${data.info?.Title || 'Not specified'}\n` +
+        `Author: ${data.info?.Author || 'Not specified'}\n` +
+        `Subject: ${data.info?.Subject || 'Not specified'}\n` +
+        `Content: This appears to be a ${data.numpages}-page PDF document. ` +
+        `${extractedText || 'No extractable text found - this may be a scanned document or image-based PDF.'}`;
+
+      return metadataText;
     }
 
   } catch (error) {
@@ -161,9 +205,23 @@ async function extractPdfText(buffer: Buffer): Promise<string> {
 
     // More detailed error information
     const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    const errorStack = error instanceof Error ? error.stack : 'No stack trace'
     console.error('PDF extraction failed with error:', errorMessage)
+    console.error('Error stack:', errorStack)
 
-    throw new Error(`Failed to extract text from PDF: ${errorMessage}`)
+    // Instead of throwing, return a descriptive message that can still be analyzed
+    const fallbackText = `PDF Document Analysis\n\n` +
+      `File Name: ${buffer ? 'PDF file received' : 'No buffer'}\n` +
+      `Processing Error: ${errorMessage}\n\n` +
+      `This PDF file could not be processed for text extraction. Possible reasons:\n` +
+      `- The PDF may be image-based or scanned (requires OCR)\n` +
+      `- The PDF may be password-protected or encrypted\n` +
+      `- The PDF format may be corrupted or non-standard\n` +
+      `- There may be a temporary processing issue\n\n` +
+      `The file has been successfully uploaded and can be manually reviewed.`;
+
+    console.log('Returning fallback text for PDF analysis');
+    return fallbackText;
   }
 }
 
