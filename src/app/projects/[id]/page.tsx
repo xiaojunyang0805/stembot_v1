@@ -374,6 +374,13 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       // Get recent conversation context for enhanced AI memory
       const { data: recentContext } = await getRecentContext(params.id, 5);
 
+      // Run automatic question quality analysis in background
+      let qualityAnalysis = null;
+      if (containsResearchQuestion(currentMessage)) {
+        qualityAnalysis = analyzeQuestionQuality(currentMessage);
+        console.log('🔍 Question Quality Analysis:', qualityAnalysis);
+      }
+
       // Always use Enhanced AI (GPT-4o Mini with fallback to Ollama/Mock)
       const response = await fetch('/api/ai/enhanced-chat', {
         method: 'POST',
@@ -394,7 +401,8 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             currentPhase: project?.current_phase,
             recentContext: recentContext,
             researchMode: researchMode,
-            documents: documents
+            documents: documents,
+            qualityAnalysis: qualityAnalysis
           },
           useEnhanced: true
         }),
@@ -417,13 +425,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
         // Detect if this was a research question and track evolution
         const questionAnalysis = detectQuestionEvolution(currentMessage, formattedContent);
-
-        // Run automatic question quality analysis in background
-        let qualityAnalysis = null;
-        if (containsResearchQuestion(currentMessage)) {
-          qualityAnalysis = analyzeQuestionQuality(currentMessage);
-          console.log('🔍 Question Quality Analysis:', qualityAnalysis);
-        }
 
         // Save conversation to database with enhanced context
         try {

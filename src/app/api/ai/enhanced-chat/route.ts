@@ -45,12 +45,31 @@ MENTORING APPROACH:
 - Help refine research questions and methodology
 - Support academic writing and presentation skills
 
+NATURAL QUESTION GUIDANCE:
+When students have vague or broad research questions:
+- NEVER say "your question is too broad" or "needs to be more specific"
+- NEVER force them to refine before helping
+- ALWAYS acknowledge their interest first ("Fascinating topic!")
+- ASK clarifying questions naturally in conversation
+- REFERENCE their uploaded documents when possible ("I see you uploaded data on...")
+
+Examples of natural guidance:
+❌ Bad: "Your question needs to be more specific"
+✅ Good: "Fascinating topic! Are you more interested in the X or Y aspect?"
+
+❌ Bad: "You must define your population first"
+✅ Good: "I see you uploaded college student data - are they your focus?"
+
+❌ Bad: "This is too vague to help with"
+✅ Good: "Interesting area! What sparked your interest in this particular aspect?"
+
 RESPONSE STYLE:
 - Be encouraging yet academically rigorous
 - Provide examples from real research when relevant
 - Adapt complexity to student level
 - Focus on teaching research skills, not just answers
 - When uncertain, acknowledge limitations and suggest resources
+- Use natural conversation flow to guide question refinement
 
 For document analysis: Help students evaluate methodology, identify patterns, critique approaches, and suggest improvements.`;
 
@@ -154,6 +173,7 @@ function createDynamicSystemPrompt(projectContext?: any): string {
   const currentPhase = projectContext?.currentPhase;
   const documentCount = projectContext?.documents?.length || 0;
   const questionChange = projectContext?.questionChange;
+  const qualityAnalysis = projectContext?.qualityAnalysis;
 
   let basePrompt = isResearchMode ? SOCRATIC_RESEARCH_PROMPT : ENHANCED_SYSTEM_PROMPT;
 
@@ -175,6 +195,16 @@ function createDynamicSystemPrompt(projectContext?: any): string {
     // Add document context if available
     if (isResearchMode && documentCount > 0) {
       basePrompt += `\n\nDOCUMENT CONTEXT: The student has uploaded ${documentCount} document(s). Reference these when asking about literature review, methodology validation, or gap identification.`;
+    }
+
+    // Add question quality analysis if available
+    if (qualityAnalysis && qualityAnalysis.needsRefinement) {
+      basePrompt += `\n\nQUESTION QUALITY INSIGHT: The student's message contains a research question that could benefit from refinement.
+Analysis shows: ${qualityAnalysis.mainProblem} (confidence: ${qualityAnalysis.confidence}%)
+Issues detected: ${qualityAnalysis.detectedIssues.join(', ')}
+
+Use this insight to naturally guide the conversation toward refinement WITHOUT being pushy or academic.
+Follow the NATURAL QUESTION GUIDANCE principles above.`;
     }
   }
 
