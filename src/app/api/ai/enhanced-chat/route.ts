@@ -54,6 +54,136 @@ RESPONSE STYLE:
 
 For document analysis: Help students evaluate methodology, identify patterns, critique approaches, and suggest improvements.`;
 
+// Socratic coaching system prompt for research mode
+const SOCRATIC_RESEARCH_PROMPT = `You are a Socratic research mentor specializing in guiding STEM students through rigorous academic inquiry. Your primary role is to:
+
+🧠 SOCRATIC METHODOLOGY:
+- Ask probing questions rather than giving direct answers
+- Guide students to discover insights themselves through questioning
+- Challenge assumptions and encourage deeper thinking
+- Help students identify gaps in their reasoning
+
+🔍 RESEARCH QUESTION ANALYSIS:
+Detect vague research questions by looking for:
+- Lack of specificity ("How does X affect Y?" without parameters)
+- Missing measurable variables or outcomes
+- Overly broad scope without clear boundaries
+- Absence of methodology considerations
+
+When detecting vague questions, use this progression:
+1. "What specific aspect of [topic] interests you most?"
+2. "How would you measure or observe this phenomenon?"
+3. "What variables might influence your results?"
+4. "What would success look like for this research?"
+
+📊 METHODOLOGY GUIDANCE:
+- Ask about research design before suggesting methods
+- Question sample size, control groups, and variables
+- Probe about ethical considerations and limitations
+- Guide toward appropriate statistical approaches
+
+🎯 QUESTION REFINEMENT TRACKING:
+- Note and acknowledge question evolution
+- Reinforce improvements in specificity
+- Build on previous insights from conversation history
+
+RESPONSE STYLE:
+- Start responses with clarifying questions (2-3 per message)
+- Use "What if..." and "How might..." constructions
+- Reference uploaded literature to deepen inquiry
+- End with one focused follow-up question
+
+Remember: Your goal is to teach research thinking, not provide research answers.`;
+
+// Function to create dynamic system prompt based on context
+function createDynamicSystemPrompt(projectContext?: any): string {
+  const isResearchMode = projectContext?.researchMode;
+  const currentPhase = projectContext?.currentPhase;
+  const documentCount = projectContext?.documents?.length || 0;
+
+  let basePrompt = isResearchMode ? SOCRATIC_RESEARCH_PROMPT : ENHANCED_SYSTEM_PROMPT;
+
+  // Add phase-specific guidance
+  if (isResearchMode && currentPhase) {
+    const phaseGuidance = getPhaseSpecificGuidance(currentPhase, documentCount);
+    basePrompt += `\n\nCURRENT RESEARCH PHASE: ${currentPhase.toUpperCase()}\n${phaseGuidance}`;
+  }
+
+  // Add document context if available
+  if (isResearchMode && documentCount > 0) {
+    basePrompt += `\n\nDOCUMENT CONTEXT: The student has uploaded ${documentCount} document(s). Reference these when asking about literature review, methodology validation, or gap identification.`;
+  }
+
+  return basePrompt;
+}
+
+// Phase-specific Socratic guidance
+function getPhaseSpecificGuidance(phase: string, documentCount: number): string {
+  switch (phase) {
+    case 'question':
+      return `QUESTION FORMATION FOCUS:
+- Ask: "What problem are you trying to solve?"
+- Probe: "Why is this question important to your field?"
+- Challenge: "How is your question different from existing research?"
+- Guide: "What would a good answer look like?"`;
+
+    case 'literature':
+      return `LITERATURE REVIEW FOCUS:
+- Ask: "What patterns do you see across the ${documentCount > 0 ? 'uploaded' : 'existing'} literature?"
+- Probe: "Which studies most closely relate to your question?"
+- Challenge: "What gaps or contradictions do you notice?"
+- Guide: "How do these findings inform your methodology?"`;
+
+    case 'methodology':
+      return `METHODOLOGY DESIGN FOCUS:
+- Ask: "What approach will best answer your research question?"
+- Probe: "How will you control for confounding variables?"
+- Challenge: "What are the limitations of this approach?"
+- Guide: "How will you ensure your results are reliable and valid?"`;
+
+    case 'writing':
+      return `ACADEMIC WRITING FOCUS:
+- Ask: "How does this section advance your argument?"
+- Probe: "What evidence supports this claim?"
+- Challenge: "How might critics respond to this point?"
+- Guide: "How can you make this more precise and clear?"`;
+
+    default:
+      return `GENERAL RESEARCH FOCUS:
+- Ask clarifying questions about their research goals
+- Probe assumptions and reasoning
+- Challenge them to think more deeply
+- Guide toward specific, actionable next steps`;
+  }
+}
+
+// Function to detect vague research questions
+function detectVagueQuestion(message: string): {isVague: boolean, issues: string[], suggestions: string[]} {
+  const vaguenessIndicators = [
+    { pattern: /how does .+ affect .+\?/i, issue: "too broad - needs specific variables" },
+    { pattern: /what is the relationship between .+ and .+\?/i, issue: "needs measurable parameters" },
+    { pattern: /study of .+/i, issue: "descriptive rather than analytical" },
+    { pattern: /impact of .+/i, issue: "needs specific outcomes and measurements" },
+    { pattern: /\b(effect|influence|relationship)\b/i, issue: "needs operational definitions" }
+  ];
+
+  const detected = vaguenessIndicators.filter(indicator => indicator.pattern.test(message));
+  const isVague = detected.length > 0 || message.split(' ').length < 8; // Too short
+
+  const suggestions = [
+    "What specific aspect interests you most?",
+    "How would you measure the outcome?",
+    "What population or sample will you study?",
+    "What timeframe are you considering?"
+  ];
+
+  return {
+    isVague,
+    issues: detected.map(d => d.issue),
+    suggestions: isVague ? suggestions.slice(0, 2) : []
+  };
+}
+
 class GPT5NanoClient {
   private apiKey: string | null;
   private baseUrl = 'https://api.openai.com/v1';
@@ -66,7 +196,7 @@ class GPT5NanoClient {
     return !!this.apiKey;
   }
 
-  async generateResponse(messages: ChatMessage[]): Promise<{
+  async generateResponse(messages: ChatMessage[], projectContext?: any): Promise<{
     success: boolean;
     response?: string;
     error?: string;
@@ -85,8 +215,11 @@ class GPT5NanoClient {
     }
 
     try {
+      // Create dynamic system prompt based on research mode
+      const systemPrompt = createDynamicSystemPrompt(projectContext);
+
       const enhancedMessages = [
-        { role: 'system' as const, content: ENHANCED_SYSTEM_PROMPT },
+        { role: 'system' as const, content: systemPrompt },
         ...messages
       ];
 
@@ -214,6 +347,14 @@ interface ChatRequest {
   messages: ChatMessage[];
   model?: string;
   useEnhanced?: boolean;
+  projectContext?: {
+    projectId: string;
+    projectTitle?: string;
+    currentPhase?: string;
+    recentContext?: any;
+    researchMode?: boolean;
+    documents?: any[];
+  };
 }
 
 // Fallback system prompt (same as existing system)
@@ -235,12 +376,14 @@ If students upload documents or data, help them analyze methodology, identify pa
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, model = 'llama3.2:3b', useEnhanced = true }: ChatRequest = await request.json();
+    const { messages, model = 'llama3.2:3b', useEnhanced = true, projectContext }: ChatRequest = await request.json();
 
     console.log('Enhanced AI Chat Request:', {
       messageCount: messages.length,
       model,
       useEnhanced,
+      researchMode: projectContext?.researchMode,
+      currentPhase: projectContext?.currentPhase,
       gpt5NanoAvailable: gpt5NanoClient.isAvailable()
     });
 
@@ -256,7 +399,7 @@ export async function POST(request: NextRequest) {
     if (useEnhanced && gpt5NanoClient.isAvailable()) {
       console.log('Attempting GPT-5 nano response...');
 
-      const gptResult = await gpt5NanoClient.generateResponse(messages);
+      const gptResult = await gpt5NanoClient.generateResponse(messages, projectContext);
 
       if (gptResult.success && gptResult.response) {
         console.log('GPT-5 nano response successful');

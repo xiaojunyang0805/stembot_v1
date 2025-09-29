@@ -38,7 +38,41 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [fileAnalysisResult, setFileAnalysisResult] = useState<any>(null);
+  const [researchMode, setResearchMode] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Question evolution detection function
+  const detectQuestionEvolution = (userMessage: string, aiResponse: string) => {
+    const questionIndicators = [
+      /research question/i,
+      /hypothesis/i,
+      /what.*study/i,
+      /how.*measure/i,
+      /investigate/i,
+      /examine/i,
+      /analyze/i
+    ];
+
+    const isQuestionRelated = questionIndicators.some(pattern => pattern.test(userMessage));
+
+    const refinementIndicators = [
+      /more specific/i,
+      /clarify/i,
+      /narrow down/i,
+      /focus/i,
+      /measurable/i,
+      /operational/i
+    ];
+
+    const hasRefinement = refinementIndicators.some(pattern => pattern.test(aiResponse));
+
+    return {
+      isQuestionRelated,
+      hasRefinement,
+      questionKeywords: userMessage.match(/\b(question|hypothesis|study|investigate|examine|analyze)\b/gi) || [],
+      timestamp: new Date().toISOString()
+    };
+  };
 
   // Fetch project data
   useEffect(() => {
@@ -219,7 +253,9 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             projectId: params.id,
             projectTitle: project?.title,
             currentPhase: project?.current_phase,
-            recentContext: recentContext
+            recentContext: recentContext,
+            researchMode: researchMode,
+            documents: documents
           },
           useEnhanced: true
         }),
@@ -240,6 +276,9 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         setMessages(prev => [...prev, aiResponse]);
         setIsAITyping(false);
 
+        // Detect if this was a research question and track evolution
+        const questionAnalysis = detectQuestionEvolution(currentMessage, formattedContent);
+
         // Save conversation to database with enhanced context
         try {
           await saveConversation({
@@ -253,7 +292,9 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               enhanced: data.enhanced || false,
               fallback: data.fallback || null,
               timestamp: new Date().toISOString(),
-              projectPhase: project?.current_phase
+              projectPhase: project?.current_phase,
+              researchMode: researchMode,
+              questionAnalysis: questionAnalysis
             }
           });
           console.log('Conversation saved to database');
@@ -1036,6 +1077,51 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             backgroundColor: '#ffffff'
           }}>
 
+            {/* Research Mode Toggle */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '1rem',
+              padding: '0.75rem',
+              backgroundColor: researchMode ? '#eff6ff' : '#f9fafb',
+              border: `1px solid ${researchMode ? '#3b82f6' : '#e5e7eb'}`,
+              borderRadius: '0.5rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <span style={{ fontSize: '1rem' }}>{researchMode ? '🧠' : '💬'}</span>
+                <span style={{
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  color: researchMode ? '#1e40af' : '#374151'
+                }}>
+                  {researchMode ? 'Research Mentoring Mode' : 'General Chat Mode'}
+                </span>
+              </div>
+              <button
+                onClick={() => setResearchMode(!researchMode)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: researchMode ? '#3b82f6' : '#6b7280',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s'
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLButtonElement).style.backgroundColor = researchMode ? '#2563eb' : '#4b5563';
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLButtonElement).style.backgroundColor = researchMode ? '#3b82f6' : '#6b7280';
+                }}
+              >
+                {researchMode ? 'Switch to Chat' : 'Enable Research Mode'}
+              </button>
+            </div>
+
             <div style={{
               display: 'flex',
               gap: '1rem',
@@ -1120,8 +1206,8 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
             {/* Context Hints */}
             <div style={{
-              backgroundColor: '#fefce8',
-              border: '1px solid #fde047',
+              backgroundColor: researchMode ? '#f0f8ff' : '#fefce8',
+              border: `1px solid ${researchMode ? '#3b82f6' : '#fde047'}`,
               borderRadius: '0.5rem',
               padding: '1rem'
             }}>
@@ -1131,16 +1217,55 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                 gap: '0.5rem',
                 marginBottom: '0.75rem'
               }}>
-                <span style={{ fontSize: '1rem' }}>💡</span>
+                <span style={{ fontSize: '1rem' }}>{researchMode ? '🧠' : '💡'}</span>
                 <h4 style={{
                   fontSize: '0.875rem',
                   fontWeight: '600',
-                  color: '#92400e',
+                  color: researchMode ? '#1e40af' : '#92400e',
                   margin: 0
                 }}>
-                  Context Hints
+                  {researchMode ? 'Socratic Research Coaching' : 'Context Hints'}
                 </h4>
               </div>
+
+              {researchMode && (
+                <div style={{
+                  backgroundColor: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '0.375rem',
+                  padding: '0.75rem',
+                  marginBottom: '0.75rem'
+                }}>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#1e40af',
+                    fontWeight: '600',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Current Phase: {project?.current_phase?.charAt(0).toUpperCase() + (project?.current_phase?.slice(1) || '')}
+                  </div>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#3b82f6',
+                    lineHeight: '1.4'
+                  }}>
+                    {(() => {
+                      switch (project?.current_phase) {
+                        case 'question':
+                          return 'I\'ll help you refine your research question using Socratic questioning. Be prepared for probing questions!';
+                        case 'literature':
+                          return 'I\'ll guide you to analyze patterns in literature and identify gaps through targeted questions.';
+                        case 'methodology':
+                          return 'I\'ll challenge your methodology choices and help you think through research design systematically.';
+                        case 'writing':
+                          return 'I\'ll help you strengthen arguments and improve clarity through constructive questioning.';
+                        default:
+                          return 'I\'ll use Socratic methods to deepen your research thinking and guide your discovery process.';
+                      }
+                    })()}
+                  </div>
+                </div>
+              )}
               <div style={{
                 display: 'grid',
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
