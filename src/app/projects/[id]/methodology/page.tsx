@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../providers/AuthProvider';
 import { getProject } from '../../../../lib/database/projects';
 import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
+import { trackProjectActivity } from '../../../../lib/database/activity';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
@@ -35,6 +36,11 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           return;
         }
         setProject(projectData);
+
+        // Track project activity for dashboard 'Continue Research'
+        trackProjectActivity(params.id).catch(err => {
+          console.warn('Failed to track project activity:', err);
+        });
 
         // Fetch documents
         const { data: documentsData, error: docsError } = await getProjectDocuments(params.id);

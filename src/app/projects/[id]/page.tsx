@@ -8,6 +8,7 @@ import { getProjectConversations, saveConversation, convertToMessages, deleteCon
 import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
 import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
+import { trackProjectActivity } from '../../../lib/database/activity';
 import type { Project } from '../../../types/database';
 
 // Disable Next.js caching for this route
@@ -53,6 +54,11 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           setError('Failed to load project');
         } else if (data) {
           setProject(data);
+
+          // Track project activity for dashboard 'Continue Research'
+          trackProjectActivity(params.id).catch(err => {
+            console.warn('Failed to track project activity:', err);
+          });
 
           // Load conversation history
           const { data: conversations, error: convError } = await getProjectConversations(params.id);
