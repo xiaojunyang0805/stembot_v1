@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gpt5NanoClient } from '@/lib/ai/gpt4o-client';
+import { gpt5NanoClient } from '@/lib/ai/gpt5-nano-client';
 
 // Use environment variable with fallback for local development (existing Ollama system)
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
