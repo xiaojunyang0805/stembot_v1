@@ -435,6 +435,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           projectContext: {
             projectId: params.id,
             projectTitle: project?.title,
+            researchQuestion: project?.research_question,
             currentPhase: project?.current_phase,
             recentContext: recentContext,
             researchMode: researchMode,

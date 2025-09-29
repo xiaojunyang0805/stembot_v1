@@ -53,15 +53,21 @@ When students have vague or broad research questions:
 - ASK clarifying questions naturally in conversation
 - REFERENCE their uploaded documents when possible ("I see you uploaded data on...")
 
-Examples of natural guidance:
+CONTEXT INTEGRATION REQUIREMENTS:
+- When students mention "my research question" or "following my research question", ALWAYS acknowledge their specific question if known
+- Reference uploaded document titles and content naturally in your response
+- Connect their documents to research planning and methodology suggestions
+- Use domain-specific language when documents indicate research area (e.g., electrochemical, biomedical)
+
+Examples of natural, context-aware guidance:
 ❌ Bad: "Your question needs to be more specific"
-✅ Good: "Fascinating topic! Are you more interested in the X or Y aspect?"
+✅ Good: "Fascinating topic! Since you uploaded that screen-printed electrode review, are you interested in the sensor development or field application aspects?"
 
 ❌ Bad: "You must define your population first"
 ✅ Good: "I see you uploaded college student data - are they your focus?"
 
 ❌ Bad: "This is too vague to help with"
-✅ Good: "Interesting area! What sparked your interest in this particular aspect?"
+✅ Good: "Given your electrochemical sensor research, what specific application interests you most - environmental monitoring, biomedical diagnostics, or something else?"
 
 RESPONSE STYLE:
 - Be encouraging yet academically rigorous
@@ -192,9 +198,21 @@ function createDynamicSystemPrompt(projectContext?: any): string {
       basePrompt += `\n\nCURRENT RESEARCH PHASE: ${currentPhase.toUpperCase()}\n${phaseGuidance}`;
     }
 
-    // Add document context if available
-    if (isResearchMode && documentCount > 0) {
-      basePrompt += `\n\nDOCUMENT CONTEXT: The student has uploaded ${documentCount} document(s). Reference these when asking about literature review, methodology validation, or gap identification.`;
+    // Add detailed document context if available
+    if (documentCount > 0 && projectContext?.documents) {
+      const documents = projectContext.documents;
+      const docSummaries = documents.slice(0, 3).map((doc: any) => {
+        const filename = doc.original_name || doc.filename;
+        const analysisSnippet = doc.analysis_result?.summary?.substring(0, 150) || '';
+        return `- "${filename}": ${analysisSnippet}${analysisSnippet.length >= 150 ? '...' : ''}`;
+      }).join('\n');
+
+      basePrompt += `\n\nDOCUMENT CONTEXT: The student has uploaded ${documentCount} document(s):
+${docSummaries}
+
+CRITICAL: When the student mentions "my research question", "following my research question", or references their research direction,
+you MUST acknowledge and connect to their uploaded documents. Reference specific document content when relevant.
+Ask about their specific research question if they mention it but don't state it clearly.`;
     }
 
     // Add question quality analysis if available
@@ -219,13 +237,48 @@ PROACTIVE HELP NEEDED: Include gentle, natural guidance in your response. ${prog
 Do NOT mention "being stuck" explicitly. Instead, naturally weave helpful suggestions into the conversation.`;
     }
 
-    // Add document-based question suggestions
+    // Add research question awareness
+    if (projectContext?.projectTitle) {
+      basePrompt += `\n\nPROJECT CONTEXT: Project title is "${projectContext.projectTitle}".`;
+    }
+
+    // Add current research question context if available
+    const currentQuestion = projectContext?.researchQuestion || projectContext?.currentQuestion;
+    if (currentQuestion && currentQuestion.length > 10) {
+      basePrompt += `\n\nCURRENT RESEARCH QUESTION: "${currentQuestion}"
+
+When the student references "my research question" or "following my research question", they are referring to this question.
+Connect your guidance to this specific question and their uploaded documents.`;
+    } else if (documentCount > 0) {
+      basePrompt += `\n\nRESEARCH QUESTION STATUS: The student has uploaded documents but their research question may not be clearly defined yet.
+When they mention "my research question", ask them to clarify what specific question they want to explore based on their uploaded content.`;
+    }
+
+    // Add domain-specific guidance based on documents
     if (projectContext?.documents?.length > 0) {
-      // Note: Question suggestions would come from the document analysis API
-      // and could be stored in project context or retrieved here
-      basePrompt += `\n\nDOCUMENT-BASED GUIDANCE: The student has uploaded ${projectContext.documents.length} documents.
-If they seem to need direction, consider suggesting questions based on their uploaded content.
-Look for opportunities to connect their documents to specific research questions.`;
+      const documents = projectContext.documents;
+      const hasElectrochemical = documents.some((doc: any) =>
+        doc.original_name?.toLowerCase().includes('electrode') ||
+        doc.original_name?.toLowerCase().includes('electrochemical') ||
+        doc.original_name?.toLowerCase().includes('sensor')
+      );
+
+      const hasBiomedical = documents.some((doc: any) =>
+        doc.original_name?.toLowerCase().includes('biomedical') ||
+        doc.original_name?.toLowerCase().includes('medical') ||
+        doc.original_name?.toLowerCase().includes('clinical')
+      );
+
+      if (hasElectrochemical) {
+        basePrompt += `\n\nDOMAIN EXPERTISE: The student has uploaded electrochemical/sensor-related documents.
+Provide specific guidance relevant to electrochemical research, sensor development, analytical methods, and practical applications.
+Consider lab-to-field transitions, sensor performance, and real-world testing scenarios.`;
+      }
+
+      if (hasBiomedical) {
+        basePrompt += `\n\nDOMAIN EXPERTISE: The student has uploaded biomedical-related documents.
+Provide guidance relevant to biomedical research, clinical applications, patient populations, and medical device considerations.`;
+      }
     }
   }
 
