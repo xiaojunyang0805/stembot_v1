@@ -1,8 +1,9 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../providers/AuthProvider';
+import { getUserProfile, updateUserProfile } from '../../lib/database/users';
 import StorageIndicator from '../../components/storage/StorageIndicator';
 
 // Disable Next.js caching for this route
@@ -13,6 +14,19 @@ export default function SettingsPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [activeTab, setActiveTab] = useState('profile');
+  const [isLoading, setIsLoading] = useState(false);
+  const [saveMessage, setSaveMessage] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+
+  // Profile form state
+  const [profileData, setProfileData] = useState({
+    displayName: '',
+    email: '',
+    institution: '',
+    researchAreas: ''
+  });
+
+  // Notifications state
   const [notifications, setNotifications] = useState({
     email: true,
     research: true,
@@ -24,9 +38,96 @@ export default function SettingsPage() {
   const userEmail = user?.email || 'user@example.com';
   const userId = user?.id || 'guest';
 
-  const handleSave = () => {
-    // Mock save functionality
-    console.log('Settings saved');
+  // Load user profile data on component mount
+  useEffect(() => {
+    const loadUserProfile = async () => {
+      if (!user) return;
+
+      try {
+        const { data: userProfile, error } = await getUserProfile();
+
+        if (error) {
+          console.warn('Error loading user profile:', error);
+          // Set default values from auth user
+          setProfileData({
+            displayName: userName,
+            email: userEmail,
+            institution: '',
+            researchAreas: ''
+          });
+        } else if (userProfile) {
+          // Populate form with existing profile data
+          const profileData = userProfile.profile_data as any;
+          setProfileData({
+            displayName: profileData?.name || userName,
+            email: userProfile.email,
+            institution: userProfile.university || '',
+            researchAreas: userProfile.research_interests?.join(', ') || ''
+          });
+
+          // Update notifications from user settings
+          if (userProfile.settings) {
+            const settings = userProfile.settings as any;
+            setNotifications({
+              email: settings.email_updates ?? true,
+              research: settings.notifications ?? true,
+              collaboration: settings.collaboration_notifications ?? false,
+              updates: settings.product_updates ?? true
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error loading user profile:', error);
+      }
+    };
+
+    loadUserProfile();
+  }, [user, userName, userEmail]);
+
+  const handleSave = async () => {
+    if (!user) return;
+
+    setIsLoading(true);
+    setSaveMessage(null);
+    setSaveError(null);
+
+    try {
+      // Prepare update data
+      const updateData = {
+        university: profileData.institution.trim() || null,
+        research_interests: profileData.researchAreas
+          .split(',')
+          .map(area => area.trim())
+          .filter(area => area.length > 0),
+        profile_data: {
+          name: profileData.displayName.trim() || userName,
+          avatar_url: user.user_metadata?.avatar_url
+        },
+        settings: {
+          notifications: notifications.research,
+          email_updates: notifications.email,
+          collaboration_notifications: notifications.collaboration,
+          product_updates: notifications.updates,
+          theme: 'light'
+        }
+      };
+
+      const { error } = await updateUserProfile(updateData);
+
+      if (error) {
+        setSaveError('Failed to save settings. Please try again.');
+        console.error('Error saving settings:', error);
+      } else {
+        setSaveMessage('Settings saved successfully!');
+        // Clear success message after 3 seconds
+        setTimeout(() => setSaveMessage(null), 3000);
+      }
+    } catch (error) {
+      setSaveError('An unexpected error occurred. Please try again.');
+      console.error('Error saving settings:', error);
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -246,7 +347,8 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="text"
-                      defaultValue={userName}
+                      value={profileData.displayName}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, displayName: e.target.value }))}
                       style={{
                         width: '100%',
                         padding: '0.75rem',
@@ -269,15 +371,25 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="email"
-                      defaultValue={userEmail}
+                      value={profileData.email}
+                      disabled
                       style={{
                         width: '100%',
                         padding: '0.75rem',
                         border: '1px solid #d1d5db',
                         borderRadius: '0.375rem',
-                        fontSize: '0.875rem'
+                        fontSize: '0.875rem',
+                        backgroundColor: '#f9fafb',
+                        color: '#6b7280'
                       }}
                     />
+                    <div style={{
+                      fontSize: '0.75rem',
+                      color: '#6b7280',
+                      marginTop: '0.25rem'
+                    }}>
+                      Email cannot be changed here. Contact support if needed.
+                    </div>
                   </div>
 
                   <div>
@@ -292,6 +404,8 @@ export default function SettingsPage() {
                     </label>
                     <input
                       type="text"
+                      value={profileData.institution}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, institution: e.target.value }))}
                       placeholder="University or Research Institution"
                       style={{
                         width: '100%',
@@ -314,7 +428,9 @@ export default function SettingsPage() {
                       Research Areas
                     </label>
                     <textarea
-                      placeholder="Your primary research interests and areas of expertise"
+                      value={profileData.researchAreas}
+                      onChange={(e) => setProfileData(prev => ({ ...prev, researchAreas: e.target.value }))}
+                      placeholder="Your primary research interests and areas of expertise (separate with commas)"
                       rows={3}
                       style={{
                         width: '100%',
@@ -466,31 +582,79 @@ export default function SettingsPage() {
               <div style={{
                 marginTop: '2rem',
                 paddingTop: '1.5rem',
-                borderTop: '1px solid #e5e7eb',
-                display: 'flex',
-                justifyContent: 'flex-end'
+                borderTop: '1px solid #e5e7eb'
               }}>
-                <button
-                  onClick={handleSave}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    backgroundColor: '#2563eb',
-                    color: 'white',
-                    border: 'none',
+                {/* Success/Error Messages */}
+                {(saveMessage || saveError) && (
+                  <div style={{
+                    marginBottom: '1rem',
+                    padding: '0.75rem 1rem',
                     borderRadius: '0.375rem',
                     fontSize: '0.875rem',
-                    fontWeight: '600',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
-                  }}
-                >
-                  💾 Save Changes
-                </button>
+                    backgroundColor: saveMessage ? '#d1fae5' : '#fee2e2',
+                    color: saveMessage ? '#065f46' : '#991b1b',
+                    border: `1px solid ${saveMessage ? '#a7f3d0' : '#fecaca'}`
+                  }}>
+                    {saveMessage ? '✅ ' + saveMessage : '❌ ' + saveError}
+                  </div>
+                )}
+
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'flex-end'
+                }}>
+                  <button
+                    onClick={handleSave}
+                    disabled={isLoading}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: isLoading ? '#9ca3af' : '#2563eb',
+                      color: 'white',
+                      border: 'none',
+                      borderRadius: '0.375rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '600',
+                      cursor: isLoading ? 'not-allowed' : 'pointer',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '0.5rem'
+                    }}
+                    onMouseEnter={(e) => {
+                      if (!isLoading) {
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (!isLoading) {
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                      }
+                    }}
+                  >
+                    {isLoading ? (
+                      <>
+                        <div style={{
+                          width: '1rem',
+                          height: '1rem',
+                          border: '2px solid transparent',
+                          borderTop: '2px solid white',
+                          borderRadius: '50%',
+                          animation: 'spin 1s linear infinite'
+                        }} />
+                        Saving...
+                      </>
+                    ) : (
+                      <>💾 Save Changes</>
+                    )}
+                  </button>
+                </div>
+
+                {/* CSS for spinner animation */}
+                <style jsx>{`
+                  @keyframes spin {
+                    0% { transform: rotate(0deg); }
+                    100% { transform: rotate(360deg); }
+                  }
+                `}</style>
               </div>
             )}
           </div>
