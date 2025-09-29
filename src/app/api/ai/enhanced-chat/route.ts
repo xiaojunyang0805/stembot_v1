@@ -21,6 +21,7 @@ interface OpenAIResponse {
 }
 
 // Enhanced system prompt for research mentoring with GPT-5 nano
+// Note: Requires OPENAI_API_KEY environment variable in Vercel
 const ENHANCED_SYSTEM_PROMPT = `You are an expert AI research mentor for university STEM students. You have deep knowledge across:
 
 RESEARCH METHODOLOGY:
