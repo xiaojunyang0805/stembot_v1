@@ -12,6 +12,7 @@ import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
 import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
 import { trackProjectActivity } from '../../../lib/database/activity';
+import { DuplicateDialog, type DuplicateChoice, type DuplicateMatch } from '../../../components/ui/duplicate-dialog';
 import type { Project } from '../../../types/database';
 
 // Disable Next.js caching for this route
@@ -41,6 +42,13 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
   const [uploadingFile, setUploadingFile] = useState(false);
   const [fileAnalysisResult, setFileAnalysisResult] = useState<any>(null);
+  // Duplicate detection states
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [duplicateMatches, setDuplicateMatches] = useState<DuplicateMatch[]>([]);
+  const [duplicateConfidence, setDuplicateConfidence] = useState(0);
+  const [duplicateRecommendation, setDuplicateRecommendation] = useState<'overwrite' | 'keep_both' | 'merge' | 'skip'>('keep_both');
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [pendingAnalysis, setPendingAnalysis] = useState<any>(null);
   const [researchMode, setResearchMode] = useState(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
   const [editedQuestion, setEditedQuestion] = useState('');

@@ -113,13 +113,28 @@ export async function generateQuestionSuggestions(
     const hasFailedExtraction = (doc.extracted_text?.length || 0) < 100;
     const confidenceThreshold = hasFailedExtraction && doc.mime_type?.includes('pdf') ? 50 : 70;
 
+    console.log(`📄 Document: ${doc.original_name}`);
+    console.log(`📊 Text length: ${doc.extracted_text?.length || 0}`);
+    console.log(`🔍 Pattern type: ${pattern.type}, confidence: ${pattern.confidence}`);
+    console.log(`⚡ Failed extraction: ${hasFailedExtraction}, threshold: ${confidenceThreshold}`);
+
     if (pattern.confidence > confidenceThreshold) {
       const suggestion = await generateSpecificSuggestion(doc, pattern, currentQuestion);
       const suggestionThreshold = hasFailedExtraction && doc.mime_type?.includes('pdf') ? 60 : 70;
 
+      console.log(`💡 Suggestion generated: ${suggestion ? 'Yes' : 'No'}`);
+      if (suggestion) {
+        console.log(`🎯 Suggestion confidence: ${suggestion.confidence}, threshold: ${suggestionThreshold}`);
+      }
+
       if (suggestion && suggestion.confidence > suggestionThreshold) {
         suggestions.push(suggestion);
+        console.log(`✅ Suggestion added!`);
+      } else if (suggestion) {
+        console.log(`❌ Suggestion rejected (confidence too low)`);
       }
+    } else {
+      console.log(`❌ Pattern confidence too low for processing`);
     }
   }
 

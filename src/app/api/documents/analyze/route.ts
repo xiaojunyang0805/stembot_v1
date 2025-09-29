@@ -5,6 +5,8 @@ import { validateStorageForUpload, validateFile } from '../../../../lib/storage/
 // Enhanced document analysis
 import { generateQuestionSuggestions, analyzeDocumentPattern } from '../../../../lib/documents/analyzer'
 import { getProjectDocuments } from '../../../../lib/database/documents'
+// Duplicate detection
+import { DocumentDuplicateDetector } from '../../../../lib/documents/duplicateDetector'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -164,6 +166,10 @@ export async function POST(request: NextRequest) {
         // Generate suggestions
         questionSuggestions = await generateQuestionSuggestions(allDocs);
         console.log('🎯 Generated question suggestions:', questionSuggestions.length);
+        console.log('📋 Suggestion details:', questionSuggestions.map(s => ({
+          confidence: s.confidence,
+          question: s.suggestedQuestion?.substring(0, 50) + '...'
+        })));
       }
     } catch (suggestionError) {
       console.warn('Question suggestion generation failed:', suggestionError);
