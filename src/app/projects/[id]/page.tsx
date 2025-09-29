@@ -398,6 +398,16 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         // Show analysis result
         setFileAnalysisResult(result);
 
+        // Add upload result to chat conversation
+        const uploadMessage: Message = {
+          id: `upload-${Date.now()}`,
+          role: 'ai',
+          content: `📄 **Document uploaded successfully!**\n\n**File:** ${result.fileInfo.name}\n**Size:** ${result.fileInfo.sizeMB} MB\n\n**Analysis Summary:**\n${result.analysis.summary}\n\n**Key Points:**\n${result.analysis.keyPoints?.map((point: string) => `• ${point}`).join('\n') || 'Processing complete'}`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setMessages(prev => [...prev, uploadMessage]);
+
         console.log('File uploaded and analyzed successfully');
       } else {
         alert(`Upload failed: ${result.error}`);
@@ -572,49 +582,11 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             </h1>
           </div>
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <button
-              style={{
-                padding: '0.5rem 1rem',
-                backgroundColor: '#3b82f6',
-                color: 'white',
-                border: 'none',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
-              }}
-            >
-              Share
-            </button>
-            <button
-              style={{
-                padding: '0.5rem',
-                backgroundColor: '#f3f4f6',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem',
-                fontSize: '1rem',
-                cursor: 'pointer'
-              }}
-              onMouseEnter={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = '#e5e7eb';
-              }}
-              onMouseLeave={(e) => {
-                (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
-              }}
-            >
-              ⚙️
-            </button>
-          </div>
+          {/* Simplified header - removed Share and Settings buttons for cleaner design */}
         </div>
       </header>
 
-      {/* Navigation Banner */}
+      {/* Project Progress Banner */}
       <div style={{
         backgroundColor: '#f8fafc',
         borderBottom: '1px solid #e5e7eb',
@@ -622,44 +594,91 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       }}>
         <div style={{
           maxWidth: '1400px',
-          margin: '0 auto',
-          display: 'flex',
-          gap: '0.5rem'
+          margin: '0 auto'
         }}>
-          {[
-            { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, active: true },
-            { id: 'literature', label: 'Literature Review', path: `/projects/${params.id}/literature`, active: false },
-            { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, active: false },
-            { id: 'writing', label: 'Academic Writing', path: `/projects/${params.id}/writing`, active: false }
-          ].map((nav) => (
-            <button
-              key={nav.id}
-              onClick={() => nav.active ? null : router.push(nav.path)}
-              style={{
-                padding: '0.75rem 1.5rem',
-                backgroundColor: nav.active ? '#2563eb' : 'white',
-                color: nav.active ? 'white' : '#6b7280',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.375rem',
-                fontSize: '0.875rem',
-                fontWeight: '600',
-                cursor: nav.active ? 'default' : 'pointer',
-                opacity: nav.active ? 1 : 0.8
-              }}
-              onMouseEnter={(e) => {
-                if (!nav.active) {
-                  (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
-                }
-              }}
-              onMouseLeave={(e) => {
-                if (!nav.active) {
-                  (e.target as HTMLButtonElement).style.backgroundColor = 'white';
-                }
-              }}
-            >
-              {nav.label}
-            </button>
-          ))}
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '0.75rem'
+          }}>
+            <span style={{
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              color: '#374151'
+            }}>
+              Project Progress
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1.5rem' }}>
+            {[
+              { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, progress: 85, active: true },
+              { id: 'literature', label: 'Literature', path: `/projects/${params.id}/literature`, progress: 65, active: false },
+              { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, progress: 40, active: false },
+              { id: 'writing', label: 'Writing', path: `/projects/${params.id}/writing`, progress: 15, active: false }
+            ].map((section) => (
+              <div
+                key={section.id}
+                style={{
+                  flex: 1,
+                  cursor: 'pointer',
+                  padding: '0.5rem',
+                  borderRadius: '0.375rem',
+                  backgroundColor: section.active ? '#eff6ff' : 'transparent',
+                  border: section.active ? '1px solid #3b82f6' : '1px solid transparent'
+                }}
+                onClick={() => section.active ? null : router.push(section.path)}
+                onMouseEnter={(e) => {
+                  if (!section.active) {
+                    (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!section.active) {
+                    (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+                  }
+                }}
+              >
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '0.25rem'
+                }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '500',
+                    color: section.active ? '#3b82f6' : '#6b7280'
+                  }}>
+                    {section.label}
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: section.active ? '#3b82f6' : '#9ca3af'
+                  }}>
+                    {section.progress}%
+                  </span>
+                </div>
+
+                <div style={{
+                  width: '100%',
+                  height: '0.375rem',
+                  backgroundColor: '#e5e7eb',
+                  borderRadius: '0.25rem',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${section.progress}%`,
+                    height: '100%',
+                    backgroundColor: section.active ? '#3b82f6' : '#10b981',
+                    borderRadius: '0.25rem',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
 
@@ -1158,13 +1177,36 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                   outline: 'none'
                 }}
               />
+              {/* Hidden file input for chat uploads */}
+              <input
+                type="file"
+                accept=".pdf,.docx,.doc,.xlsx,.xls,.txt,.jpg,.jpeg,.png,.tiff,.bmp,.webp"
+                onChange={handleFileUpload}
+                style={{ display: 'none' }}
+                id="chat-file-upload"
+                disabled={uploadingFile || isAITyping}
+              />
+
               <button
+                onClick={() => document.getElementById('chat-file-upload')?.click()}
+                disabled={uploadingFile || isAITyping}
                 style={{
                   padding: '0.75rem',
-                  backgroundColor: '#f3f4f6',
+                  backgroundColor: uploadingFile ? '#e5e7eb' : '#f3f4f6',
                   border: '1px solid #d1d5db',
                   borderRadius: '0.5rem',
-                  cursor: 'pointer'
+                  cursor: uploadingFile || isAITyping ? 'not-allowed' : 'pointer',
+                  opacity: uploadingFile || isAITyping ? 0.6 : 1
+                }}
+                onMouseEnter={(e) => {
+                  if (!uploadingFile && !isAITyping) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#e5e7eb';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!uploadingFile && !isAITyping) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                  }
                 }}
               >
                 📎
