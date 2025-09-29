@@ -7,6 +7,7 @@ import { getProject } from '../../../lib/database/projects';
 import { getProjectConversations, saveConversation, convertToMessages, deleteConversation } from '../../../lib/database/conversations';
 import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
+import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
 import type { Project } from '../../../types/database';
 
 // Disable Next.js caching for this route
@@ -33,6 +34,9 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   const useEnhancedAI = true;
   const [isAITyping, setIsAITyping] = useState(false);
   const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
+  const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [fileAnalysisResult, setFileAnalysisResult] = useState<any>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch project data
@@ -80,6 +84,16 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               }
             ]);
           }
+
+          // Load project documents
+          const { data: projectDocuments, error: docsError } = await getProjectDocuments(params.id);
+          if (docsError) {
+            console.warn('Error loading documents:', docsError);
+          } else if (projectDocuments) {
+            setDocuments(projectDocuments);
+            console.log(`Loaded ${projectDocuments.length} documents`);
+          }
+
         } else {
           setError('Project not found');
         }
@@ -133,9 +147,11 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     sources: [
       { name: 'Research sources will appear here', type: 'pdf' }
     ],
-    documents: [
-      { name: 'Project documents will appear here', size: '0 MB', type: 'pdf' }
-    ],
+    documents: documents.map(doc => ({
+      name: doc.original_name,
+      size: `${(doc.file_size / (1024 * 1024)).toFixed(1)} MB`,
+      type: doc.mime_type.split('/')[1] || 'file'
+    })),
     memory: {
       lastSession: `Working on "${project.title}" - ${project.current_phase} phase`,
       contextHints: [
@@ -339,6 +355,63 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       alert('Failed to delete message. Please try again.');
     } finally {
       setDeletingMessageId(null);
+    }
+  };
+
+  // Handle file upload and analysis
+  const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    try {
+      setUploadingFile(true);
+      setFileAnalysisResult(null);
+
+      const formData = new FormData();
+      formData.append('file', file);
+
+      const response = await fetch('/api/documents/analyze', {
+        method: 'POST',
+        body: formData
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        // Save document metadata to database
+        await saveDocumentMetadata({
+          projectId: params.id,
+          filename: result.fileInfo.name,
+          originalName: result.fileInfo.name,
+          fileSize: result.fileInfo.size,
+          mimeType: result.fileInfo.type,
+          extractedText: result.extractedText,
+          analysisResult: result.analysis
+        });
+
+        // Refresh documents list
+        const { data: updatedDocuments } = await getProjectDocuments(params.id);
+        if (updatedDocuments) {
+          setDocuments(updatedDocuments);
+        }
+
+        // Show analysis result
+        setFileAnalysisResult(result);
+
+        console.log('File uploaded and analyzed successfully');
+      } else {
+        alert(`Upload failed: ${result.error}`);
+      }
+
+    } catch (error) {
+      console.error('File upload error:', error);
+      alert('File upload failed. Please try again.');
+    } finally {
+      setUploadingFile(false);
+      // Reset file input
+      if (event.target) {
+        event.target.value = '';
+      }
     }
   };
 
@@ -827,26 +900,57 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                 </h3>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                {projectData.documents.map((doc, index) => (
-                  <div key={index} style={{
+                {documents.length > 0 ? documents.map((doc, index) => (
+                  <div key={doc.id} style={{
                     fontSize: '0.75rem',
-                    color: '#6b7280'
+                    color: '#6b7280',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem'
                   }}>
-                    • {doc.name}
+                    <span>📄</span>
+                    <span>{doc.original_name}</span>
+                    <span style={{ color: '#9ca3af' }}>
+                      ({(doc.file_size / (1024 * 1024)).toFixed(1)} MB)
+                    </span>
                   </div>
-                ))}
-                <button style={{
-                  marginTop: '0.5rem',
-                  padding: '0.5rem',
-                  backgroundColor: '#3b82f6',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.25rem',
-                  fontSize: '0.75rem',
-                  cursor: 'pointer'
-                }}>
-                  Upload More
-                </button>
+                )) : (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic'
+                  }}>
+                    No documents uploaded yet
+                  </div>
+                )}
+
+                {/* File Upload Input */}
+                <input
+                  type="file"
+                  accept=".pdf,.docx,.doc,.xlsx,.xls,.txt"
+                  onChange={handleFileUpload}
+                  style={{ display: 'none' }}
+                  id="document-upload"
+                  disabled={uploadingFile}
+                />
+
+                <label
+                  htmlFor="document-upload"
+                  style={{
+                    marginTop: '0.5rem',
+                    padding: '0.5rem',
+                    backgroundColor: uploadingFile ? '#9ca3af' : '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.25rem',
+                    fontSize: '0.75rem',
+                    cursor: uploadingFile ? 'not-allowed' : 'pointer',
+                    textAlign: 'center',
+                    display: 'block'
+                  }}
+                >
+                  {uploadingFile ? 'Uploading...' : 'Upload Document'}
+                </label>
               </div>
             </div>
           </div>

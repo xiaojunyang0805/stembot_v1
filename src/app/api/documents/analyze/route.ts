@@ -1,0 +1,246 @@
+import { NextRequest, NextResponse } from 'next/server'
+
+// Storage validation
+import { validateStorageForUpload, validateFile } from '../../../../lib/storage/validation'
+
+export const runtime = 'nodejs'
+export const dynamic = 'force-dynamic'
+
+// Document analysis API endpoint
+export async function POST(request: NextRequest) {
+  try {
+    // Parse multipart form data
+    const formData = await request.formData()
+    const file = formData.get('file') as File
+
+    if (!file) {
+      return NextResponse.json({
+        success: false,
+        error: 'No file provided'
+      }, { status: 400 })
+    }
+
+    // Validate file before processing
+    const fileValidation = validateFile(file, 'documents', 'free') // TODO: Get actual subscription tier
+
+    if (!fileValidation.valid) {
+      return NextResponse.json({
+        success: false,
+        error: fileValidation.error,
+        fileInfo: fileValidation.fileInfo
+      }, { status: 400 })
+    }
+
+    // Validate storage limits
+    const storageValidation = await validateStorageForUpload(fileValidation.fileInfo!.sizeMB)
+
+    if (!storageValidation.canUpload) {
+      return NextResponse.json({
+        success: false,
+        error: storageValidation.error,
+        storageInfo: storageValidation.storageInfo
+      }, { status: 413 })
+    }
+
+    // Convert File to Buffer for processing
+    const arrayBuffer = await file.arrayBuffer()
+    const buffer = Buffer.from(arrayBuffer)
+
+    // Extract text based on file type
+    let extractedText = ''
+    let analysis = {}
+
+    try {
+      switch (file.type) {
+        case 'application/pdf':
+          extractedText = await extractPdfText(buffer)
+          break
+
+        case 'application/vnd.openxmlformats-officedocument.wordprocessingml.document':
+          extractedText = await extractDocxText(buffer)
+          break
+
+        case 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet':
+          extractedText = await extractXlsxText(buffer)
+          break
+
+        case 'text/plain':
+          extractedText = buffer.toString('utf-8')
+          break
+
+        case 'application/msword':
+          // Basic .doc support - fallback to filename info only
+          extractedText = `Document: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\nFormat: Microsoft Word Document (.doc)`
+          break
+
+        default:
+          return NextResponse.json({
+            success: false,
+            error: `Unsupported file type: ${file.type}`,
+            fileInfo: fileValidation.fileInfo
+          }, { status: 400 })
+      }
+
+      // Generate AI analysis if text extraction successful
+      if (extractedText.trim().length > 0) {
+        analysis = await generateDocumentAnalysis(extractedText, file.name)
+      }
+
+    } catch (extractionError) {
+      console.error('Text extraction failed:', extractionError)
+      // Fallback to basic file info
+      extractedText = `File: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\nType: ${file.type}`
+      analysis = {
+        summary: 'Text extraction failed - showing basic file information only.',
+        keyPoints: [`File name: ${file.name}`, `File size: ${(file.size / 1024).toFixed(1)} KB`],
+        documentType: 'Unknown',
+        error: 'Text extraction failed'
+      }
+    }
+
+    return NextResponse.json({
+      success: true,
+      fileInfo: {
+        name: file.name,
+        size: file.size,
+        type: file.type,
+        sizeMB: parseFloat((file.size / (1024 * 1024)).toFixed(2))
+      },
+      extractedText: extractedText.substring(0, 5000), // Limit text length
+      analysis,
+      storageInfo: storageValidation.storageInfo,
+      timestamp: new Date().toISOString()
+    })
+
+  } catch (error) {
+    console.error('Document analysis error:', error)
+    return NextResponse.json({
+      success: false,
+      error: 'Document analysis failed',
+      details: error instanceof Error ? error.message : 'Unknown error'
+    }, { status: 500 })
+  }
+}
+
+/**
+ * Extract text from PDF files
+ */
+async function extractPdfText(buffer: Buffer): Promise<string> {
+  try {
+    const pdfParse = (await import('pdf-parse')).default
+    const data = await pdfParse(buffer)
+    return data.text || 'No text found in PDF'
+  } catch (error) {
+    console.error('PDF extraction error:', error)
+    throw new Error('Failed to extract text from PDF')
+  }
+}
+
+/**
+ * Extract text from DOCX files
+ */
+async function extractDocxText(buffer: Buffer): Promise<string> {
+  try {
+    const mammoth = await import('mammoth')
+    const result = await mammoth.extractRawText({ buffer })
+    return result.value || 'No text found in DOCX'
+  } catch (error) {
+    console.error('DOCX extraction error:', error)
+    throw new Error('Failed to extract text from DOCX')
+  }
+}
+
+/**
+ * Extract text from XLSX files
+ */
+async function extractXlsxText(buffer: Buffer): Promise<string> {
+  try {
+    const XLSX = await import('xlsx')
+    const workbook = XLSX.read(buffer, { type: 'buffer' })
+    let allText = ''
+
+    workbook.SheetNames.forEach(sheetName => {
+      const worksheet = workbook.Sheets[sheetName]
+      const sheetText = XLSX.utils.sheet_to_csv(worksheet)
+      allText += `Sheet: ${sheetName}\n${sheetText}\n\n`
+    })
+
+    return allText || 'No data found in spreadsheet'
+  } catch (error) {
+    console.error('XLSX extraction error:', error)
+    throw new Error('Failed to extract data from XLSX')
+  }
+}
+
+/**
+ * Generate AI-powered document analysis using GPT-4o mini
+ */
+async function generateDocumentAnalysis(text: string, fileName: string): Promise<any> {
+  try {
+    // Prepare text for analysis (limit size for API)
+    const analysisText = text.substring(0, 3000) // Limit for GPT processing
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: 'You are a document analysis assistant. Analyze the provided document text and provide a structured summary with key points, document type, and research relevance. Return your response in JSON format with fields: summary, keyPoints (array), documentType, and researchRelevance.'
+          },
+          {
+            role: 'user',
+            content: `Analyze this document "${fileName}":\n\n${analysisText}`
+          }
+        ],
+        max_tokens: 1000,
+        temperature: 0.3
+      })
+    })
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`)
+    }
+
+    const data = await response.json()
+    const analysisContent = data.choices[0]?.message?.content
+
+    if (!analysisContent) {
+      throw new Error('No analysis content received')
+    }
+
+    // Try to parse as JSON, fallback to text analysis
+    try {
+      return JSON.parse(analysisContent)
+    } catch (parseError) {
+      // Fallback: create structured response from text
+      return {
+        summary: analysisContent,
+        keyPoints: ['AI analysis completed', `Document: ${fileName}`],
+        documentType: 'Document',
+        researchRelevance: 'Analysis available'
+      }
+    }
+
+  } catch (error) {
+    console.error('AI analysis error:', error)
+
+    // Fallback analysis
+    return {
+      summary: `Document "${fileName}" uploaded successfully. AI analysis unavailable - using basic text extraction.`,
+      keyPoints: [
+        `Document name: ${fileName}`,
+        `Text length: ${text.length} characters`,
+        'Basic document processing completed'
+      ],
+      documentType: 'Document',
+      researchRelevance: 'Analysis unavailable',
+      error: 'AI analysis failed'
+    }
+  }
+}

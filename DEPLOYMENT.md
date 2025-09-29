@@ -2417,3 +2417,139 @@ Current Status
 
   The fix has been deployed and GPT-5-nano should now work properly with your existing API key. Test it by enabling Enhanced AI in your chat interface.
 
+13:54, 29/09, 2025
+✅ GPT-5-nano Investigation Complete - Reverted to GPT-4o-mini
+
+  Investigation Results:
+  ✅ What I Found:
+  1. Model Identifier: 'gpt-5-nano-2025-08-07' is the correct OpenAI API model name     
+  2. API Authentication: Your OpenAI API key works perfectly with GPT-5-nano
+  3. Parameter Requirements: GPT-5-nano uses max_completion_tokens instead of max_tokens
+  4. API Connection: Direct API calls succeed with 200 OK responses
+
+  ❌ Root Issue Discovered:
+  GPT-5-nano has known bugs with empty response content. My research found:
+  - Multiple GitHub issues reporting empty output_text from GPT-5 series
+  - OpenAI Community posts about "empty reasoning and no content output"
+  - LangChain integration issues with GPT-5-nano returning empty content
+  - This affects the Responses API and various integrations
+
+  ✅ Solution Applied:
+  Reverted all references back to 'gpt-4o-mini' which is:
+  - ✅ Proven to work in your application
+  - ✅ Stable and reliable
+  - ✅ Cost-effective for your use case
+  - ✅ Well-tested with your current implementation
+
+  Files Updated:
+  - src/lib/ai/gpt5-nano-client.ts
+  - src/app/api/ai/enhanced-chat/route.ts
+  - src/app/projects/[id]/page.tsx
+  - src/lib/database/conversations.ts
+  - create_conversations_table.sql
+
+  Recommendation:
+  Stick with GPT-4o-mini until OpenAI resolves the GPT-5-nano empty response issues. Your Enhanced AI should now work reliably again with the proven model.
+
+14:04, 29/09, 2025
+✅ File System Cleanup and GPT-4o-mini Verification Complete    
+
+  Cleanup Results:
+
+  🗑️ Files Removed:
+  - create_conversations_table.sql - Temporary SQL migration file
+  - vercel.json.backup - Backup configuration file
+  - src/app/ai-test/ - Test route for AI functionality
+  - src/app/dashboard-backup/ - Backup dashboard page
+  - src/app/integration-test/ - Integration testing route
+  - src/app/test-route/ - General test route
+  - src/app/api/test/ - Test API endpoints
+  - src/app/api/debug/ - Debug API endpoints
+
+  📊 Optimization Results:
+  - ✅ Route count reduced: 32 → 26 routes (6 routes removed)
+  - ✅ Build size optimized: Cleaner bundle without test code
+  - ✅ File system health: No unnecessary test or backup files
+  - ✅ Production-ready codebase: Only essential routes remain
+
+  🤖 GPT-4o-mini Status:
+  - ✅ API Connection: Verified working with OpenAI API
+  - ✅ Model Configuration: All references correctly set to 'gpt-4o-mini'
+  - ✅ Response Quality: Returns proper content (unlike GPT-5-nano issues)
+  - ✅ Integration Ready: Enhanced AI functionality ready for use
+
+  🛡️ Files Kept:
+  - src/app/api/admin/database/ - Useful for database administration with service role
+  - All production routes and components
+
+  Your file system is now clean and optimized, with GPT-4o-mini confirmed as the working AI model. The Enhanced AI functionality should work reliably in your application.
+
+14:24, 29/09, 2025
+✅ Comprehensive Storage Management System Implemented
+
+  Storage Monitoring & Limits:
+
+  | Subscription | Storage Limit | File Limit   | Max File Size   |
+  |--------------|---------------|--------------|-----------------|
+  | Free         | 50 MB         | 50 MB total  | 10 MB per file  |
+  | Pro          | 1 GB          | 500 MB total | 100 MB per file |
+  | Enterprise   | 5 GB          | 2 GB total   | 500 MB per file |
+
+  ✨ Features Implemented:
+
+  1. Real-Time Monitoring:
+  - Live storage calculation across all user data
+  - Breakdown by: conversations, projects, sources, memory, attachments
+  - Visual indicators with color-coded warnings (70%, 85%, 95%)
+
+  2. User Interface Integration:
+  - Dashboard Header: Compact storage indicator with percentage
+  - Settings Page: Detailed "Storage & Usage" tab with full breakdown
+  - Project Pages: Pre-conversation storage validation
+  - Visual Feedback: Progress bars and cleanup suggestions
+
+  3. Smart Validation:
+  - Conversation Storage: Validates before saving messages/AI responses
+  - File Upload: Size, type, and capacity validation
+  - Proactive Warnings: Alerts before hitting limits
+  - Graceful Degradation: Clear error messages, not silent failures
+
+  4. Cleanup Recommendations:
+  - Archive conversations older than 6 months (30% savings)
+  - Remove unused/inactive projects (20% savings)
+  - Optimize project memory entries (25% savings)
+  - Clean duplicate/unused sources (15% savings)
+
+  5. Technical Implementation:
+  - Monitoring: src/lib/storage/monitoring.ts
+  - Validation: src/lib/storage/validation.ts
+  - UI Component: src/components/storage/StorageIndicator.tsx
+  - Database Integration: Efficient queries with Supabase
+  - TypeScript Support: Full type safety and error handling
+
+  🎯 User Experience:
+  - Proactive: Users know their storage status before issues occur
+  - Educational: Clear explanations of what uses storage
+  - Actionable: Specific suggestions for freeing up space
+  - Non-Intrusive: Compact indicators don't clutter the UI
+
+  Your application now provides enterprise-level storage management that scales from individual researchers to multi-university deployments!
+
+14:38, 29/09, 2025
+Excellent! I'm glad the message deletion functionality is working well for you. This gives you great control over managing your conversation history and storage space.
+
+  🎉 What You Can Now Do:
+  - ✅ Clean up fallback responses - Remove those mock/fallback messages that were cluttering your conversations
+  - ✅ Manage storage proactively - Delete unnecessary conversations before hitting limits
+  - ✅ Keep conversations focused - Remove off-topic or incorrect responses
+  - ✅ See immediate storage benefits - Watch your storage usage decrease as you clean up
+
+  🛠️ The Complete Storage Management System:
+  - Dashboard Header: Quick storage indicator showing your usage percentage
+  - Settings Page: Detailed storage breakdown with cleanup suggestions
+  - Project Pages: Individual message deletion with hover-to-show buttons
+  - Smart Validation: Pre-conversation storage checks to prevent overages
+
+  You now have a comprehensive conversation and storage management system that scales from individual message cleanup to full storage monitoring and optimization. Perfect for keeping your research workspace clean and efficient!
+
+
