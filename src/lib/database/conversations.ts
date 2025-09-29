@@ -9,6 +9,7 @@ export interface ChatMessage {
   role: 'user' | 'ai'
   content: string
   timestamp: string
+  conversationId?: string
 }
 
 export interface ConversationData {
@@ -90,7 +91,8 @@ export function convertToMessages(conversations: Conversation[]): ChatMessage[] 
       id: `${conv.id}-user`,
       role: 'user',
       content: conv.message,
-      timestamp: new Date(conv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: new Date(conv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      conversationId: conv.id // Add conversation ID for deletion
     })
 
     // Add AI response
@@ -98,7 +100,8 @@ export function convertToMessages(conversations: Conversation[]): ChatMessage[] 
       id: `${conv.id}-ai`,
       role: 'ai',
       content: conv.ai_response,
-      timestamp: new Date(conv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      timestamp: new Date(conv.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+      conversationId: conv.id // Add conversation ID for deletion
     })
   })
 
@@ -196,6 +199,54 @@ export async function cleanupOldConversations(projectId: string, daysToKeep: num
     return { error }
   } catch (error) {
     console.error('Error cleaning up conversations:', error)
+    return { error }
+  }
+}
+
+// Delete a specific conversation
+export async function deleteConversation(conversationId: string): Promise<{ error: any }> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return { error: authError || new Error('User not authenticated') }
+    }
+
+    // Delete the conversation (with RLS ensuring user can only delete their own)
+    const { error } = await supabase
+      .from('conversations')
+      .delete()
+      .eq('id', conversationId)
+      .eq('user_id', user.id) // Extra security check
+
+    return { error }
+
+  } catch (error) {
+    console.error('Error deleting conversation:', error)
+    return { error }
+  }
+}
+
+// Delete multiple conversations
+export async function deleteConversations(conversationIds: string[]): Promise<{ error: any }> {
+  try {
+    const { data: { user }, error: authError } = await supabase.auth.getUser()
+
+    if (authError || !user) {
+      return { error: authError || new Error('User not authenticated') }
+    }
+
+    // Delete multiple conversations
+    const { error } = await supabase
+      .from('conversations')
+      .delete()
+      .in('id', conversationIds)
+      .eq('user_id', user.id) // Extra security check
+
+    return { error }
+
+  } catch (error) {
+    console.error('Error deleting conversations:', error)
     return { error }
   }
 }

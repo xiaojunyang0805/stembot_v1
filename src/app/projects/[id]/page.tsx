@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
 import { getProject } from '../../../lib/database/projects';
-import { getProjectConversations, saveConversation, convertToMessages } from '../../../lib/database/conversations';
+import { getProjectConversations, saveConversation, convertToMessages, deleteConversation } from '../../../lib/database/conversations';
 import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
 import type { Project } from '../../../types/database';
@@ -18,6 +18,7 @@ interface Message {
   role: 'user' | 'ai';
   content: string;
   timestamp: string;
+  conversationId?: string; // For tracking database conversations
 }
 
 export default function ProjectWorkspace({ params }: { params: { id: string } }) {
@@ -31,6 +32,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const useEnhancedAI = true;
   const [isAITyping, setIsAITyping] = useState(false);
+  const [deletingMessageId, setDeletingMessageId] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch project data
@@ -294,6 +296,49 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           console.warn('Failed to save error fallback conversation:', saveError);
         }
       }, 1000);
+    }
+  };
+
+  // Handle message deletion
+  const handleDeleteMessage = async (messageId: string, conversationId?: string) => {
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      conversationId
+        ? 'Delete this conversation? This will remove both the question and AI response permanently.'
+        : 'Delete this message? This action cannot be undone.'
+    );
+
+    if (!confirmed) return;
+
+    if (!conversationId) {
+      // This is a new message not yet saved to database, just remove from UI
+      setMessages(prev => prev.filter(msg => msg.id !== messageId));
+      return;
+    }
+
+    try {
+      setDeletingMessageId(messageId);
+
+      // Delete from database
+      const { error } = await deleteConversation(conversationId);
+
+      if (error) {
+        console.error('Failed to delete conversation:', error);
+        alert('Failed to delete message. Please try again.');
+        return;
+      }
+
+      // Remove both user and AI messages for this conversation from UI
+      setMessages(prev => prev.filter(msg => msg.conversationId !== conversationId));
+
+      // Optional: Show success message
+      console.log('Conversation deleted successfully');
+
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      alert('Failed to delete message. Please try again.');
+    } finally {
+      setDeletingMessageId(null);
     }
   };
 
@@ -830,12 +875,50 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                 alignItems: msg.role === 'user' ? 'flex-end' : 'flex-start'
               }}>
                 <div style={{
+                  position: 'relative',
                   maxWidth: '70%',
                   padding: '1rem',
                   borderRadius: '1rem',
                   backgroundColor: msg.role === 'user' ? '#3b82f6' : '#f3f4f6',
                   color: msg.role === 'user' ? 'white' : '#374151'
-                }}>
+                }}
+                onMouseEnter={(e) => {
+                  const deleteBtn = e.currentTarget.querySelector('.delete-btn') as HTMLElement;
+                  if (deleteBtn) deleteBtn.style.opacity = '1';
+                }}
+                onMouseLeave={(e) => {
+                  const deleteBtn = e.currentTarget.querySelector('.delete-btn') as HTMLElement;
+                  if (deleteBtn) deleteBtn.style.opacity = '0';
+                }}
+                >
+                  {/* Delete Button */}
+                  <button
+                    className="delete-btn"
+                    onClick={() => handleDeleteMessage(msg.id, msg.conversationId)}
+                    disabled={deletingMessageId === msg.id}
+                    style={{
+                      position: 'absolute',
+                      top: '0.25rem',
+                      right: '0.25rem',
+                      width: '1.5rem',
+                      height: '1.5rem',
+                      borderRadius: '50%',
+                      border: 'none',
+                      backgroundColor: 'rgba(239, 68, 68, 0.9)',
+                      color: 'white',
+                      fontSize: '0.75rem',
+                      cursor: 'pointer',
+                      opacity: '0',
+                      transition: 'opacity 0.2s ease',
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center'
+                    }}
+                    title="Delete this message"
+                  >
+                    {deletingMessageId === msg.id ? '...' : '×'}
+                  </button>
+
                   <div style={{
                     margin: 0,
                     fontSize: '0.875rem',
@@ -855,6 +938,11 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                 }}>
                   <span>{msg.role === 'user' ? 'You' : 'AI'}</span>
                   <span>{msg.timestamp}</span>
+                  {msg.conversationId && (
+                    <span style={{ fontSize: '0.6875rem', opacity: 0.6 }}>
+                      (saved)
+                    </span>
+                  )}
                 </div>
               </div>
             ))}
