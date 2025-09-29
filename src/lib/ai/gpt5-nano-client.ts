@@ -1,5 +1,6 @@
 // GPT-5 nano client for enhanced AI responses
 // This is a NEW file that doesn't modify any existing functionality
+// Updated: 2025-09-29 - Force fresh deployment
 
 interface ChatMessage {
   role: 'system' | 'user' | 'assistant';
