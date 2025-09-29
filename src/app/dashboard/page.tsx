@@ -6,6 +6,7 @@ import { useAuth } from '../../providers/AuthProvider';
 import { getUserProjects } from '../../lib/database/projects';
 import { getMostRecentlyActiveProject } from '../../lib/database/activity';
 import { getRecentContext } from '../../lib/database/conversations';
+import { getUserProfile } from '../../lib/database/users';
 import StorageIndicator from '../../components/storage/StorageIndicator';
 import type { Project } from '../../types/database';
 
@@ -21,6 +22,7 @@ export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
   const [mostRecentProject, setMostRecentProject] = useState<Project | null>(null);
   const [recentContext, setRecentContext] = useState<any>(null);
+  const [userInstitution, setUserInstitution] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch user projects and most recent activity from Supabase
@@ -29,10 +31,11 @@ export default function DashboardPage() {
       if (!user) return;
 
       try {
-        // Fetch all projects and most recently active project in parallel
-        const [projectsResult, recentProjectResult] = await Promise.all([
+        // Fetch all data in parallel
+        const [projectsResult, recentProjectResult, userProfileResult] = await Promise.all([
           getUserProjects(),
-          getMostRecentlyActiveProject()
+          getMostRecentlyActiveProject(),
+          getUserProfile()
         ]);
 
         if (projectsResult.error) {
@@ -51,6 +54,14 @@ export default function DashboardPage() {
           recentProject = recentProjectResult.data;
         }
         setMostRecentProject(recentProject);
+
+        // Load user institution
+        if (userProfileResult.error) {
+          console.warn('Error fetching user profile:', userProfileResult.error);
+          setUserInstitution('University'); // Fallback
+        } else if (userProfileResult.data) {
+          setUserInstitution(userProfileResult.data.university || 'University');
+        }
 
         // Fetch recent conversation context for memory recall
         if (recentProject) {
@@ -157,19 +168,24 @@ export default function DashboardPage() {
 
           {/* University Selector and Storage */}
           <div style={{display: 'flex', alignItems: 'center', gap: '1rem'}}>
-            <select style={{
-              padding: '0.5rem 1rem',
-              border: '1px solid #d1d5db',
-              borderRadius: '0.375rem',
-              backgroundColor: 'white',
-              color: '#374151',
-              fontSize: '0.875rem'
-            }}>
-              <option>TU Delft</option>
-              <option>Stanford University</option>
-              <option>MIT</option>
-              <option>Cambridge</option>
-            </select>
+            <div
+              title="Change your institution in Settings"
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                backgroundColor: '#f9fafb',
+                color: '#374151',
+                fontSize: '0.875rem',
+                cursor: 'help'
+              }}
+            >
+              <span style={{ fontSize: '1rem' }}>🏛️</span>
+              <span>{userInstitution || 'University'}</span>
+            </div>
             <StorageIndicator showDetails={false} />
           </div>
 
