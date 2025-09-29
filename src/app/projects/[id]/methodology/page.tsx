@@ -1,9 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../providers/AuthProvider';
-import ResearchLayout from '../../../../components/layout/ResearchLayout';
-import MethodologyGuide from '../../../../components/research/MethodologyGuide';
+import { getProject } from '../../../../lib/database/projects';
+import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
+import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -12,127 +14,621 @@ export const fetchCache = 'force-no-store';
 export default function MethodologyPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
+  const [project, setProject] = useState<Project | null>(null);
+  const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const handleMethodologyUpdate = (methodology: any) => {
-    console.log('Methodology updated:', methodology);
-  };
+  // Fetch project data and documents
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
 
-  const memoryHints = [
-    {
-      id: 'hint-1',
-      title: 'Research Design Pattern',
-      content: 'Cross-sectional designs work well for sleep-memory correlations in undergraduate populations',
-      type: 'suggestion' as const,
-      confidence: 0.89
-    },
-    {
-      id: 'hint-2',
-      title: 'Sample Size Memory',
-      content: 'Previous discussions indicated n=120 needed for 80% power with medium effect size',
-      type: 'reminder' as const,
-      confidence: 0.94
-    }
-  ];
+      try {
+        setLoading(true);
 
-  // Convert AuthUser to User format expected by ResearchLayout
-  const layoutUser = user ? {
-    id: user.id,
-    name: user.email?.split('@')[0] || 'Researcher',
-    email: user.email || '',
-    avatar: undefined
-  } : undefined;
+        // Fetch project data
+        const { data: projectData, error: projectError } = await getProject(params.id);
+        if (projectError) {
+          setError('Failed to load project');
+          return;
+        }
+        setProject(projectData);
 
+        // Fetch documents
+        const { data: documentsData, error: docsError } = await getProjectDocuments(params.id);
+        if (docsError) {
+          console.warn('Error loading documents:', docsError);
+        } else if (documentsData) {
+          setDocuments(documentsData);
+        }
 
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load project data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id, user]);
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '1rem',
+        color: '#6b7280'
+      }}>
+        Loading project...
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '1rem',
+        color: '#ef4444'
+      }}>
+        {error || 'Project not found'}
+      </div>
+    );
+  }
 
   return (
-    <ResearchLayout
-      currentPhase="methodology"
-      projectTitle="Sleep & Memory Research Study"
-      projectId={params.id}
-      user={layoutUser}
-      memoryHints={memoryHints}
-    >
-
-      <div style={{
-        padding: '2rem',
-        maxWidth: '1200px',
-        margin: '0 auto'
+    <div style={{ height: '100vh', backgroundColor: '#ffffff' }}>
+      {/* Header */}
+      <header style={{
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e5e7eb',
+        padding: '1rem 2rem',
+        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
       }}>
-        {/* Navigation Banner */}
         <div style={{
-          backgroundColor: '#f8fafc',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '1rem 2rem',
-          marginBottom: '2rem',
-          borderRadius: '0.5rem'
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          maxWidth: '1400px',
+          margin: '0 auto'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              onClick={() => router.push('/dashboard')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                color: '#374151',
+                fontSize: '0.875rem',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = '#e5e7eb';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+              }}
+            >
+              ← Dashboard
+            </button>
+            <h1 style={{
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              color: '#111827',
+              margin: 0
+            }}>
+              {project.title}
+            </h1>
+          </div>
+        </div>
+      </header>
+
+      {/* Project Progress Banner */}
+      <div style={{
+        backgroundColor: '#f8fafc',
+        borderBottom: '1px solid #e5e7eb',
+        padding: '1rem 2rem'
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto'
         }}>
           <div style={{
             display: 'flex',
-            gap: '0.5rem'
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '0.75rem'
           }}>
+            <span style={{
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              color: '#374151'
+            }}>
+              Project Progress
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1.5rem' }}>
             {[
-              { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, active: false },
-              { id: 'literature', label: 'Literature Review', path: `/projects/${params.id}/literature`, active: false },
-              { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, active: true },
-              { id: 'writing', label: 'Academic Writing', path: `/projects/${params.id}/writing`, active: false }
-            ].map((nav) => (
-              <button
-                key={nav.id}
-                onClick={() => nav.active ? null : router.push(nav.path)}
+              { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, progress: 85, active: false },
+              { id: 'literature', label: 'Doc Center', path: `/projects/${params.id}/literature`, progress: 65, active: false },
+              { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, progress: 40, active: true },
+              { id: 'writing', label: 'Writing', path: `/projects/${params.id}/writing`, progress: 15, active: false }
+            ].map((section) => (
+              <div
+                key={section.id}
                 style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: nav.active ? '#2563eb' : 'white',
-                  color: nav.active ? 'white' : '#6b7280',
-                  border: '1px solid #e5e7eb',
+                  flex: 1,
+                  cursor: 'pointer',
+                  padding: '0.5rem',
                   borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  cursor: nav.active ? 'default' : 'pointer',
-                  opacity: nav.active ? 1 : 0.8
+                  backgroundColor: section.active ? '#eff6ff' : 'transparent',
+                  border: section.active ? '1px solid #3b82f6' : '1px solid transparent'
                 }}
+                onClick={() => section.active ? null : router.push(section.path)}
                 onMouseEnter={(e) => {
-                  if (!nav.active) {
-                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                  if (!section.active) {
+                    (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!nav.active) {
-                    (e.target as HTMLButtonElement).style.backgroundColor = 'white';
+                  if (!section.active) {
+                    (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
                   }
                 }}
               >
-                {nav.label}
-              </button>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '0.25rem'
+                }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '500',
+                    color: section.active ? '#3b82f6' : '#6b7280'
+                  }}>
+                    {section.label}
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: section.active ? '#3b82f6' : '#9ca3af'
+                  }}>
+                    {section.progress}%
+                  </span>
+                </div>
+
+                <div style={{
+                  width: '100%',
+                  height: '0.375rem',
+                  backgroundColor: '#e5e7eb',
+                  borderRadius: '0.25rem',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${section.progress}%`,
+                    height: '100%',
+                    backgroundColor: section.active ? '#3b82f6' : '#10b981',
+                    borderRadius: '0.25rem',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+              </div>
             ))}
           </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div style={{
+        display: 'flex',
+        height: 'calc(100vh - 140px)',
+        maxWidth: '1400px',
+        margin: '0 auto'
+      }}>
+        {/* Left Sidebar (25% width) */}
         <div style={{
-          marginBottom: '2rem'
+          width: isSidebarOpen ? '25%' : '0',
+          minWidth: isSidebarOpen ? '300px' : '0',
+          backgroundColor: '#f9fafb',
+          borderRight: '1px solid #e5e7eb',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease'
         }}>
-          <h1 style={{
-            fontSize: '2rem',
-            fontWeight: 'bold',
-            color: '#111827',
-            marginBottom: '0.5rem'
-          }}>
-            🔬 Methodology Design & Validation
-          </h1>
-          <p style={{
-            fontSize: '1rem',
-            color: '#6b7280',
-            lineHeight: '1.5'
-          }}>
-            Design your research methodology with AI-powered validation and flaw detection.
-            Our intelligent system helps identify potential issues before you begin data collection.
-          </p>
+          <div style={{ padding: '1.5rem' }}>
+            {/* Navigation Menu */}
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: '#374151',
+                margin: '0 0 1rem 0'
+              }}>
+                Project Navigation
+              </h3>
+
+              {[
+                { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: false, icon: '💬' },
+                { id: 'documents', label: '📚 Doc Center', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
+                { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: true, icon: '🔬' },
+                { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' }
+              ].map((nav) => (
+                <button
+                  key={nav.id}
+                  onClick={() => nav.active ? null : router.push(nav.path)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    marginBottom: '0.5rem',
+                    backgroundColor: nav.active ? '#eff6ff' : 'transparent',
+                    color: nav.active ? '#3b82f6' : '#6b7280',
+                    border: nav.active ? '1px solid #3b82f6' : '1px solid transparent',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: nav.active ? '600' : '500',
+                    cursor: nav.active ? 'default' : 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!nav.active) {
+                      (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!nav.active) {
+                      (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  <span>{nav.icon}</span>
+                  <span>{nav.label.replace(/.*\s/, '')}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Research Question */}
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem'
+              }}>
+                <span style={{ fontSize: '1.25rem' }}>🎯</span>
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#374151',
+                  margin: 0
+                }}>
+                  Research Question
+                </h3>
+              </div>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                lineHeight: '1.5',
+                margin: 0
+              }}>
+                {project.research_question}
+              </p>
+            </div>
+
+            {/* Recent Documents */}
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '0.75rem'
+              }}>
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>📄</span>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    color: '#374151',
+                    margin: 0
+                  }}>
+                    Recent Documents ({documents.length})
+                  </h3>
+                </div>
+                <button
+                  onClick={() => router.push(`/projects/${params.id}/literature`)}
+                  style={{
+                    fontSize: '0.75rem',
+                    color: '#3b82f6',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  View All
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                {documents.length > 0 ? documents.slice(0, 3).map((doc, index) => (
+                  <div key={doc.id} style={{
+                    fontSize: '0.75rem',
+                    color: '#6b7280',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.25rem',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+                  }}
+                  >
+                    <span>📄</span>
+                    <span style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      flex: 1
+                    }}>
+                      {doc.original_name}
+                    </span>
+                  </div>
+                )) : (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    textAlign: 'center',
+                    padding: '1rem 0'
+                  }}>
+                    No documents uploaded yet.
+                    Use 📎 in Workspace to upload files.
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
         </div>
 
-        <MethodologyGuide
-          currentProjectId={params.id}
-          onMethodologyUpdate={handleMethodologyUpdate}
-        />
+        {/* Main Content Area (75% width) */}
+        <div style={{
+          flex: 1,
+          padding: '2rem',
+          backgroundColor: '#ffffff',
+          overflow: 'auto'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '2rem'
+          }}>
+            <h1 style={{
+              fontSize: '2rem',
+              fontWeight: 'bold',
+              color: '#111827',
+              margin: 0
+            }}>
+              🔬 Methodology
+            </h1>
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              style={{
+                padding: '0.5rem',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                cursor: 'pointer'
+              }}
+            >
+              {isSidebarOpen ? '◀' : '▶'}
+            </button>
+          </div>
+
+          {/* Methodology Content */}
+          <div style={{
+            backgroundColor: '#f9fafb',
+            border: '1px solid #e5e7eb',
+            borderRadius: '0.5rem',
+            padding: '2rem'
+          }}>
+            <div style={{
+              textAlign: 'center',
+              color: '#6b7280',
+              marginBottom: '2rem'
+            }}>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '600',
+                marginBottom: '1rem',
+                color: '#374151'
+              }}>
+                Research Methodology Hub
+              </h2>
+              <p style={{
+                fontSize: '1rem',
+                lineHeight: '1.6',
+                maxWidth: '600px',
+                margin: '0 auto'
+              }}>
+                This page will become your methodology planning center. AI will automatically extract
+                methodology discussions from your chat conversations and organize them here.
+              </p>
+            </div>
+
+            {/* Methodology Planning Sections */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '1.5rem',
+              marginTop: '2rem'
+            }}>
+              <div style={{
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                padding: '1.5rem'
+              }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>📊</span> Research Design
+                </h3>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
+                }}>
+                  AI will capture your research design discussions and organize them here.
+                  Talk about your study design in the Workspace chat.
+                </p>
+              </div>
+
+              <div style={{
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                padding: '1.5rem'
+              }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>👥</span> Participants
+                </h3>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
+                }}>
+                  Sample size calculations, inclusion criteria, and recruitment strategies
+                  will be automatically extracted from your conversations.
+                </p>
+              </div>
+
+              <div style={{
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                padding: '1.5rem'
+              }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>📏</span> Instruments
+                </h3>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
+                }}>
+                  Data collection tools, questionnaires, and measurement procedures
+                  discussed in chat will appear here.
+                </p>
+              </div>
+
+              <div style={{
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                padding: '1.5rem'
+              }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>📈</span> Analysis Plan
+                </h3>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
+                }}>
+                  Statistical methods and analysis approaches will be captured
+                  and organized automatically.
+                </p>
+              </div>
+            </div>
+
+            {/* Smart Memory Feature Preview */}
+            <div style={{
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '0.5rem',
+              padding: '1.5rem',
+              marginTop: '2rem'
+            }}>
+              <h3 style={{
+                fontSize: '1.125rem',
+                fontWeight: '600',
+                color: '#1e40af',
+                marginBottom: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span>🧠</span> Smart Memory Integration
+              </h3>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#1e40af',
+                lineHeight: '1.5',
+                margin: 0
+              }}>
+                <strong>Coming soon:</strong> When you discuss methodology in the Workspace chat,
+                AI will automatically extract relevant information and organize it into the sections above.
+                This creates a comprehensive methodology overview that evolves with your research discussions.
+              </p>
+            </div>
+          </div>
+        </div>
       </div>
-    </ResearchLayout>
+    </div>
   );
 }

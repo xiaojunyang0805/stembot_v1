@@ -1,8 +1,11 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../providers/AuthProvider';
-import ResearchLayout from '../../../../components/layout/ResearchLayout';
+import { getProject } from '../../../../lib/database/projects';
+import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
+import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -11,274 +14,622 @@ export const fetchCache = 'force-no-store';
 export default function WritingPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
+  const [project, setProject] = useState<Project | null>(null);
+  const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
-  const memoryHints = [
-    {
-      id: 'hint-1',
-      title: 'Writing Structure',
-      content: 'Your methodology section needs to detail the sleep assessment protocol and statistical analysis plan',
-      type: 'reminder' as const,
-      confidence: 0.94
-    },
-    {
-      id: 'hint-2',
-      title: 'Citation Style',
-      content: 'Psychology journals typically use APA 7th edition. Ensure consistency throughout your manuscript',
-      type: 'suggestion' as const,
-      confidence: 0.89
-    }
-  ];
+  // Fetch project data and documents
+  useEffect(() => {
+    const fetchData = async () => {
+      if (!user) return;
 
-  // Convert AuthUser to User format expected by ResearchLayout
-  const layoutUser = user ? {
-    id: user.id,
-    name: user.email?.split('@')[0] || 'Researcher',
-    email: user.email || '',
-    avatar: undefined
-  } : undefined;
+      try {
+        setLoading(true);
+
+        // Fetch project data
+        const { data: projectData, error: projectError } = await getProject(params.id);
+        if (projectError) {
+          setError('Failed to load project');
+          return;
+        }
+        setProject(projectData);
+
+        // Fetch documents
+        const { data: documentsData, error: docsError } = await getProjectDocuments(params.id);
+        if (docsError) {
+          console.warn('Error loading documents:', docsError);
+        } else if (documentsData) {
+          setDocuments(documentsData);
+        }
+
+      } catch (err) {
+        console.error('Error fetching data:', err);
+        setError('Failed to load project data');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [params.id, user]);
+
+  if (loading) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '1rem',
+        color: '#6b7280'
+      }}>
+        Loading project...
+      </div>
+    );
+  }
+
+  if (error || !project) {
+    return (
+      <div style={{
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        height: '100vh',
+        fontSize: '1rem',
+        color: '#ef4444'
+      }}>
+        {error || 'Project not found'}
+      </div>
+    );
+  }
 
   return (
-    <ResearchLayout
-      currentPhase="writing"
-      projectTitle="Sleep & Memory Research Study"
-      projectId={params.id}
-      user={layoutUser}
-      memoryHints={memoryHints}
-    >
-      <div style={{
-        padding: '2rem',
-        maxWidth: '1200px',
-        margin: '0 auto'
+    <div style={{ height: '100vh', backgroundColor: '#ffffff' }}>
+      {/* Header */}
+      <header style={{
+        backgroundColor: 'white',
+        borderBottom: '1px solid #e5e7eb',
+        padding: '1rem 2rem',
+        boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
       }}>
-        {/* Navigation Banner */}
         <div style={{
-          backgroundColor: '#f8fafc',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '1rem 2rem',
-          marginBottom: '2rem',
-          borderRadius: '0.5rem'
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          maxWidth: '1400px',
+          margin: '0 auto'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <button
+              onClick={() => router.push('/dashboard')}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                padding: '0.5rem 1rem',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                color: '#374151',
+                fontSize: '0.875rem',
+                cursor: 'pointer'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = '#e5e7eb';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+              }}
+            >
+              ← Dashboard
+            </button>
+            <h1 style={{
+              fontSize: '1.25rem',
+              fontWeight: 'bold',
+              color: '#111827',
+              margin: 0
+            }}>
+              {project.title}
+            </h1>
+          </div>
+        </div>
+      </header>
+
+      {/* Project Progress Banner */}
+      <div style={{
+        backgroundColor: '#f8fafc',
+        borderBottom: '1px solid #e5e7eb',
+        padding: '1rem 2rem'
+      }}>
+        <div style={{
+          maxWidth: '1400px',
+          margin: '0 auto'
         }}>
           <div style={{
             display: 'flex',
-            gap: '0.5rem'
+            alignItems: 'center',
+            gap: '1rem',
+            marginBottom: '0.75rem'
           }}>
+            <span style={{
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              color: '#374151'
+            }}>
+              Project Progress
+            </span>
+          </div>
+
+          <div style={{ display: 'flex', gap: '1.5rem' }}>
             {[
-              { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, active: false },
-              { id: 'literature', label: 'Literature Review', path: `/projects/${params.id}/literature`, active: false },
-              { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, active: false },
-              { id: 'writing', label: 'Academic Writing', path: `/projects/${params.id}/writing`, active: true }
-            ].map((nav) => (
-              <button
-                key={nav.id}
-                onClick={() => nav.active ? null : router.push(nav.path)}
+              { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, progress: 85, active: false },
+              { id: 'literature', label: 'Doc Center', path: `/projects/${params.id}/literature`, progress: 65, active: false },
+              { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, progress: 40, active: false },
+              { id: 'writing', label: 'Writing', path: `/projects/${params.id}/writing`, progress: 15, active: true }
+            ].map((section) => (
+              <div
+                key={section.id}
                 style={{
-                  padding: '0.75rem 1.5rem',
-                  backgroundColor: nav.active ? '#2563eb' : 'white',
-                  color: nav.active ? 'white' : '#6b7280',
-                  border: '1px solid #e5e7eb',
+                  flex: 1,
+                  cursor: 'pointer',
+                  padding: '0.5rem',
                   borderRadius: '0.375rem',
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  cursor: nav.active ? 'default' : 'pointer',
-                  opacity: nav.active ? 1 : 0.8
+                  backgroundColor: section.active ? '#eff6ff' : 'transparent',
+                  border: section.active ? '1px solid #3b82f6' : '1px solid transparent'
                 }}
+                onClick={() => section.active ? null : router.push(section.path)}
                 onMouseEnter={(e) => {
-                  if (!nav.active) {
-                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                  if (!section.active) {
+                    (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
                   }
                 }}
                 onMouseLeave={(e) => {
-                  if (!nav.active) {
-                    (e.target as HTMLButtonElement).style.backgroundColor = 'white';
+                  if (!section.active) {
+                    (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
                   }
                 }}
               >
-                {nav.label}
-              </button>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  marginBottom: '0.25rem'
+                }}>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    fontWeight: '500',
+                    color: section.active ? '#3b82f6' : '#6b7280'
+                  }}>
+                    {section.label}
+                  </span>
+                  <span style={{
+                    fontSize: '0.75rem',
+                    color: section.active ? '#3b82f6' : '#9ca3af'
+                  }}>
+                    {section.progress}%
+                  </span>
+                </div>
+
+                <div style={{
+                  width: '100%',
+                  height: '0.375rem',
+                  backgroundColor: '#e5e7eb',
+                  borderRadius: '0.25rem',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${section.progress}%`,
+                    height: '100%',
+                    backgroundColor: section.active ? '#3b82f6' : '#10b981',
+                    borderRadius: '0.25rem',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+              </div>
             ))}
           </div>
         </div>
+      </div>
 
+      {/* Main Content */}
+      <div style={{
+        display: 'flex',
+        height: 'calc(100vh - 140px)',
+        maxWidth: '1400px',
+        margin: '0 auto'
+      }}>
+        {/* Left Sidebar (25% width) */}
         <div style={{
-          marginBottom: '2rem'
+          width: isSidebarOpen ? '25%' : '0',
+          minWidth: isSidebarOpen ? '300px' : '0',
+          backgroundColor: '#f9fafb',
+          borderRight: '1px solid #e5e7eb',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease'
         }}>
-          <h1 style={{
-            fontSize: '2rem',
-            fontWeight: 'bold',
-            color: '#111827',
-            marginBottom: '0.5rem'
-          }}>
-            ✍️ Academic Writing & Publication
-          </h1>
-          <p style={{
-            fontSize: '1rem',
-            color: '#6b7280',
-            lineHeight: '1.5'
-          }}>
-            Transform your research into compelling academic papers with AI-powered writing assistance.
-            Get help with structure, citations, and academic tone to meet publication standards.
-          </p>
-        </div>
+          <div style={{ padding: '1.5rem' }}>
+            {/* Navigation Menu */}
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: '#374151',
+                margin: '0 0 1rem 0'
+              }}>
+                Project Navigation
+              </h3>
 
-        {/* Writing Interface */}
-        <div style={{
-          backgroundColor: '#ffffff',
-          border: '1px solid #e2e8f0',
-          borderRadius: '0.5rem',
-          overflow: 'hidden'
-        }}>
-          {/* Header */}
-          <div style={{
-            padding: '1.5rem',
-            backgroundColor: '#d97706',
-            color: 'white'
-          }}>
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              marginBottom: '1rem'
-            }}>
-              <span style={{fontSize: '1.5rem'}}>✍️</span>
-              <h2 style={{
-                fontSize: '1.25rem',
-                fontWeight: '700',
+              {[
+                { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: false, icon: '💬' },
+                { id: 'documents', label: '📚 Doc Center', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
+                { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
+                { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: true, icon: '✍️' }
+              ].map((nav) => (
+                <button
+                  key={nav.id}
+                  onClick={() => nav.active ? null : router.push(nav.path)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    marginBottom: '0.5rem',
+                    backgroundColor: nav.active ? '#eff6ff' : 'transparent',
+                    color: nav.active ? '#3b82f6' : '#6b7280',
+                    border: nav.active ? '1px solid #3b82f6' : '1px solid transparent',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: nav.active ? '600' : '500',
+                    cursor: nav.active ? 'default' : 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!nav.active) {
+                      (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!nav.active) {
+                      (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  <span>{nav.icon}</span>
+                  <span>{nav.label.replace(/.*\s/, '')}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Research Question */}
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem'
+              }}>
+                <span style={{ fontSize: '1.25rem' }}>🎯</span>
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#374151',
+                  margin: 0
+                }}>
+                  Research Question
+                </h3>
+              </div>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                lineHeight: '1.5',
                 margin: 0
               }}>
-                Academic Writing Assistant
-              </h2>
+                {project.research_question}
+              </p>
+            </div>
+
+            {/* Recent Documents */}
+            <div style={{ marginBottom: '2rem' }}>
               <div style={{
-                backgroundColor: 'rgba(255, 255, 255, 0.2)',
-                padding: '0.25rem 0.75rem',
-                borderRadius: '9999px',
-                fontSize: '0.75rem',
-                fontWeight: '600'
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '0.75rem'
               }}>
-                AI-Powered Writing Support v2.1
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span style={{ fontSize: '1.25rem' }}>📄</span>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    color: '#374151',
+                    margin: 0
+                  }}>
+                    Recent Documents ({documents.length})
+                  </h3>
+                </div>
+                <button
+                  onClick={() => router.push(`/projects/${params.id}/literature`)}
+                  style={{
+                    fontSize: '0.75rem',
+                    color: '#3b82f6',
+                    backgroundColor: 'transparent',
+                    border: 'none',
+                    cursor: 'pointer'
+                  }}
+                >
+                  View All
+                </button>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+                {documents.length > 0 ? documents.slice(0, 3).map((doc, index) => (
+                  <div key={doc.id} style={{
+                    fontSize: '0.75rem',
+                    color: '#6b7280',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.25rem',
+                    padding: '0.25rem',
+                    borderRadius: '0.25rem',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+                  }}
+                  >
+                    <span>📄</span>
+                    <span style={{
+                      overflow: 'hidden',
+                      textOverflow: 'ellipsis',
+                      whiteSpace: 'nowrap',
+                      flex: 1
+                    }}>
+                      {doc.original_name}
+                    </span>
+                  </div>
+                )) : (
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#9ca3af',
+                    fontStyle: 'italic',
+                    textAlign: 'center',
+                    padding: '1rem 0'
+                  }}>
+                    No documents uploaded yet.
+                    Use 📎 in Workspace to upload files.
+                  </div>
+                )}
               </div>
             </div>
           </div>
+        </div>
 
-          {/* Content */}
+        {/* Main Content Area (75% width) */}
+        <div style={{
+          flex: 1,
+          padding: '2rem',
+          backgroundColor: '#ffffff',
+          overflow: 'auto'
+        }}>
           <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '2rem'
+          }}>
+            <h1 style={{
+              fontSize: '2rem',
+              fontWeight: 'bold',
+              color: '#111827',
+              margin: 0
+            }}>
+              ✍️ Academic Writing
+            </h1>
+            <button
+              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+              style={{
+                padding: '0.5rem',
+                backgroundColor: '#f3f4f6',
+                border: '1px solid #d1d5db',
+                borderRadius: '0.375rem',
+                cursor: 'pointer'
+              }}
+            >
+              {isSidebarOpen ? '◀' : '▶'}
+            </button>
+          </div>
+
+          {/* Writing Content */}
+          <div style={{
+            backgroundColor: '#f9fafb',
+            border: '1px solid #e5e7eb',
+            borderRadius: '0.5rem',
             padding: '2rem'
           }}>
             <div style={{
               textAlign: 'center',
-              padding: '3rem',
-              color: '#6b7280'
+              color: '#6b7280',
+              marginBottom: '2rem'
             }}>
-              <div style={{fontSize: '4rem', marginBottom: '1rem'}}>📝</div>
-              <div style={{
+              <h2 style={{
                 fontSize: '1.5rem',
                 fontWeight: '600',
-                marginBottom: '0.5rem',
-                color: '#d97706'
+                marginBottom: '1rem',
+                color: '#374151'
               }}>
-                Academic Writing Workspace
-              </div>
-              <div style={{fontSize: '1rem', marginBottom: '2rem'}}>
-                Professional writing tools with citation management, structure guidance, and publication support.
-                This workspace will include:
-              </div>
+                Academic Writing Center
+              </h2>
+              <p style={{
+                fontSize: '1rem',
+                lineHeight: '1.6',
+                maxWidth: '600px',
+                margin: '0 auto'
+              }}>
+                This page will become your writing hub. AI will automatically extract
+                writing insights and research findings from your chat conversations.
+              </p>
+            </div>
+
+            {/* Writing Structure Sections */}
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
+              gap: '1.5rem',
+              marginTop: '2rem'
+            }}>
               <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
-                gap: '1rem',
-                marginTop: '2rem',
-                textAlign: 'left'
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                padding: '1.5rem'
               }}>
-                <div style={{
-                  backgroundColor: '#fef3c7',
-                  padding: '1rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #fcd34d'
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }}>
-                  <div style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>📋</div>
-                  <div style={{fontWeight: '600', color: '#92400e', marginBottom: '0.5rem'}}>Structure Templates</div>
-                  <div style={{fontSize: '0.875rem', color: '#b45309'}}>Pre-built templates for research papers, theses, and journal articles</div>
-                </div>
-                <div style={{
-                  backgroundColor: '#fef3c7',
-                  padding: '1rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #fcd34d'
+                  <span>📝</span> Introduction
+                </h3>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
                 }}>
-                  <div style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>📖</div>
-                  <div style={{fontWeight: '600', color: '#92400e', marginBottom: '0.5rem'}}>Citation Management</div>
-                  <div style={{fontSize: '0.875rem', color: '#b45309'}}>Automatic APA, MLA, Chicago formatting with reference tracking</div>
-                </div>
-                <div style={{
-                  backgroundColor: '#fef3c7',
-                  padding: '1rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #fcd34d'
-                }}>
-                  <div style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>🎯</div>
-                  <div style={{fontWeight: '600', color: '#92400e', marginBottom: '0.5rem'}}>Academic Tone</div>
-                  <div style={{fontSize: '0.875rem', color: '#b45309'}}>AI suggestions for improving clarity, flow, and academic voice</div>
-                </div>
-                <div style={{
-                  backgroundColor: '#fef3c7',
-                  padding: '1rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #fcd34d'
-                }}>
-                  <div style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>🚀</div>
-                  <div style={{fontWeight: '600', color: '#92400e', marginBottom: '0.5rem'}}>Publication Ready</div>
-                  <div style={{fontSize: '0.875rem', color: '#b45309'}}>Journal submission guidelines and peer review preparation</div>
-                </div>
-                <div style={{
-                  backgroundColor: '#fef3c7',
-                  padding: '1rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #fcd34d'
-                }}>
-                  <div style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>📊</div>
-                  <div style={{fontWeight: '600', color: '#92400e', marginBottom: '0.5rem'}}>Data Visualization</div>
-                  <div style={{fontSize: '0.875rem', color: '#b45309'}}>Charts, tables, and figures integrated with your findings</div>
-                </div>
-                <div style={{
-                  backgroundColor: '#fef3c7',
-                  padding: '1rem',
-                  borderRadius: '0.5rem',
-                  border: '1px solid #fcd34d'
-                }}>
-                  <div style={{fontSize: '1.5rem', marginBottom: '0.5rem'}}>✅</div>
-                  <div style={{fontWeight: '600', color: '#92400e', marginBottom: '0.5rem'}}>Quality Assurance</div>
-                  <div style={{fontSize: '0.875rem', color: '#b45309'}}>Grammar checking, plagiarism detection, and consistency validation</div>
-                </div>
+                  Background information, research gaps, and objectives discussed
+                  in your conversations will be organized here.
+                </p>
               </div>
 
               <div style={{
-                marginTop: '3rem',
-                padding: '1.5rem',
-                backgroundColor: '#fef3c7',
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
                 borderRadius: '0.5rem',
-                border: '1px solid #fcd34d'
+                padding: '1.5rem'
               }}>
-                <div style={{
+                <h3 style={{
                   fontSize: '1.125rem',
                   fontWeight: '600',
-                  color: '#92400e',
-                  marginBottom: '0.75rem'
+                  color: '#111827',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }}>
-                  📝 Coming Soon: Advanced Writing Features
-                </div>
-                <div style={{
+                  <span>📊</span> Results
+                </h3>
+                <p style={{
                   fontSize: '0.875rem',
-                  color: '#b45309',
-                  textAlign: 'left'
+                  color: '#6b7280',
+                  lineHeight: '1.5'
                 }}>
-                  Our writing workspace is being enhanced with collaborative editing, real-time feedback,
-                  and integration with major academic databases. Sign up for early access to these
-                  professional writing tools designed specifically for STEM research.
-                </div>
+                  Research findings, statistical results, and data interpretations
+                  will be automatically captured from your discussions.
+                </p>
               </div>
+
+              <div style={{
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                padding: '1.5rem'
+              }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>💬</span> Discussion
+                </h3>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
+                }}>
+                  Interpretations, implications, and connections to existing literature
+                  from your conversations will appear here.
+                </p>
+              </div>
+
+              <div style={{
+                backgroundColor: 'white',
+                border: '1px solid #e5e7eb',
+                borderRadius: '0.5rem',
+                padding: '1.5rem'
+              }}>
+                <h3 style={{
+                  fontSize: '1.125rem',
+                  fontWeight: '600',
+                  color: '#111827',
+                  marginBottom: '1rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  <span>🔚</span> Conclusion
+                </h3>
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  lineHeight: '1.5'
+                }}>
+                  Key takeaways, limitations, and future directions discussed
+                  in chat will be compiled here.
+                </p>
+              </div>
+            </div>
+
+            {/* Smart Memory Feature Preview */}
+            <div style={{
+              backgroundColor: '#eff6ff',
+              border: '1px solid #bfdbfe',
+              borderRadius: '0.5rem',
+              padding: '1.5rem',
+              marginTop: '2rem'
+            }}>
+              <h3 style={{
+                fontSize: '1.125rem',
+                fontWeight: '600',
+                color: '#1e40af',
+                marginBottom: '0.75rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span>🧠</span> Smart Writing Integration
+              </h3>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#1e40af',
+                lineHeight: '1.5',
+                margin: 0
+              }}>
+                <strong>Coming soon:</strong> When you discuss research findings, interpretations,
+                or writing ideas in the Workspace chat, AI will automatically extract and organize
+                them into the appropriate sections above. This creates a living manuscript that
+                evolves with your research conversations.
+              </p>
             </div>
           </div>
         </div>
       </div>
-    </ResearchLayout>
+    </div>
   );
 }
