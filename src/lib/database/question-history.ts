@@ -43,8 +43,8 @@ function calculateTextSimilarity(text1: string, text2: string): number {
   const set1 = new Set(words1);
   const set2 = new Set(words2);
 
-  const intersection = new Set([...set1].filter(word => set2.has(word)));
-  const union = new Set([...set1, ...set2]);
+  const intersection = new Set(Array.from(set1).filter(word => set2.has(word)));
+  const union = new Set([...Array.from(set1), ...Array.from(set2)]);
 
   return Math.round((intersection.size / union.size) * 100);
 }
