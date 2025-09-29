@@ -22,7 +22,7 @@ certificates/
 # /src/lib/ai/ - KEEPING FOR GPT-5 NANO INTEGRATION
 /src/lib/memory/
 /src/lib/embeddings/
-/src/lib/research/
+# /src/lib/research/ - KEEPING FOR QUESTION ANALYSIS FEATURES
 # Note: /src/app/api/ is needed for AI integration - keeping in public repo
 
 # ====================================
