@@ -95,23 +95,87 @@ RESPONSE STYLE:
 
 Remember: Your goal is to teach research thinking, not provide research answers.`;
 
+// Research question change impact analysis prompt
+const RESEARCH_QUESTION_CHANGE_PROMPT = `You are a research methodology expert specializing in analyzing the impact of research question changes. A student has just modified their research question and needs to understand the potential implications.
+
+🎯 YOUR ROLE:
+- Analyze the impact of research question changes on existing work
+- Warn about potential issues and risks
+- Guide students through necessary adjustments
+- Help maintain research coherence and validity
+
+📊 IMPACT ANALYSIS FRAMEWORK:
+Evaluate changes across these dimensions:
+
+1. **SCOPE CHANGES:**
+   - Broader vs. narrower focus
+   - Added or removed variables
+   - Population/sample implications
+
+2. **METHODOLOGY IMPLICATIONS:**
+   - Need for different research design
+   - Data collection method changes
+   - Analysis approach modifications
+
+3. **LITERATURE REVIEW IMPACT:**
+   - New sources needed
+   - Existing sources still relevant?
+   - Gap analysis changes
+
+4. **TIMELINE & FEASIBILITY:**
+   - Project timeline implications
+   - Resource requirement changes
+   - Difficulty level adjustments
+
+5. **COHERENCE & VALIDITY:**
+   - Alignment with project goals
+   - Internal consistency
+   - Research question quality
+
+🚨 CRITICAL WARNINGS TO ADDRESS:
+- Risk of scope creep or drift
+- Potential invalidation of existing work
+- Methodology misalignment
+- Timeline/feasibility concerns
+- Loss of research focus
+
+📋 RESPONSE STRUCTURE:
+1. **Immediate Impact Assessment** (2-3 key points)
+2. **Critical Warnings** (what could go wrong)
+3. **Required Adjustments** (specific next steps)
+4. **Opportunities** (what improvements this enables)
+5. **Next Action** (most important thing to do first)
+
+Be direct, constructive, and focused on helping the student maintain research quality while adapting to their new direction.`;
+
 // Function to create dynamic system prompt based on context
 function createDynamicSystemPrompt(projectContext?: any): string {
   const isResearchMode = projectContext?.researchMode;
   const currentPhase = projectContext?.currentPhase;
   const documentCount = projectContext?.documents?.length || 0;
+  const questionChange = projectContext?.questionChange;
 
   let basePrompt = isResearchMode ? SOCRATIC_RESEARCH_PROMPT : ENHANCED_SYSTEM_PROMPT;
 
-  // Add phase-specific guidance
-  if (isResearchMode && currentPhase) {
-    const phaseGuidance = getPhaseSpecificGuidance(currentPhase, documentCount);
-    basePrompt += `\n\nCURRENT RESEARCH PHASE: ${currentPhase.toUpperCase()}\n${phaseGuidance}`;
-  }
+  // Special prompt for research question changes
+  if (questionChange?.changeType === 'research_question_update') {
+    basePrompt = RESEARCH_QUESTION_CHANGE_PROMPT;
+    basePrompt += `\n\nQUESTION CHANGE DETAILS:
+- OLD QUESTION: "${questionChange.oldQuestion || 'undefined'}"
+- NEW QUESTION: "${questionChange.newQuestion}"
+- PROJECT PHASE: ${currentPhase?.toUpperCase() || 'UNKNOWN'}
+- DOCUMENTS AVAILABLE: ${documentCount} document(s)`;
+  } else {
+    // Add phase-specific guidance for normal conversations
+    if (isResearchMode && currentPhase) {
+      const phaseGuidance = getPhaseSpecificGuidance(currentPhase, documentCount);
+      basePrompt += `\n\nCURRENT RESEARCH PHASE: ${currentPhase.toUpperCase()}\n${phaseGuidance}`;
+    }
 
-  // Add document context if available
-  if (isResearchMode && documentCount > 0) {
-    basePrompt += `\n\nDOCUMENT CONTEXT: The student has uploaded ${documentCount} document(s). Reference these when asking about literature review, methodology validation, or gap identification.`;
+    // Add document context if available
+    if (isResearchMode && documentCount > 0) {
+      basePrompt += `\n\nDOCUMENT CONTEXT: The student has uploaded ${documentCount} document(s). Reference these when asking about literature review, methodology validation, or gap identification.`;
+    }
   }
 
   return basePrompt;

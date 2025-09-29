@@ -35,7 +35,8 @@
       "Bash(npx vercel:*)",
       "Bash(curl:*)",
       "Bash(for file in src/app/auth/*/page.tsx src/app/auth/layout.tsx)",
-      "Bash(done)"
+      "Bash(done)",
+      "mcp__chrome-devtools__navigate_page"
     ],
     "deny": [],
     "ask": []

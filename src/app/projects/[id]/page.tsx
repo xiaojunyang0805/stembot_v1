@@ -3,7 +3,7 @@
 import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
-import { getProject } from '../../../lib/database/projects';
+import { getProject, updateProject } from '../../../lib/database/projects';
 import { getProjectConversations, saveConversation, convertToMessages, deleteConversation, getRecentContext } from '../../../lib/database/conversations';
 import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
@@ -39,7 +39,145 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   const [uploadingFile, setUploadingFile] = useState(false);
   const [fileAnalysisResult, setFileAnalysisResult] = useState<any>(null);
   const [researchMode, setResearchMode] = useState(false);
+  const [isEditingQuestion, setIsEditingQuestion] = useState(false);
+  const [editedQuestion, setEditedQuestion] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  // Handle research question editing
+  const handleEditQuestion = () => {
+    setEditedQuestion(project?.research_question || '');
+    setIsEditingQuestion(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditingQuestion(false);
+    setEditedQuestion('');
+  };
+
+  const handleSaveQuestion = async () => {
+    if (!project || !editedQuestion.trim()) return;
+
+    const oldQuestion = project.research_question;
+    const newQuestion = editedQuestion.trim();
+
+    if (oldQuestion === newQuestion) {
+      setIsEditingQuestion(false);
+      return;
+    }
+
+    try {
+      // Update project in database
+      const { error } = await updateProject(params.id, {
+        research_question: newQuestion,
+        updated_at: new Date().toISOString()
+      });
+
+      if (error) {
+        console.error('Error updating research question:', error);
+        return;
+      }
+
+      // Update local state
+      setProject(prev => prev ? { ...prev, research_question: newQuestion } : null);
+      setIsEditingQuestion(false);
+
+      // Trigger conversation about the change impact
+      await triggerQuestionChangeConversation(oldQuestion, newQuestion);
+
+    } catch (error) {
+      console.error('Error saving research question:', error);
+    }
+  };
+
+  // Trigger AI conversation about research question changes
+  const triggerQuestionChangeConversation = async (oldQuestion: string | null, newQuestion: string) => {
+    const changeMessage = `I've updated my research question from "${oldQuestion || 'undefined'}" to "${newQuestion}". What are the potential impacts of this change on my research?`;
+
+    // Add user message
+    const userMessage = {
+      id: Date.now().toString(),
+      role: 'user' as const,
+      content: changeMessage,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setIsAITyping(true);
+
+    try {
+      // Get recent context for better AI response
+      const { data: recentContext } = await getRecentContext(params.id, 3);
+
+      // Call AI with special research question change prompt
+      const response = await fetch('/api/ai/enhanced-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            ...messages.map(msg => ({
+              role: msg.role === 'ai' ? 'assistant' : msg.role,
+              content: msg.content
+            })),
+            { role: 'user', content: changeMessage }
+          ],
+          projectContext: {
+            projectId: params.id,
+            projectTitle: project?.title,
+            currentPhase: project?.current_phase,
+            recentContext: recentContext,
+            researchMode: true, // Force research mode for question change analysis
+            documents: documents,
+            questionChange: {
+              oldQuestion: oldQuestion,
+              newQuestion: newQuestion,
+              changeType: 'research_question_update'
+            }
+          },
+          useEnhanced: true
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const formattedContent = formatAIResponse(data.message.content);
+
+        const aiResponse = {
+          id: (Date.now() + 1).toString(),
+          role: 'ai' as const,
+          content: formattedContent,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setMessages(prev => [...prev, aiResponse]);
+
+        // Save the special conversation about question change
+        await saveConversation({
+          projectId: params.id,
+          userMessage: changeMessage,
+          aiResponse: formattedContent,
+          modelUsed: data.model || 'gpt-4o-mini',
+          tokensUsed: data.usage?.total_tokens || 0,
+          contextRecall: recentContext,
+          metadata: {
+            enhanced: data.enhanced || false,
+            timestamp: new Date().toISOString(),
+            projectPhase: project?.current_phase,
+            questionChange: {
+              oldQuestion: oldQuestion,
+              newQuestion: newQuestion,
+              changeType: 'research_question_update'
+            }
+          }
+        });
+      }
+    } catch (error) {
+      console.error('Error triggering question change conversation:', error);
+    } finally {
+      setIsAITyping(false);
+    }
+  };
 
   // Question evolution detection function
   const detectQuestionEvolution = (userMessage: string, aiResponse: string) => {
@@ -723,27 +861,136 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem',
+                justifyContent: 'space-between',
                 marginBottom: '0.75rem'
               }}>
-                <span style={{ fontSize: '1.25rem' }}>🎯</span>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#374151',
-                  margin: 0
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
                 }}>
-                  Research Question
-                </h3>
+                  <span style={{ fontSize: '1.25rem' }}>🎯</span>
+                  <h3 style={{
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    color: '#374151',
+                    margin: 0
+                  }}>
+                    Research Question
+                  </h3>
+                </div>
+                {!isEditingQuestion && (
+                  <button
+                    onClick={handleEditQuestion}
+                    style={{
+                      padding: '0.25rem 0.5rem',
+                      backgroundColor: '#f3f4f6',
+                      border: '1px solid #d1d5db',
+                      borderRadius: '0.25rem',
+                      fontSize: '0.75rem',
+                      color: '#374151',
+                      cursor: 'pointer'
+                    }}
+                    onMouseEnter={(e) => {
+                      (e.target as HTMLButtonElement).style.backgroundColor = '#e5e7eb';
+                    }}
+                    onMouseLeave={(e) => {
+                      (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                    }}
+                  >
+                    ✏️ Edit
+                  </button>
+                )}
               </div>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#6b7280',
-                lineHeight: '1.5',
-                margin: 0
-              }}>
-                {projectData.question}
-              </p>
+
+              {isEditingQuestion ? (
+                <div style={{ marginBottom: '0.75rem' }}>
+                  <textarea
+                    value={editedQuestion}
+                    onChange={(e) => setEditedQuestion(e.target.value)}
+                    style={{
+                      width: '100%',
+                      minHeight: '80px',
+                      padding: '0.75rem',
+                      border: '2px solid #3b82f6',
+                      borderRadius: '0.5rem',
+                      fontSize: '0.875rem',
+                      lineHeight: '1.5',
+                      resize: 'vertical',
+                      outline: 'none',
+                      fontFamily: 'inherit'
+                    }}
+                    placeholder="Enter your research question..."
+                    autoFocus
+                  />
+                  <div style={{
+                    display: 'flex',
+                    gap: '0.5rem',
+                    marginTop: '0.5rem'
+                  }}>
+                    <button
+                      onClick={handleSaveQuestion}
+                      disabled={!editedQuestion.trim()}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        backgroundColor: editedQuestion.trim() ? '#3b82f6' : '#9ca3af',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.375rem',
+                        fontSize: '0.75rem',
+                        fontWeight: '600',
+                        cursor: editedQuestion.trim() ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      ✅ Save & Analyze Impact
+                    </button>
+                    <button
+                      onClick={handleCancelEdit}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        backgroundColor: '#6b7280',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.375rem',
+                        fontSize: '0.75rem',
+                        cursor: 'pointer'
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#4b5563';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#6b7280';
+                      }}
+                    >
+                      ❌ Cancel
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <p style={{
+                  fontSize: '0.875rem',
+                  color: '#6b7280',
+                  lineHeight: '1.5',
+                  margin: 0,
+                  padding: '0.75rem',
+                  backgroundColor: '#f9fafb',
+                  borderRadius: '0.5rem',
+                  border: '1px solid #e5e7eb'
+                }}>
+                  {project?.research_question || 'No research question defined'}
+                </p>
+              )}
+
+              {!isEditingQuestion && (
+                <div style={{
+                  fontSize: '0.75rem',
+                  color: '#9ca3af',
+                  marginTop: '0.5rem',
+                  fontStyle: 'italic'
+                }}>
+                  💡 Click "Edit" to modify your research question. AI will analyze the impact of changes.
+                </div>
+              )}
             </div>
 
             {/* Recent Documents */}
