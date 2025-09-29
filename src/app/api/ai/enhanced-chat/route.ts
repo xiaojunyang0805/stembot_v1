@@ -206,6 +206,27 @@ Issues detected: ${qualityAnalysis.detectedIssues.join(', ')}
 Use this insight to naturally guide the conversation toward refinement WITHOUT being pushy or academic.
 Follow the NATURAL QUESTION GUIDANCE principles above.`;
     }
+
+    // Add progress monitoring for stuck students
+    if (projectContext?.progressCheck?.isStuck) {
+      const progressCheck = projectContext.progressCheck;
+      basePrompt += `\n\nSTUDENT PROGRESS ALERT: The student appears to be stuck based on these indicators:
+- ${progressCheck.stuckIndicators.join('\n- ')}
+- Time since last progress: ${Math.round(progressCheck.timeSinceLastProgress)} minutes
+
+PROACTIVE HELP NEEDED: Include gentle, natural guidance in your response. ${progressCheck.suggestedHelp}
+
+Do NOT mention "being stuck" explicitly. Instead, naturally weave helpful suggestions into the conversation.`;
+    }
+
+    // Add document-based question suggestions
+    if (projectContext?.documents?.length > 0) {
+      // Note: Question suggestions would come from the document analysis API
+      // and could be stored in project context or retrieved here
+      basePrompt += `\n\nDOCUMENT-BASED GUIDANCE: The student has uploaded ${projectContext.documents.length} documents.
+If they seem to need direction, consider suggesting questions based on their uploaded content.
+Look for opportunities to connect their documents to specific research questions.`;
+    }
   }
 
   return basePrompt;

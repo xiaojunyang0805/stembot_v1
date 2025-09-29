@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from 'next/server'
 
 // Storage validation
 import { validateStorageForUpload, validateFile } from '../../../../lib/storage/validation'
+// Enhanced document analysis
+import { generateQuestionSuggestions, analyzeDocumentPattern } from '../../../../lib/documents/analyzer'
+import { getProjectDocuments } from '../../../../lib/database/documents'
 
 export const runtime = 'nodejs'
 export const dynamic = 'force-dynamic'
@@ -129,6 +132,44 @@ export async function POST(request: NextRequest) {
       }
     }
 
+    // Generate question suggestions based on document analysis
+    let questionSuggestions: any[] = [];
+    try {
+      // Get project ID from form data
+      const projectId = formData.get('projectId') as string;
+      if (projectId) {
+        // Get all documents for this project to enable cross-document analysis
+        const { data: existingDocs } = await getProjectDocuments(projectId);
+
+        // Create a mock document object for the newly uploaded file
+        const currentDoc = {
+          id: 'temp',
+          project_id: projectId,
+          user_id: 'temp',
+          filename: file.name,
+          original_name: file.name,
+          file_size: file.size,
+          mime_type: file.type,
+          storage_path: null,
+          extracted_text: extractedText,
+          analysis_result: analysis,
+          upload_status: 'completed' as const,
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString()
+        };
+
+        // Combine with existing documents for analysis
+        const allDocs = [...(existingDocs || []), currentDoc];
+
+        // Generate suggestions
+        questionSuggestions = await generateQuestionSuggestions(allDocs);
+        console.log('🎯 Generated question suggestions:', questionSuggestions.length);
+      }
+    } catch (suggestionError) {
+      console.warn('Question suggestion generation failed:', suggestionError);
+      // Don't fail the whole request, just skip suggestions
+    }
+
     return NextResponse.json({
       success: true,
       fileInfo: {
@@ -139,6 +180,7 @@ export async function POST(request: NextRequest) {
       },
       extractedText: extractedText.substring(0, 5000), // Limit text length
       analysis,
+      questionSuggestions,
       storageInfo: storageValidation.storageInfo,
       timestamp: new Date().toISOString()
     })

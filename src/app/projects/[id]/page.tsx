@@ -7,6 +7,7 @@ import { getProject, updateProject } from '../../../lib/database/projects';
 import { getProjectConversations, saveConversation, convertToMessages, deleteConversation, getRecentContext } from '../../../lib/database/conversations';
 import { analyzeQuestionQuality, containsResearchQuestion, shouldTriggerSocraticCoaching } from '../../../lib/research/questionAnalyzer';
 import { trackQuestionEvolution } from '../../../lib/database/question-history';
+import { checkStudentProgress } from '../../../lib/documents/analyzer';
 import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
 import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
@@ -398,6 +399,25 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         }
       }
 
+      // Check for stuck student patterns and provide proactive help
+      let progressCheck = null;
+      try {
+        if (project) {
+          progressCheck = checkStudentProgress(
+            documents,
+            project.research_question || '',
+            project.created_at,
+            project.updated_at
+          );
+
+          if (progressCheck.isStuck) {
+            console.log('🚨 Student appears stuck:', progressCheck.stuckIndicators.join('; '));
+          }
+        }
+      } catch (error) {
+        console.warn('Error checking student progress:', error);
+      }
+
       // Always use Enhanced AI (GPT-4o Mini with fallback to Ollama/Mock)
       const response = await fetch('/api/ai/enhanced-chat', {
         method: 'POST',
@@ -419,7 +439,8 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             recentContext: recentContext,
             researchMode: researchMode,
             documents: documents,
-            qualityAnalysis: qualityAnalysis
+            qualityAnalysis: qualityAnalysis,
+            progressCheck: progressCheck
           },
           useEnhanced: true
         }),
@@ -592,6 +613,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('projectId', params.id);
 
       const response = await fetch('/api/documents/analyze', {
         method: 'POST',
@@ -622,10 +644,25 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         setFileAnalysisResult(result);
 
         // Add upload result to chat conversation
+        let content = `📄 **Document uploaded successfully!**\n\n**File:** ${result.fileInfo.name}\n**Size:** ${result.fileInfo.sizeMB} MB\n\n**Analysis Summary:**\n${result.analysis.summary}\n\n**Key Points:**\n${result.analysis.keyPoints?.map((point: string) => `• ${point}`).join('\n') || 'Processing complete'}`;
+
+        // Add question suggestions if available
+        if (result.questionSuggestions && result.questionSuggestions.length > 0) {
+          content += `\n\n🎯 **Research Question Suggestions:**\n`;
+          result.questionSuggestions.forEach((suggestion: any, index: number) => {
+            if (suggestion.confidence > 70) {
+              content += `\n**${index + 1}.** ${suggestion.suggestedQuestion}\n`;
+              content += `*${suggestion.reasoning}*\n`;
+              content += `*Based on: ${suggestion.documentBasis}*\n`;
+            }
+          });
+          content += `\nThese suggestions are based on your uploaded content. Feel free to explore any that interest you!`;
+        }
+
         const uploadMessage: Message = {
           id: `upload-${Date.now()}`,
           role: 'ai',
-          content: `📄 **Document uploaded successfully!**\n\n**File:** ${result.fileInfo.name}\n**Size:** ${result.fileInfo.sizeMB} MB\n\n**Analysis Summary:**\n${result.analysis.summary}\n\n**Key Points:**\n${result.analysis.keyPoints?.map((point: string) => `• ${point}`).join('\n') || 'Processing complete'}`,
+          content,
           timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         };
 
