@@ -381,6 +381,12 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         qualityAnalysis = analyzeQuestionQuality(currentMessage);
         console.log('🔍 Question Quality Analysis:', qualityAnalysis);
 
+        // Automatically enable research mode for questions that need guidance
+        if (shouldTriggerSocraticCoaching(qualityAnalysis)) {
+          setResearchMode(true);
+          console.log('🧠 Research Mode automatically enabled for question guidance');
+        }
+
         // Track question evolution if this is a research question
         try {
           const { wasStored } = await trackQuestionEvolution(params.id, currentMessage, qualityAnalysis);
@@ -1345,50 +1351,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             backgroundColor: '#ffffff'
           }}>
 
-            {/* Research Mode Toggle */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '1rem',
-              padding: '0.75rem',
-              backgroundColor: researchMode ? '#eff6ff' : '#f9fafb',
-              border: `1px solid ${researchMode ? '#3b82f6' : '#e5e7eb'}`,
-              borderRadius: '0.5rem'
-            }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '1rem' }}>{researchMode ? '🧠' : '💬'}</span>
-                <span style={{
-                  fontSize: '0.875rem',
-                  fontWeight: '600',
-                  color: researchMode ? '#1e40af' : '#374151'
-                }}>
-                  {researchMode ? 'Research Mentoring Mode' : 'General Chat Mode'}
-                </span>
-              </div>
-              <button
-                onClick={() => setResearchMode(!researchMode)}
-                style={{
-                  padding: '0.5rem 1rem',
-                  backgroundColor: researchMode ? '#3b82f6' : '#6b7280',
-                  color: 'white',
-                  border: 'none',
-                  borderRadius: '0.375rem',
-                  fontSize: '0.75rem',
-                  fontWeight: '600',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s'
-                }}
-                onMouseEnter={(e) => {
-                  (e.target as HTMLButtonElement).style.backgroundColor = researchMode ? '#2563eb' : '#4b5563';
-                }}
-                onMouseLeave={(e) => {
-                  (e.target as HTMLButtonElement).style.backgroundColor = researchMode ? '#3b82f6' : '#6b7280';
-                }}
-              >
-                {researchMode ? 'Switch to Chat' : 'Enable Research Mode'}
-              </button>
-            </div>
 
             <div style={{
               display: 'flex',
