@@ -651,7 +651,9 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         if (result.questionSuggestions && result.questionSuggestions.length > 0) {
           content += `\n\n🎯 **Research Question Suggestions:**\n`;
           result.questionSuggestions.forEach((suggestion: any, index: number) => {
-            if (suggestion.confidence > 70) {
+            // Lower threshold for title-based suggestions (60) vs text-based (70)
+            const minConfidence = suggestion.documentBasis?.includes('Based on') ? 60 : 70;
+            if (suggestion.confidence > minConfidence) {
               content += `\n**${index + 1}.** ${suggestion.suggestedQuestion}\n`;
               content += `*${suggestion.reasoning}*\n`;
               content += `*Based on: ${suggestion.documentBasis}*\n`;
