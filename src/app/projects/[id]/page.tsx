@@ -614,7 +614,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           <div style={{ display: 'flex', gap: '1.5rem' }}>
             {[
               { id: 'workspace', label: 'Workspace', path: `/projects/${params.id}`, progress: 85, active: true },
-              { id: 'literature', label: 'Literature', path: `/projects/${params.id}/literature`, progress: 65, active: false },
+              { id: 'literature', label: 'Doc Center', path: `/projects/${params.id}/literature`, progress: 65, active: false },
               { id: 'methodology', label: 'Methodology', path: `/projects/${params.id}/methodology`, progress: 40, active: false },
               { id: 'writing', label: 'Writing', path: `/projects/${params.id}/writing`, progress: 15, active: false }
             ].map((section) => (
@@ -713,7 +713,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
               {[
                 { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: true, icon: '💬' },
-                { id: 'documents', label: '📚 Documents Hub', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
+                { id: 'documents', label: '📚 Doc Center', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
                 { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
                 { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' }
               ].map((nav) => (
@@ -862,89 +862,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               </div>
             </div>
 
-            {/* Progress */}
-            <div style={{ marginBottom: '2rem' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.75rem'
-              }}>
-                <span style={{ fontSize: '1.25rem' }}>📊</span>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#374151',
-                  margin: 0
-                }}>
-                  Progress
-                </h3>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                {[
-                  { phase: 'Question', data: projectData.progress.question },
-                  { phase: 'Literature', data: projectData.progress.literature },
-                  { phase: 'Methodology', data: projectData.progress.methodology },
-                  { phase: 'Writing', data: projectData.progress.writing }
-                ].map(({ phase, data }) => (
-                  <div key={phase} style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem'
-                  }}>
-                    <div style={{
-                      display: 'flex',
-                      alignItems: 'center',
-                      justifyContent: 'space-between'
-                    }}>
-                      <div style={{
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.5rem'
-                      }}>
-                        <span style={{
-                          color: data.status === 'completed' ? '#10b981' :
-                                 data.status === 'active' ? '#3b82f6' : '#9ca3af',
-                          fontSize: '0.875rem'
-                        }}>
-                          {getPhaseIcon(phase, data.status)}
-                        </span>
-                        <span style={{
-                          fontSize: '0.875rem',
-                          color: data.status === 'active' ? '#3b82f6' : '#6b7280',
-                          fontWeight: data.status === 'active' ? '600' : '400'
-                        }}>
-                          {phase}
-                        </span>
-                      </div>
-                      <span style={{
-                        fontSize: '0.75rem',
-                        color: '#9ca3af',
-                        fontWeight: '600'
-                      }}>
-                        {data.percentage}%
-                      </span>
-                    </div>
-                    <div style={{
-                      width: '100%',
-                      height: '6px',
-                      backgroundColor: '#e5e7eb',
-                      borderRadius: '3px',
-                      overflow: 'hidden'
-                    }}>
-                      <div style={{
-                        width: `${data.percentage}%`,
-                        height: '100%',
-                        backgroundColor: data.status === 'completed' ? '#10b981' :
-                                         data.status === 'active' ? '#3b82f6' : '#9ca3af',
-                        borderRadius: '3px',
-                        transition: 'width 0.3s ease'
-                      }} />
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
 
             {/* Memory */}
             <div style={{ marginBottom: '2rem' }}>
@@ -981,78 +898,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               </div>
             </div>
 
-            {/* Documents */}
-            <div>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.75rem'
-              }}>
-                <span style={{ fontSize: '1.25rem' }}>📂</span>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#374151',
-                  margin: 0
-                }}>
-                  Documents
-                </h3>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                {documents.length > 0 ? documents.map((doc, index) => (
-                  <div key={doc.id} style={{
-                    fontSize: '0.75rem',
-                    color: '#6b7280',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem'
-                  }}>
-                    <span>📄</span>
-                    <span>{doc.original_name}</span>
-                    <span style={{ color: '#9ca3af' }}>
-                      ({(doc.file_size / (1024 * 1024)).toFixed(1)} MB)
-                    </span>
-                  </div>
-                )) : (
-                  <div style={{
-                    fontSize: '0.75rem',
-                    color: '#9ca3af',
-                    fontStyle: 'italic'
-                  }}>
-                    No documents uploaded yet
-                  </div>
-                )}
-
-                {/* File Upload Input */}
-                <input
-                  type="file"
-                  accept=".pdf,.docx,.doc,.xlsx,.xls,.txt,.jpg,.jpeg,.png,.tiff,.bmp,.webp"
-                  onChange={handleFileUpload}
-                  style={{ display: 'none' }}
-                  id="document-upload"
-                  disabled={uploadingFile}
-                />
-
-                <label
-                  htmlFor="document-upload"
-                  style={{
-                    marginTop: '0.5rem',
-                    padding: '0.5rem',
-                    backgroundColor: uploadingFile ? '#9ca3af' : '#3b82f6',
-                    color: 'white',
-                    border: 'none',
-                    borderRadius: '0.25rem',
-                    fontSize: '0.75rem',
-                    cursor: uploadingFile ? 'not-allowed' : 'pointer',
-                    textAlign: 'center',
-                    display: 'block'
-                  }}
-                >
-                  {uploadingFile ? 'Uploading...' : 'Upload Document or Image'}
-                </label>
-              </div>
-            </div>
           </div>
         </div>
 
