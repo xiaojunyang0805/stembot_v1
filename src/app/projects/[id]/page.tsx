@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
 import { getProject, updateProject } from '../../../lib/database/projects';
 import { getProjectConversations, saveConversation, convertToMessages, deleteConversation, getRecentContext } from '../../../lib/database/conversations';
+import { analyzeQuestionQuality, containsResearchQuestion, shouldTriggerSocraticCoaching } from '../../../lib/research/questionAnalyzer';
 import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
 import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
@@ -417,6 +418,13 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         // Detect if this was a research question and track evolution
         const questionAnalysis = detectQuestionEvolution(currentMessage, formattedContent);
 
+        // Run automatic question quality analysis in background
+        let qualityAnalysis = null;
+        if (containsResearchQuestion(currentMessage)) {
+          qualityAnalysis = analyzeQuestionQuality(currentMessage);
+          console.log('🔍 Question Quality Analysis:', qualityAnalysis);
+        }
+
         // Save conversation to database with enhanced context
         try {
           await saveConversation({
@@ -432,7 +440,8 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               timestamp: new Date().toISOString(),
               projectPhase: project?.current_phase,
               researchMode: researchMode,
-              questionAnalysis: questionAnalysis
+              questionAnalysis: questionAnalysis,
+              qualityAnalysis: qualityAnalysis
             }
           });
           console.log('Conversation saved to database');
