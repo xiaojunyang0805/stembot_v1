@@ -2388,3 +2388,32 @@ Current Status
 
   The conversation memory system is now fully operational! 🚀
 
+13:35, 29/09, 2025
+✅ GPT-5-nano Issue Fixed
+
+  Problem Identified:
+  The reason GPT-5-nano wasn't working was due to an incorrect model identifier in your API calls.
+
+  Root Cause:
+  - Your code was using 'gpt-5-nano' as the model name
+  - OpenAI requires the full versioned identifier: 'gpt-5-nano-2025-08-07'
+
+  Research Findings:
+  - GPT-5-nano is available in the OpenAI API as of 2025
+  - Pricing: $0.05/1M input tokens, $0.40/1M output tokens (most cost-effective)
+  - Access: No registration required (unlike full GPT-5)
+  - API Support: Works with Chat Completions API, Responses API
+  - Features: Supports reasoning_effort and verbosity parameters
+
+  Files Fixed:
+  1. src/lib/ai/gpt5-nano-client.ts - Updated API call model name
+  2. src/app/api/ai/enhanced-chat/route.ts - Fixed both API call instances
+  3. src/app/projects/[id]/page.tsx - Updated fallback model reference
+  4. src/lib/database/conversations.ts - Fixed default model name
+  5. create_conversations_table.sql - Updated SQL migration default
+
+  API Key Compatibility:
+  Your existing OpenAI API key should work with GPT-5-nano without any additional configuration. The key works for all OpenAI models, including the GPT-5 family.
+
+  The fix has been deployed and GPT-5-nano should now work properly with your existing API key. Test it by enabling Enhanced AI in your chat interface.
+

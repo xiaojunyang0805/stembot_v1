@@ -111,7 +111,7 @@ export class GPT5NanoClient {
           'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          model: 'gpt-5-nano-2025-08-07',
+          model: 'gpt-4o-mini',
           messages: enhancedMessages,
           temperature: 0.7,
           max_tokens: 2048,

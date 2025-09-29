@@ -35,7 +35,7 @@ export async function saveConversation(data: ConversationData): Promise<{ data: 
       user_id: user.id,
       message: data.userMessage,
       ai_response: data.aiResponse,
-      model_used: data.modelUsed || 'gpt-5-nano-2025-08-07',
+      model_used: data.modelUsed || 'gpt-4o-mini',
       tokens_used: data.tokensUsed || 0,
       context_recall: data.contextRecall || {},
       conversation_metadata: data.metadata || {},

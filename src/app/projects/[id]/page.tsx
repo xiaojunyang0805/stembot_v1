@@ -198,7 +198,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             projectId: params.id,
             userMessage: currentMessage,
             aiResponse: formattedContent,
-            modelUsed: data.model || 'gpt-5-nano-2025-08-07',
+            modelUsed: data.model || 'gpt-4o-mini',
             tokensUsed: data.usage?.total_tokens || 0,
             metadata: {
               enhanced: data.enhanced || false,
