@@ -68,8 +68,8 @@ export function analyzeDocumentPattern(document: DocumentMetadata): DocumentPatt
 
       return {
         type: 'literature',
-        confidence: literaturePatterns.length > 0 ? 75 : 60, // Slightly lower confidence for title-based
-        keyElements: literaturePatterns
+        confidence: literaturePatterns.length > 0 ? 75 : (hasMinimalText ? 65 : 60), // Higher confidence for title-based analysis
+        keyElements: literaturePatterns.length > 0 ? literaturePatterns : ['Research paper identified from filename']
       };
     }
   }
@@ -109,9 +109,15 @@ export async function generateQuestionSuggestions(
 
   // Generate suggestions for each document type
   for (const { doc, pattern } of documentPatterns) {
-    if (pattern.confidence > 70) {
+    // Lower threshold for PDF documents with failed text extraction (title-based analysis)
+    const hasFailedExtraction = (doc.extracted_text?.length || 0) < 100;
+    const confidenceThreshold = hasFailedExtraction && doc.mime_type?.includes('pdf') ? 50 : 70;
+
+    if (pattern.confidence > confidenceThreshold) {
       const suggestion = await generateSpecificSuggestion(doc, pattern, currentQuestion);
-      if (suggestion && suggestion.confidence > 70) {
+      const suggestionThreshold = hasFailedExtraction && doc.mime_type?.includes('pdf') ? 60 : 70;
+
+      if (suggestion && suggestion.confidence > suggestionThreshold) {
         suggestions.push(suggestion);
       }
     }
@@ -316,12 +322,14 @@ function extractPatternsFromFilename(filename: string): string[] {
     .trim();
 
   // Look for research themes in title
-  const electrochemicalTerms = ['electrode', 'electrochemical', 'sensor', 'detection', 'analytical'];
+  const electrochemicalTerms = ['electrode', 'electrochemical', 'sensor', 'detection', 'analytical', 'screen-printed'];
   const biomedicalTerms = ['biomedical', 'diagnostic', 'medical', 'clinical', 'health'];
   const environmentalTerms = ['environmental', 'monitoring', 'field', 'portable', 'real-time'];
+  const applicationTerms = ['transitioning', 'laboratory', 'field', 'application'];
 
   if (electrochemicalTerms.some(term => filename.toLowerCase().includes(term))) {
     patterns.push('Electrochemical research focus');
+    patterns.push('Sensor technology development');
   }
 
   if (biomedicalTerms.some(term => filename.toLowerCase().includes(term))) {
@@ -330,6 +338,10 @@ function extractPatternsFromFilename(filename: string): string[] {
 
   if (environmentalTerms.some(term => filename.toLowerCase().includes(term))) {
     patterns.push('Environmental monitoring applications');
+  }
+
+  if (applicationTerms.some(term => filename.toLowerCase().includes(term))) {
+    patterns.push('Laboratory to field application research');
   }
 
   // Add the cleaned title as a research area
@@ -372,11 +384,11 @@ async function generateSpecificSuggestion(
     const keyElements = pattern.keyElements.join('. ');
 
     // If text extraction failed but we have a descriptive filename, use title-based analysis
-    const hasMinimalContent = !analysisText || analysisText.length < 100;
+    const hasMinimalExtractedContent = !analysisText || analysisText.length < 100;
     const hasDescriptiveTitle = document.original_name.length > 10;
 
     let prompt: string;
-    if (hasMinimalContent && hasDescriptiveTitle) {
+    if (hasMinimalExtractedContent && hasDescriptiveTitle) {
       prompt = createTitleBasedSuggestionPrompt(document.original_name, currentQuestion);
     } else {
       prompt = createSuggestionPrompt(documentType, analysisText, keyElements, currentQuestion);
@@ -414,8 +426,11 @@ async function generateSpecificSuggestion(
 
     const parsed = JSON.parse(content);
 
+    // Ensure title-based suggestions get adequate confidence scores
+    const defaultConfidence = hasMinimalExtractedContent ? 70 : 75;
+
     return {
-      confidence: parsed.confidence || 75,
+      confidence: parsed.confidence || defaultConfidence,
       suggestedQuestion: parsed.suggestedQuestion,
       reasoning: parsed.reasoning,
       documentBasis: `Based on ${document.original_name}`,
