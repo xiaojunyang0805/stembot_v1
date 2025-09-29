@@ -6,6 +6,7 @@ import { useAuth } from '../../../providers/AuthProvider';
 import { getProject, updateProject } from '../../../lib/database/projects';
 import { getProjectConversations, saveConversation, convertToMessages, deleteConversation, getRecentContext } from '../../../lib/database/conversations';
 import { analyzeQuestionQuality, containsResearchQuestion, shouldTriggerSocraticCoaching } from '../../../lib/research/questionAnalyzer';
+import { trackQuestionEvolution } from '../../../lib/database/question-history';
 import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
 import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
@@ -379,6 +380,16 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       if (containsResearchQuestion(currentMessage)) {
         qualityAnalysis = analyzeQuestionQuality(currentMessage);
         console.log('🔍 Question Quality Analysis:', qualityAnalysis);
+
+        // Track question evolution if this is a research question
+        try {
+          const { wasStored } = await trackQuestionEvolution(params.id, currentMessage, qualityAnalysis);
+          if (wasStored) {
+            console.log('📈 Question evolution tracked - new version stored');
+          }
+        } catch (error) {
+          console.warn('Error tracking question evolution:', error);
+        }
       }
 
       // Always use Enhanced AI (GPT-4o Mini with fallback to Ollama/Mock)
