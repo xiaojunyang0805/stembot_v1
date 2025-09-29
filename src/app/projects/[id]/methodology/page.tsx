@@ -299,7 +299,7 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
                   }}
                 >
                   <span>{nav.icon}</span>
-                  <span>{nav.label.replace(/.*\s/, '')}</span>
+                  <span>{nav.label.replace(/^[^\s]+\s/, '')}</span>
                 </button>
               ))}
             </div>
