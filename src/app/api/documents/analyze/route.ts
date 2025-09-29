@@ -73,6 +73,15 @@ export async function POST(request: NextRequest) {
           extractedText = `Document: ${file.name}\nSize: ${(file.size / 1024).toFixed(1)} KB\nFormat: Microsoft Word Document (.doc)`
           break
 
+        case 'image/jpeg':
+        case 'image/jpg':
+        case 'image/png':
+        case 'image/tiff':
+        case 'image/bmp':
+        case 'image/webp':
+          extractedText = await extractImageText(buffer, file.type)
+          break
+
         default:
           return NextResponse.json({
             success: false,
@@ -169,6 +178,38 @@ async function extractXlsxText(buffer: Buffer): Promise<string> {
   } catch (error) {
     console.error('XLSX extraction error:', error)
     throw new Error('Failed to extract data from XLSX')
+  }
+}
+
+/**
+ * Extract text from images using OCR (Tesseract.js)
+ */
+async function extractImageText(buffer: Buffer, mimeType: string): Promise<string> {
+  try {
+    const { createWorker } = await import('tesseract.js')
+
+    // Create OCR worker with English language support
+    const worker = await createWorker('eng', 1, {
+      logger: m => console.log(m) // Optional: log OCR progress
+    })
+
+    // Perform OCR on the image buffer
+    const { data: { text } } = await worker.recognize(buffer)
+
+    // Terminate worker to free memory
+    await worker.terminate()
+
+    // Return extracted text or fallback message
+    const extractedText = text.trim()
+    if (extractedText.length > 0) {
+      return `Image OCR Results:\n${extractedText}`
+    } else {
+      return `Image processed successfully but no readable text found.\nImage Type: ${mimeType}`
+    }
+
+  } catch (error) {
+    console.error('OCR extraction error:', error)
+    throw new Error(`Failed to extract text from image: ${error instanceof Error ? error.message : 'Unknown error'}`)
   }
 }
 

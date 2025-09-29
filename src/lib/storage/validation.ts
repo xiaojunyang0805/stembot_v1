@@ -27,8 +27,16 @@ export const ALLOWED_FILE_TYPES = {
     'application/pdf',
     'application/msword',
     'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
     'text/plain',
-    'text/markdown'
+    'text/markdown',
+    // Image formats with OCR support
+    'image/jpeg',
+    'image/jpg',
+    'image/png',
+    'image/tiff',
+    'image/bmp',
+    'image/webp'
   ],
   images: [
     'image/jpeg',

@@ -927,7 +927,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                 {/* File Upload Input */}
                 <input
                   type="file"
-                  accept=".pdf,.docx,.doc,.xlsx,.xls,.txt"
+                  accept=".pdf,.docx,.doc,.xlsx,.xls,.txt,.jpg,.jpeg,.png,.tiff,.bmp,.webp"
                   onChange={handleFileUpload}
                   style={{ display: 'none' }}
                   id="document-upload"
@@ -949,7 +949,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                     display: 'block'
                   }}
                 >
-                  {uploadingFile ? 'Uploading...' : 'Upload Document'}
+                  {uploadingFile ? 'Uploading...' : 'Upload Document or Image'}
                 </label>
               </div>
             </div>
