@@ -45,7 +45,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     }
   ]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [useEnhancedAI, setUseEnhancedAI] = useState(false);
+  const useEnhancedAI = true;
   const [isAITyping, setIsAITyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
@@ -155,41 +155,39 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     setIsAITyping(true);
 
     try {
-      // Use enhanced chat route if toggle is enabled, otherwise use original mock behavior
-      if (useEnhancedAI) {
-        const response = await fetch('/api/ai/enhanced-chat', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            messages: [
-              ...messages.map(msg => ({
-                role: msg.role === 'ai' ? 'assistant' : msg.role,
-                content: msg.content
-              })),
-              { role: 'user', content: currentMessage }
-            ],
-            useEnhanced: true
-          }),
-        });
+      // Always use Enhanced AI (GPT-4o Mini with fallback to Ollama/Mock)
+      const response = await fetch('/api/ai/enhanced-chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messages: [
+            ...messages.map(msg => ({
+              role: msg.role === 'ai' ? 'assistant' : msg.role,
+              content: msg.content
+            })),
+            { role: 'user', content: currentMessage }
+          ],
+          useEnhanced: true
+        }),
+      });
 
-        if (response.ok) {
-          const data = await response.json();
+      if (response.ok) {
+        const data = await response.json();
 
-          // Format AI response with proper paragraph breaks
-          const formattedContent = formatAIResponse(data.message.content);
+        // Format AI response with proper paragraph breaks
+        const formattedContent = formatAIResponse(data.message.content);
 
-          const aiResponse: Message = {
-            id: (Date.now() + 1).toString(),
-            role: 'ai',
-            content: formattedContent,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          };
-          setMessages(prev => [...prev, aiResponse]);
-          setIsAITyping(false);
-          return;
-        }
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'ai',
+          content: formattedContent,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages(prev => [...prev, aiResponse]);
+        setIsAITyping(false);
+        return;
       }
 
       // Fallback to original mock behavior (preserves existing functionality)
@@ -869,43 +867,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             borderTop: '1px solid #e5e7eb',
             backgroundColor: '#ffffff'
           }}>
-            {/* Enhanced AI Toggle - Minimal UI Addition */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'space-between',
-              marginBottom: '1rem',
-              padding: '0.5rem',
-              backgroundColor: '#f8fafc',
-              borderRadius: '0.375rem',
-              border: '1px solid #e5e7eb'
-            }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>🤖</span>
-                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                  Enhanced AI {useEnhancedAI ? '(GPT-5 nano)' : '(Mock Responses)'}
-                </span>
-              </div>
-              <button
-                onClick={() => setUseEnhancedAI(!useEnhancedAI)}
-                style={{
-                  padding: '0.25rem 0.75rem',
-                  backgroundColor: useEnhancedAI ? '#3b82f6' : '#e5e7eb',
-                  color: useEnhancedAI ? 'white' : '#6b7280',
-                  border: 'none',
-                  borderRadius: '0.25rem',
-                  fontSize: '0.75rem',
-                  cursor: 'pointer',
-                  transition: 'all 0.2s ease'
-                }}
-              >
-                {useEnhancedAI ? 'ON' : 'OFF'}
-              </button>
-            </div>
 
             <div style={{
               display: 'flex',
