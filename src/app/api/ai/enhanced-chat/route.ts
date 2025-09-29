@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { gpt4oClient } from '@/lib/ai/gpt4o-client';
+import { gpt5NanoClient } from '@/lib/ai/gpt4o-client';
 
 // Use environment variable with fallback for local development (existing Ollama system)
 const OLLAMA_BASE_URL = process.env.OLLAMA_BASE_URL || 'http://localhost:11434';
@@ -40,7 +40,7 @@ export async function POST(request: NextRequest) {
       messageCount: messages.length,
       model,
       useEnhanced,
-      gpt4oAvailable: gpt4oClient.isAvailable()
+      gpt5NanoAvailable: gpt5NanoClient.isAvailable()
     });
 
     // Validate messages
@@ -51,26 +51,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Try GPT-4o Mini first if enhanced mode is requested and available
-    if (useEnhanced && gpt4oClient.isAvailable()) {
-      console.log('Attempting GPT-4o Mini response...');
+    // Try GPT-5 nano first if enhanced mode is requested and available
+    if (useEnhanced && gpt5NanoClient.isAvailable()) {
+      console.log('Attempting GPT-5 nano response...');
 
-      const gptResult = await gpt4oClient.generateResponse(messages);
+      const gptResult = await gpt5NanoClient.generateResponse(messages);
 
       if (gptResult.success && gptResult.response) {
-        console.log('GPT-4o Mini response successful');
+        console.log('GPT-5 nano response successful');
         return NextResponse.json({
           message: {
             role: 'assistant',
             content: gptResult.response
           },
-          model: 'gpt-4o-mini',
+          model: 'gpt-5-nano',
           enhanced: true,
           usage: gptResult.usage,
           timestamp: new Date().toISOString()
         });
       } else {
-        console.log('GPT-4o Mini failed, falling back to Ollama:', gptResult.error);
+        console.log('GPT-5 nano failed, falling back to Ollama:', gptResult.error);
       }
     }
 
@@ -234,8 +234,8 @@ What aspect of your research would you like to explore today?
 // Health check endpoint
 export async function GET() {
   try {
-    // Test GPT-4o Mini connection
-    const gptTest = await gpt4oClient.testConnection();
+    // Test GPT-5 nano connection
+    const gptTest = await gpt5NanoClient.testConnection();
 
     // Test Ollama connection (same as existing health check)
     let ollamaStatus = 'unknown';
@@ -255,8 +255,8 @@ export async function GET() {
     return NextResponse.json({
       status: 'operational',
       services: {
-        'gpt-4o-mini': {
-          available: gpt4oClient.isAvailable(),
+        'gpt-5-nano': {
+          available: gpt5NanoClient.isAvailable(),
           status: gptTest.success ? 'healthy' : 'unavailable',
           error: gptTest.error,
           models: gptTest.models
@@ -269,7 +269,7 @@ export async function GET() {
           status: 'always-available'
         }
       },
-      fallback_strategy: 'gpt-4o-mini → ollama → mock-responses',
+      fallback_strategy: 'gpt-5-nano → ollama → mock-responses',
       timestamp: new Date().toISOString()
     });
 

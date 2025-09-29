@@ -783,7 +783,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               }}>
                 <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>🤖</span>
                 <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
-                  Enhanced AI {useEnhancedAI ? '(GPT-4o Mini)' : '(Mock Responses)'}
+                  Enhanced AI {useEnhancedAI ? '(GPT-5 nano)' : '(Mock Responses)'}
                 </span>
               </div>
               <button
