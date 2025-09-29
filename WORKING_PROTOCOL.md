@@ -1,8 +1,8 @@
-# 🛡️ WORKING STATE PROTECTION PROTOCOL
+# 🛡️ WORKING PROTOCOL
 
-## ⚠️ **CRITICAL: Preventing Loss of Hard-Won Progress**
+## ⚠️ **CRITICAL: Comprehensive Development & Deployment Protocols**
 
-This protocol prevents the destruction of days/weeks of work through "improvement" efforts.
+This document contains all essential protocols for protecting working functionality, automated testing, and efficient development workflows.
 
 ---
 
@@ -172,6 +172,49 @@ For every significant change, document:
 
 ---
 
+## 🔧 **CHROME DEVTOOLS MCP INTEGRATION**
+
+### **Automated UI Inspection Protocol**
+✅ **Chrome DevTools MCP Server**: Installed and connected
+- **Status**: `claude mcp list` shows chrome-devtools connected
+- **Command**: `npx chrome-devtools-mcp@latest`
+
+### **Automated Testing Instead of Manual DevTools**
+Replace manual DevTools inspection with automated commands:
+
+```bash
+# Performance check
+"Check the performance of https://stembotv1.vercel.app"
+
+# Visual inspection
+"Take screenshot of https://stembotv1.vercel.app"
+
+# Console error detection
+"Check console logs for https://stembotv1.vercel.app"
+
+# Network monitoring
+"Monitor network requests for https://stembotv1.vercel.app"
+
+# Responsive testing
+"Test responsive design for https://stembotv1.vercel.app"
+```
+
+### **Integrated Pre-Deployment Protocol**
+Enhanced testing workflow:
+```bash
+# 1. Code validation
+npm run type-check && npm run build
+
+# 2. Automated UI inspection (Chrome DevTools MCP)
+"Check performance and console errors for https://stembotv1.vercel.app"
+
+# 3. Visual verification
+"Take screenshot and inspect DOM for layout issues"
+
+# 4. Deploy with confidence
+git add . && git commit -m "..." && git push origin main
+```
+
 ## ⚡ **QUICK REFERENCE COMMANDS**
 
 ```bash
@@ -179,7 +222,7 @@ For every significant change, document:
 git status
 git log --oneline -5
 
-# Test before deploy
+# Test before deploy (enhanced with Chrome DevTools MCP)
 npm run type-check && npm run build
 
 # Emergency rollback
@@ -188,6 +231,9 @@ git push origin main --force
 
 # Document working state
 git rev-parse HEAD > .working-commit
+
+# Verify MCP tools
+claude mcp list
 ```
 
 ---

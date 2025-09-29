@@ -20,7 +20,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ### **MANDATORY BEFORE ANY CHANGES:**
 **⚠️ CRITICAL: Protect days of work from being destroyed in minutes**
 
-**See `WORKING_STATE_PROTECTION.md` for full protocol**
+**See `WORKING_PROTOCOL.md` for full protocol**
 
 #### **Pre-Change Checklist:**
 1. **Document Working State**: Test `https://stembotv1.vercel.app` - record what works NOW
@@ -178,13 +178,54 @@ When encountering build errors:
 3. Verify path aliases match tsconfig.json configuration
 4. For Supabase errors, ensure environment variables are configured
 
-Common commands to run after making changes:
+## Chrome DevTools MCP Integration
+
+### **🔧 Automated UI Testing Protocol**
+✅ **Chrome DevTools MCP Server**: Installed and connected (`claude mcp list`)
+
+**Replace Manual DevTools with Automated Commands:**
+```bash
+# Performance analysis
+"Check the performance of https://stembotv1.vercel.app"
+
+# Visual inspection & screenshots
+"Take screenshot of https://stembotv1.vercel.app"
+
+# Console error detection
+"Check console logs for https://stembotv1.vercel.app"
+
+# Network request monitoring
+"Monitor network requests for https://stembotv1.vercel.app"
+
+# Responsive design testing
+"Test responsive design for https://stembotv1.vercel.app"
+
+# DOM & CSS inspection
+"Inspect DOM elements and CSS for layout issues"
+```
+
+**Enhanced Commands After Making Changes:**
 1. `npm run type-check` - Verify TypeScript compatibility
 2. `npm run lint` - Check code quality
-3. `npm test` - Run unit tests to verify functionality
+3. `npm run build` - Ensure build succeeds
+4. **Chrome DevTools MCP**: "Check performance and console errors for https://stembotv1.vercel.app"
+5. **Visual Verification**: "Take screenshot and inspect for styling issues"
 
-To completely solve the persistant login issue, I will replace all old supabaseUr to new "https://kutpbtpdgptcmrlabekq.supabase.co". 
+**Integrated Deployment Workflow:**
+```bash
+# 1. Code validation
+npm run type-check && npm run build
+
+# 2. Automated UI inspection (Chrome DevTools MCP replaces manual DevTools)
+"Check performance, console logs, and visual layout for https://stembotv1.vercel.app"
+
+# 3. Deploy automatically
+git add . && git commit -m "..." && git push origin main
+```
+
+To completely solve the persistant login issue, I will replace all old supabaseUr to new "https://kutpbtpdgptcmrlabekq.supabase.co".
 - Going through git add/commit/push process in serial without my permission unless error occurs.
 - In future don't run local test, we only do vercel deployment for web test.
 - After debugging, do git add/commit/push in serial, then trigger vercel build.
 - In future, after debugging, do git add/commit/push in serial without asking permission, go automatically.
+- **NEW**: Use Chrome DevTools MCP for automated UI inspection instead of manual DevTools checking.

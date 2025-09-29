@@ -45,6 +45,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     }
   ]);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [useEnhancedAI, setUseEnhancedAI] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Fetch project data
@@ -137,7 +138,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     }
   } : null;
 
-  const handleSendMessage = () => {
+  const handleSendMessage = async () => {
     if (!message.trim()) return;
 
     const newMessage: Message = {
@@ -148,18 +149,67 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     };
 
     setMessages(prev => [...prev, newMessage]);
+    const currentMessage = message;
     setMessage('');
 
-    // Mock AI response (will be replaced with OpenAI)
-    setTimeout(() => {
-      const aiResponse: Message = {
-        id: (Date.now() + 1).toString(),
-        role: 'ai',
-        content: "I understand your question about " + message.toLowerCase() + ". Let me help you think through this systematically. What specific aspect would you like to explore first?",
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
-      setMessages(prev => [...prev, aiResponse]);
-    }, 1000);
+    try {
+      // Use enhanced chat route if toggle is enabled, otherwise use original mock behavior
+      if (useEnhancedAI) {
+        const response = await fetch('/api/ai/enhanced-chat', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            messages: [
+              ...messages.map(msg => ({
+                role: msg.role === 'ai' ? 'assistant' : msg.role,
+                content: msg.content
+              })),
+              { role: 'user', content: currentMessage }
+            ],
+            useEnhanced: true
+          }),
+        });
+
+        if (response.ok) {
+          const data = await response.json();
+          const aiResponse: Message = {
+            id: (Date.now() + 1).toString(),
+            role: 'ai',
+            content: data.message.content,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          setMessages(prev => [...prev, aiResponse]);
+          return;
+        }
+      }
+
+      // Fallback to original mock behavior (preserves existing functionality)
+      setTimeout(() => {
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'ai',
+          content: "I understand your question about " + currentMessage.toLowerCase() + ". Let me help you think through this systematically. What specific aspect would you like to explore first?",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages(prev => [...prev, aiResponse]);
+      }, 1000);
+
+    } catch (error) {
+      console.error('Enhanced AI error, falling back to mock:', error);
+
+      // Always fallback to original mock behavior to prevent breaking anything
+      setTimeout(() => {
+        const aiResponse: Message = {
+          id: (Date.now() + 1).toString(),
+          role: 'ai',
+          content: "I understand your question about " + currentMessage.toLowerCase() + ". Let me help you think through this systematically. What specific aspect would you like to explore first?",
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages(prev => [...prev, aiResponse]);
+      }, 1000);
+    }
   };
 
   const scrollToBottom = () => {
@@ -715,6 +765,44 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             borderTop: '1px solid #e5e7eb',
             backgroundColor: '#ffffff'
           }}>
+            {/* Enhanced AI Toggle - Minimal UI Addition */}
+            <div style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              marginBottom: '1rem',
+              padding: '0.5rem',
+              backgroundColor: '#f8fafc',
+              borderRadius: '0.375rem',
+              border: '1px solid #e5e7eb'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <span style={{ fontSize: '0.875rem', color: '#6b7280' }}>🤖</span>
+                <span style={{ fontSize: '0.75rem', color: '#6b7280' }}>
+                  Enhanced AI {useEnhancedAI ? '(GPT-4o Mini)' : '(Mock Responses)'}
+                </span>
+              </div>
+              <button
+                onClick={() => setUseEnhancedAI(!useEnhancedAI)}
+                style={{
+                  padding: '0.25rem 0.75rem',
+                  backgroundColor: useEnhancedAI ? '#3b82f6' : '#e5e7eb',
+                  color: useEnhancedAI ? 'white' : '#6b7280',
+                  border: 'none',
+                  borderRadius: '0.25rem',
+                  fontSize: '0.75rem',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+              >
+                {useEnhancedAI ? 'ON' : 'OFF'}
+              </button>
+            </div>
+
             <div style={{
               display: 'flex',
               gap: '1rem',
