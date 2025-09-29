@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
 import { getProject } from '../../../lib/database/projects';
-import { getProjectConversations, saveConversation, convertToMessages, deleteConversation } from '../../../lib/database/conversations';
+import { getProjectConversations, saveConversation, convertToMessages, deleteConversation, getRecentContext } from '../../../lib/database/conversations';
 import { validateConversationStorage } from '../../../lib/storage/validation';
 import StorageIndicator from '../../../components/storage/StorageIndicator';
 import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
@@ -198,6 +198,9 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     setIsAITyping(true);
 
     try {
+      // Get recent conversation context for enhanced AI memory
+      const { data: recentContext } = await getRecentContext(params.id, 5);
+
       // Always use Enhanced AI (GPT-4o Mini with fallback to Ollama/Mock)
       const response = await fetch('/api/ai/enhanced-chat', {
         method: 'POST',
@@ -212,6 +215,12 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             })),
             { role: 'user', content: currentMessage }
           ],
+          projectContext: {
+            projectId: params.id,
+            projectTitle: project?.title,
+            currentPhase: project?.current_phase,
+            recentContext: recentContext
+          },
           useEnhanced: true
         }),
       });
@@ -231,7 +240,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         setMessages(prev => [...prev, aiResponse]);
         setIsAITyping(false);
 
-        // Save conversation to database
+        // Save conversation to database with enhanced context
         try {
           await saveConversation({
             projectId: params.id,
@@ -239,10 +248,12 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             aiResponse: formattedContent,
             modelUsed: data.model || 'gpt-4o-mini',
             tokensUsed: data.usage?.total_tokens || 0,
+            contextRecall: recentContext,
             metadata: {
               enhanced: data.enhanced || false,
               fallback: data.fallback || null,
-              timestamp: new Date().toISOString()
+              timestamp: new Date().toISOString(),
+              projectPhase: project?.current_phase
             }
           });
           console.log('Conversation saved to database');

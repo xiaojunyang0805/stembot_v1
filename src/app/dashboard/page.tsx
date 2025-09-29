@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../providers/AuthProvider';
 import { getUserProjects } from '../../lib/database/projects';
 import { getMostRecentlyActiveProject } from '../../lib/database/activity';
+import { getRecentContext } from '../../lib/database/conversations';
 import StorageIndicator from '../../components/storage/StorageIndicator';
 import type { Project } from '../../types/database';
 
@@ -19,6 +20,7 @@ export default function DashboardPage() {
   const [showUserDropdown, setShowUserDropdown] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
   const [mostRecentProject, setMostRecentProject] = useState<Project | null>(null);
+  const [recentContext, setRecentContext] = useState<any>(null);
   const [isLoading, setIsLoading] = useState(true);
 
   // Fetch user projects and most recent activity from Supabase
@@ -40,12 +42,24 @@ export default function DashboardPage() {
           setProjects(projectsResult.data || []);
         }
 
+        let recentProject = null;
         if (recentProjectResult.error) {
           console.error('Error fetching most recent project:', recentProjectResult.error);
           // Fall back to first project if recent activity fetch fails
-          setMostRecentProject(projectsResult.data?.[0] || null);
+          recentProject = projectsResult.data?.[0] || null;
         } else {
-          setMostRecentProject(recentProjectResult.data);
+          recentProject = recentProjectResult.data;
+        }
+        setMostRecentProject(recentProject);
+
+        // Fetch recent conversation context for memory recall
+        if (recentProject) {
+          const { data: contextData, error: contextError } = await getRecentContext(recentProject.id, 3);
+          if (contextError) {
+            console.warn('Error fetching recent context:', contextError);
+          } else {
+            setRecentContext(contextData);
+          }
         }
 
       } catch (error) {
@@ -63,10 +77,31 @@ export default function DashboardPage() {
   // Use the most recently active project (based on conversations) for memory recall
   const recentProject = mostRecentProject;
 
-  // Dynamic memory data based on actual projects
+  // Dynamic memory data based on actual projects and conversation context
   const memoryData = recentProject ? {
-    lastSession: `Worked on "${recentProject.title}"`,
+    lastSession: (() => {
+      if (recentContext?.recentMessages?.length > 0) {
+        const lastMessage = recentContext.recentMessages[0];
+        // Extract meaningful keywords from the last conversation
+        const keywords = lastMessage.userMessage.split(' ').filter((word: string) => word.length > 4).slice(0, 3).join(', ');
+        return `Discussed ${keywords} for "${recentProject.title}"`;
+      }
+      return `Worked on "${recentProject.title}"`;
+    })(),
     suggestedAction: (() => {
+      if (recentContext?.recentMessages?.length > 0) {
+        const lastAIResponse = recentContext.recentMessages[0].aiResponse;
+        // Smart suggestion based on AI's last response
+        if (lastAIResponse.toLowerCase().includes('next step')) {
+          return 'Continue with the suggested next steps from your last session';
+        } else if (lastAIResponse.toLowerCase().includes('research') || lastAIResponse.toLowerCase().includes('analyze')) {
+          return 'Dive deeper into your research analysis';
+        } else if (lastAIResponse.toLowerCase().includes('question')) {
+          return 'Refine your research questions based on recent insights';
+        }
+      }
+
+      // Fallback to phase-based suggestions
       switch (recentProject.current_phase) {
         case 'question': return 'Refine your research question';
         case 'literature': return 'Continue literature review';
@@ -75,7 +110,7 @@ export default function DashboardPage() {
         default: return 'Continue your research';
       }
     })(),
-    confidence: 88
+    confidence: recentContext?.conversationCount > 0 ? 92 : 75
   } : {
     lastSession: "Ready to start your research journey",
     suggestedAction: "Create your first research project",
