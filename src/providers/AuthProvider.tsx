@@ -197,17 +197,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return
       }
 
-      console.log('🔐 Real Supabase sign in')
-      const { error } = await supabase.auth.signInWithPassword({
+      console.log('🔐 Real Supabase sign in for:', email)
+      const { data, error } = await supabase.auth.signInWithPassword({
         email,
         password
       })
 
       if (error) {
-        setError(error.message)
+        console.error('❌ Supabase sign in error:', error)
+
+        // Provide helpful error messages for common issues
+        if (error.message.includes('Invalid login credentials')) {
+          setError('Incorrect email or password. Please check your credentials and try again.')
+        } else if (error.message.includes('Email not confirmed')) {
+          setError('Please check your email and click the confirmation link before signing in.')
+        } else if (error.message.includes('Invalid API key')) {
+          setError('Authentication service is temporarily unavailable. Please try again later.')
+        } else {
+          setError(`Sign in failed: ${error.message}`)
+        }
+        throw error
+      }
+
+      if (data.user) {
+        console.log('✅ Sign in successful for:', data.user.email)
       }
     } catch (err: any) {
+      console.error('❌ Sign in exception:', err)
       setError(err.message || 'Sign in failed')
+      throw err
     } finally {
       setLoading(false)
     }
@@ -226,8 +244,8 @@ export function AuthProvider({ children }: AuthProviderProps) {
         return
       }
 
-      console.log('🔐 Real Supabase sign up')
-      const { error } = await supabase.auth.signUp({
+      console.log('🔐 Real Supabase sign up for:', email)
+      const { data, error } = await supabase.auth.signUp({
         email,
         password,
         options: {
@@ -236,10 +254,30 @@ export function AuthProvider({ children }: AuthProviderProps) {
       })
 
       if (error) {
-        setError(error.message)
+        console.error('❌ Supabase sign up error:', error)
+
+        // Provide helpful error messages for common configuration issues
+        if (error.message.includes('Email signups are disabled')) {
+          setError('Email registration is currently disabled. Please contact support or try signing in with Google.')
+        } else if (error.message.includes('Invalid API key')) {
+          setError('Authentication service is temporarily unavailable. Please try again later or contact support.')
+        } else {
+          setError(`Registration failed: ${error.message}`)
+        }
+        throw error
+      }
+
+      if (data.user) {
+        console.log('✅ Sign up successful for:', data.user.email)
+        if (!data.user.email_confirmed_at) {
+          console.log('📧 Email confirmation required')
+          setError('Please check your email and click the confirmation link to complete registration.')
+        }
       }
     } catch (err: any) {
+      console.error('❌ Sign up exception:', err)
       setError(err.message || 'Sign up failed')
+      throw err
     } finally {
       setLoading(false)
     }
