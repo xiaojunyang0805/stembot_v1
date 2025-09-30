@@ -57,65 +57,31 @@ export async function POST(request: NextRequest) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // First create user in Supabase Auth to get a valid UUID that satisfies foreign key
-    const { data: authUser, error: authError } = await supabase.auth.admin.createUser({
-      email: email.toLowerCase(),
-      password: password,
-      email_confirm: true,
-      user_metadata: {
-        first_name: firstName,
-        last_name: lastName || '',
-        role: role || 'researcher'
-      }
-    });
-
-    if (authError || !authUser || !authUser.user) {
-      console.error('Auth user creation error:', { authError, authUser });
-      return NextResponse.json(
-        {
-          error: 'Failed to create authentication account',
-          details: authError?.message || 'No user data returned'
-        },
-        { status: 500 }
-      );
-    }
-
-    console.log('Auth user created successfully:', { userId: authUser.user.id, email: authUser.user.email });
-
-    // Now create/update the profile in users table with the auth UUID
-    const userProfile = {
-      id: authUser.user.id,
-      email: email.toLowerCase(),
-      password_hash: hashedPassword,
-      first_name: firstName,
-      last_name: lastName || '',
-      role: role || 'researcher',
-      email_verified: true
-    };
-
-    console.log('Creating user profile:', userProfile);
-
+    // Create user directly in our users table (foreign key constraint removed)
     const { data: newUser, error: createError } = await supabase
       .from('users')
-      .upsert(userProfile)
+      .insert({
+        email: email.toLowerCase(),
+        password_hash: hashedPassword,
+        first_name: firstName,
+        last_name: lastName || '',
+        role: role || 'researcher',
+        email_verified: true
+      })
       .select('*')
       .single();
 
     if (createError) {
-      console.error('Profile creation error:', {
+      console.error('User creation error:', {
         error: createError,
         code: createError.code,
         message: createError.message,
-        details: createError.details,
-        userProfile
+        details: createError.details
       });
-
-      // Try to clean up the auth user if profile creation fails
-      await supabase.auth.admin.deleteUser(authUser.user.id);
 
       return NextResponse.json(
         {
-          error: 'Failed to create user profile',
+          error: 'Failed to create user account',
           details: createError.message,
           code: createError.code
         },
