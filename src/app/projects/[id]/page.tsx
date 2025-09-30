@@ -793,6 +793,8 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         console.log('  Matches:', duplicateResult.matches?.length || 0);
         console.log('  Confidence:', duplicateResult.confidence);
         console.log('  Recommendation:', duplicateResult.recommendation);
+        console.log('🔍 DETAILED MATCHES DATA:', duplicateResult.matches);
+        console.log('🔍 FIRST MATCH ID:', duplicateResult.matches?.[0]?.id);
 
         setDuplicateMatches(duplicateResult.matches);
         setDuplicateConfidence(duplicateResult.confidence);

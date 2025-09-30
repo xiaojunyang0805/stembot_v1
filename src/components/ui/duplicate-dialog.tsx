@@ -46,6 +46,8 @@ export function DuplicateDialog({
   console.log('🔘 DIALOG: Dialog is open with matches:', matches.length);
   console.log('🔘 DIALOG: Initial selected action:', selectedAction);
   console.log('🔘 DIALOG: Initial selected document ID:', selectedDocumentId);
+  console.log('🔘 DIALOG: First match data:', matches[0]);
+  console.log('🔘 DIALOG: All matches:', matches);
 
   const topMatch = matches[0];
 
