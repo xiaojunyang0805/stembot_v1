@@ -932,7 +932,16 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     }
   };
 
-  // Function to format AI responses with proper paragraph breaks
+  // Helper function to format any message content with bold text
+  const formatMessageContent = (content: string): string => {
+    return content
+      // Convert **text** to <strong>text</strong> for bold formatting
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Convert line breaks to HTML <br> tags for proper HTML rendering
+      .replace(/\n/g, '<br>');
+  };
+
+  // Function to format AI responses with proper paragraph breaks and bold text
   const formatAIResponse = (content: string): string => {
     return content
       // Add line breaks before numbered lists
@@ -943,8 +952,12 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       .replace(/([A-Z\s]{3,}:)/g, '\n\n$1')
       // Add line breaks after question marks and periods when followed by capital letter
       .replace(/([.?!])\s*([A-Z])/g, '$1\n\n$2')
+      // Convert **text** to <strong>text</strong> for bold formatting
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
       // Clean up extra line breaks
       .replace(/\n{3,}/g, '\n\n')
+      // Convert line breaks to HTML <br> tags for proper HTML rendering
+      .replace(/\n/g, '<br>')
       .trim();
   };
 
@@ -1548,10 +1561,8 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                   <div style={{
                     margin: 0,
                     fontSize: '0.875rem',
-                    lineHeight: '1.6',
-                    whiteSpace: 'pre-line'
-                  }}>
-                    {msg.content}
+                    lineHeight: '1.6'
+                  }} dangerouslySetInnerHTML={{ __html: formatMessageContent(msg.content) }}>
                   </div>
                 </div>
                 <div style={{
