@@ -358,6 +358,12 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   // Handle user choice for duplicate files
   const handleDuplicateChoice = async (choice: DuplicateChoice) => {
     console.log('👤 User choice for duplicate:', choice);
+    console.log('🔍 DETAILED CHOICE DEBUG:', {
+      action: choice.action,
+      replaceDocumentId: choice.replaceDocumentId,
+      newName: choice.newName,
+      willTriggerDeletion: choice.action === 'overwrite' && !!choice.replaceDocumentId
+    });
     setShowDuplicateDialog(false);
 
     if (choice.action === 'cancel') {
@@ -377,6 +383,11 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       if (choice.action === 'overwrite' && choice.replaceDocumentId) {
         // Delete the existing document first
         console.log('🗑️ Removing existing document:', choice.replaceDocumentId);
+        console.log('📊 DELETION ATTEMPT DETAILS:', {
+          documentToDelete: choice.replaceDocumentId,
+          pendingFileName: pendingFile?.name,
+          currentDocumentsCount: documents.length
+        });
 
         // Get current user for authentication
         const { data: { user }, error: authError } = await supabase.auth.getUser();
@@ -400,6 +411,11 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           return;
         } else {
           console.log('✅ Successfully deleted existing document');
+          console.log('🔍 POST-DELETION STATE:', {
+            deletedDocumentId: choice.replaceDocumentId,
+            documentsBeforeFilter: documents.length,
+            documentsAfterFilter: documents.filter(doc => doc.id !== choice.replaceDocumentId).length
+          });
         }
 
         // Update local state immediately
@@ -845,8 +861,18 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         });
 
         // Refresh documents list
+        console.log('🔄 Refreshing documents list after upload...');
         const { data: updatedDocuments } = await getProjectDocuments(params.id);
         if (updatedDocuments) {
+          console.log('📊 DOCUMENTS AFTER UPLOAD:', {
+            previousCount: documents.length,
+            newCount: updatedDocuments.length,
+            documentsFound: updatedDocuments.map(doc => ({
+              id: doc.id,
+              name: doc.original_name,
+              created: doc.created_at
+            }))
+          });
           setDocuments(updatedDocuments);
         }
 
