@@ -70,11 +70,9 @@ export async function POST(request: NextRequest) {
         first_name: firstName,
         last_name: lastName || '',
         role: role || 'researcher',
-        email_verified: false,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString()
+        email_verified: false
       })
-      .select('id, email, first_name, last_name, role, email_verified, created_at')
+      .select('id, email, first_name, last_name, role, email_verified')
       .single();
 
     if (createError) {
@@ -106,7 +104,7 @@ export async function POST(request: NextRequest) {
         lastName: newUser.last_name,
         role: newUser.role,
         emailVerified: newUser.email_verified,
-        createdAt: newUser.created_at
+        createdAt: new Date().toISOString()
       },
       token
     }, { status: 201 });
