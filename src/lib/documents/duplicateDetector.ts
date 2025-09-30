@@ -44,7 +44,23 @@ export class DocumentDuplicateDetector {
       .eq('project_id', projectId)
       .eq('upload_status', 'completed');
 
-    if (error || !existingDocs || existingDocs.length === 0) {
+    console.log('📊 Database Query Results:');
+    console.log('  Project ID:', projectId);
+    console.log('  Query Error:', error ? error.message : 'None');
+    console.log('  Documents Found:', existingDocs?.length || 0);
+
+    if (error) {
+      console.error('❌ Database error:', error);
+      return {
+        isDuplicate: false,
+        confidence: 0,
+        matchedDocuments: [],
+        recommendation: 'keep_both'
+      };
+    }
+
+    if (!existingDocs || existingDocs.length === 0) {
+      console.log('📄 No existing documents found for comparison');
       return {
         isDuplicate: false,
         confidence: 0,
@@ -55,10 +71,22 @@ export class DocumentDuplicateDetector {
 
     const matches: DuplicateMatch[] = [];
 
+    console.log('🔍 Starting similarity analysis...');
     for (const doc of existingDocs) {
       const similarity = this.calculateSimilarity(newFile, doc, extractedText);
 
+      console.log(`📄 Comparing with "${doc.original_name}":`, {
+        newFileName: newFile.name,
+        existingFileName: doc.original_name,
+        newFileSize: newFile.size,
+        existingFileSize: doc.file_size,
+        similarityScore: similarity.score,
+        matchType: similarity.type,
+        threshold: 'Need >30 for potential match, >70 for duplicate'
+      });
+
       if (similarity.score > 30) { // Threshold for potential duplicate
+        console.log(`✅ MATCH FOUND: ${similarity.score}% similarity`);
         matches.push({
           id: doc.id,
           filename: doc.filename,
@@ -68,6 +96,8 @@ export class DocumentDuplicateDetector {
           uploadDate: doc.created_at,
           fileSize: doc.file_size
         });
+      } else {
+        console.log(`❌ Below threshold: ${similarity.score}% < 30%`);
       }
     }
 

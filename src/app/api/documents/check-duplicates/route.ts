@@ -48,6 +48,30 @@ export async function POST(request: NextRequest) {
       recommendation: result.recommendation
     });
 
+    // Enhanced debugging for troubleshooting
+    console.log('🔍 ENHANCED DEBUGGING:');
+    console.log('📄 Input file details:', {
+      name: file.name,
+      size: file.size,
+      type: file.type,
+      extractedTextLength: extractedText?.length || 0
+    });
+
+    if (result.matchedDocuments.length > 0) {
+      console.log('🎯 FOUND POTENTIAL MATCHES:');
+      result.matchedDocuments.forEach((match, index) => {
+        console.log(`  Match ${index + 1}:`, {
+          id: match.id,
+          filename: match.originalName,
+          similarity: `${match.similarity}%`,
+          matchType: match.matchType,
+          similarity_threshold: 'Need >70% for duplicate detection'
+        });
+      });
+    } else {
+      console.log('❌ NO POTENTIAL MATCHES: Either no documents in database or all similarities < 30%');
+    }
+
     if (result.isDuplicate) {
       console.log('⚠️ DUPLICATES FOUND:', result.matchedDocuments.map(match => ({
         filename: match.originalName,
