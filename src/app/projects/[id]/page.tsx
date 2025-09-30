@@ -13,6 +13,7 @@ import StorageIndicator from '../../../components/storage/StorageIndicator';
 import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
 import { trackProjectActivity } from '../../../lib/database/activity';
 import { DuplicateDialog, type DuplicateChoice, type DuplicateMatch } from '../../../components/ui/duplicate-dialog';
+import { supabase } from '../../../lib/supabase';
 import type { Project } from '../../../types/database';
 
 // Disable Next.js caching for this route
@@ -352,6 +353,59 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     }
   } : null;
 
+  // Handle user choice for duplicate files
+  const handleDuplicateChoice = async (choice: DuplicateChoice) => {
+    console.log('👤 User choice for duplicate:', choice);
+    setShowDuplicateDialog(false);
+
+    if (choice.action === 'cancel') {
+      setPendingFile(null);
+      setPendingAnalysis(null);
+      return;
+    }
+
+    if (!pendingFile) {
+      console.error('No pending file for duplicate handling');
+      return;
+    }
+
+    try {
+      setUploadingFile(true);
+
+      if (choice.action === 'overwrite' && choice.replaceDocumentId) {
+        // Delete the existing document first
+        console.log('🗑️ Removing existing document:', choice.replaceDocumentId);
+
+        const { error: deleteError } = await supabase
+          .from('documents')
+          .delete()
+          .eq('id', choice.replaceDocumentId);
+
+        if (deleteError) {
+          console.error('Failed to delete existing document:', deleteError);
+        }
+
+        // Update local state
+        setDocuments(prev => prev.filter(doc => doc.id !== choice.replaceDocumentId));
+      }
+
+      // Process the file with optional renaming
+      const fileToUpload = choice.newName
+        ? new File([pendingFile], choice.newName, { type: pendingFile.type })
+        : pendingFile;
+
+      await proceedWithFileAnalysis(fileToUpload);
+
+    } catch (error) {
+      console.error('Error handling duplicate choice:', error);
+      setUploadingFile(false);
+      alert('Failed to process file. Please try again.');
+    } finally {
+      setPendingFile(null);
+      setPendingAnalysis(null);
+    }
+  };
+
   const handleSendMessage = async () => {
     if (!message.trim() || isAITyping) return;
 
@@ -616,10 +670,57 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Store reference for cleanup
+    const inputElement = event.target;
+
     try {
       setUploadingFile(true);
       setFileAnalysisResult(null);
 
+      // Step 1: Check for duplicates first
+      console.log('🔍 Checking for duplicate documents...');
+      const duplicateCheckData = new FormData();
+      duplicateCheckData.append('file', file);
+      duplicateCheckData.append('projectId', params.id);
+
+      const duplicateResponse = await fetch('/api/documents/check-duplicates', {
+        method: 'POST',
+        body: duplicateCheckData
+      });
+
+      const duplicateResult = await duplicateResponse.json();
+
+      if (duplicateResult.success && duplicateResult.isDuplicate) {
+        console.log('⚠️ Duplicate detected:', duplicateResult);
+
+        // Show duplicate dialog and wait for user choice
+        setDuplicateMatches(duplicateResult.matches);
+        setDuplicateConfidence(duplicateResult.confidence);
+        setDuplicateRecommendation(duplicateResult.recommendation);
+        setPendingFile(file);
+        setShowDuplicateDialog(true);
+        setUploadingFile(false); // Stop loading state until user decides
+        return; // Exit here, continue in handleDuplicateChoice
+      }
+
+      // Step 2: No duplicates or user chose to proceed - continue with analysis
+      await proceedWithFileAnalysis(file);
+
+    } catch (error) {
+      console.error('File upload error:', error);
+      setUploadingFile(false);
+      alert('File upload failed. Please try again.');
+    } finally {
+      // Reset file input
+      if (inputElement) {
+        inputElement.value = '';
+      }
+    }
+  };
+
+  // Separate function for the actual file analysis (after duplicate check)
+  const proceedWithFileAnalysis = async (file: File) => {
+    try {
       const formData = new FormData();
       formData.append('file', file);
       formData.append('projectId', params.id);
@@ -689,10 +790,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       alert('File upload failed. Please try again.');
     } finally {
       setUploadingFile(false);
-      // Reset file input
-      if (event.target) {
-        event.target.value = '';
-      }
     }
   };
 
@@ -1562,6 +1659,21 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           </div>
         </div>
       </div>
+
+      {/* Duplicate Detection Dialog */}
+      <DuplicateDialog
+        isOpen={showDuplicateDialog}
+        onClose={() => {
+          setShowDuplicateDialog(false);
+          setPendingFile(null);
+          setPendingAnalysis(null);
+        }}
+        onChoice={handleDuplicateChoice}
+        newFileName={pendingFile?.name || ''}
+        matches={duplicateMatches}
+        confidence={duplicateConfidence}
+        recommendation={duplicateRecommendation}
+      />
     </div>
   );
 }
