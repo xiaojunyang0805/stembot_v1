@@ -60,8 +60,8 @@ export async function calculateUserStorageUsage(userId?: string): Promise<{ data
       return { data: null, error: profileError }
     }
 
-    // Calculate storage for each data type
-    const [conversationsResult, projectsResult, sourcesResult, memoryResult] = await Promise.all([
+    // Calculate storage for each data type with error handling
+    const [conversationsResult, projectsResult, sourcesResult, memoryResult] = await Promise.allSettled([
       // Conversations storage
       supabase.rpc('calculate_conversations_size', { target_user_id: targetUserId }),
 
@@ -76,10 +76,10 @@ export async function calculateUserStorageUsage(userId?: string): Promise<{ data
     ])
 
     // Fallback calculations if RPC functions don't exist
-    const conversationsMB = conversationsResult.data || await estimateConversationsSize(targetUserId)
-    const projectsMB = projectsResult.data || await estimateProjectsSize(targetUserId)
-    const sourcesMB = sourcesResult.data || await estimateSourcesSize(targetUserId)
-    const memoryMB = memoryResult.data || await estimateMemorySize(targetUserId)
+    const conversationsMB = (conversationsResult.status === 'fulfilled' && conversationsResult.value?.data) || await estimateConversationsSize(targetUserId)
+    const projectsMB = (projectsResult.status === 'fulfilled' && projectsResult.value?.data) || await estimateProjectsSize(targetUserId)
+    const sourcesMB = (sourcesResult.status === 'fulfilled' && sourcesResult.value?.data) || await estimateSourcesSize(targetUserId)
+    const memoryMB = (memoryResult.status === 'fulfilled' && memoryResult.value?.data) || await estimateMemorySize(targetUserId)
     const profileMB = 0.01 // User profile is typically very small
     const attachmentsMB = 0 // TODO: Implement when file uploads are added
 
@@ -151,46 +151,56 @@ async function estimateProjectsSize(userId: string): Promise<number> {
  * Estimate sources storage size (fallback method)
  */
 async function estimateSourcesSize(userId: string): Promise<number> {
-  // Get user's projects first
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('id')
-    .eq('user_id', userId)
+  try {
+    // Get user's projects first
+    const { data: projects } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('user_id', userId)
 
-  if (!projects || projects.length === 0) return 0
+    if (!projects || projects.length === 0) return 0
 
-  const projectIds = projects.map(p => p.id)
+    const projectIds = projects.map(p => p.id)
 
-  const { count } = await supabase
-    .from('sources')
-    .select('*', { count: 'exact', head: true })
-    .in('project_id', projectIds)
+    const { count } = await supabase
+      .from('sources')
+      .select('*', { count: 'exact', head: true })
+      .in('project_id', projectIds)
 
-  // Estimate: Average source = 8 KB (title, authors, summary, notes)
-  return ((count || 0) * 8) / 1024 // Convert KB to MB
+    // Estimate: Average source = 8 KB (title, authors, summary, notes)
+    return ((count || 0) * 8) / 1024 // Convert KB to MB
+  } catch (error) {
+    console.warn('Sources table not found, using default estimate:', error)
+    return 0 // Default to 0 if sources table doesn't exist
+  }
 }
 
 /**
  * Estimate project memory storage size (fallback method)
  */
 async function estimateMemorySize(userId: string): Promise<number> {
-  // Get user's projects first
-  const { data: projects } = await supabase
-    .from('projects')
-    .select('id')
-    .eq('user_id', userId)
+  try {
+    // Get user's projects first
+    const { data: projects } = await supabase
+      .from('projects')
+      .select('id')
+      .eq('user_id', userId)
 
-  if (!projects || projects.length === 0) return 0
+    if (!projects || projects.length === 0) return 0
 
-  const projectIds = projects.map(p => p.id)
+    const projectIds = projects.map(p => p.id)
 
-  const { count } = await supabase
-    .from('project_memory')
-    .select('*', { count: 'exact', head: true })
-    .in('project_id', projectIds)
+    const { count } = await supabase
+      .from('project_memory')
+      .select('*', { count: 'exact', head: true })
+      .in('project_id', projectIds)
 
-  // Estimate: Average memory entry = 10 KB (content + embeddings)
-  return ((count || 0) * 10) / 1024 // Convert KB to MB
+    // Estimate: Average memory entry = 10 KB (content + embeddings)
+    return ((count || 0) * 10) / 1024 // Convert KB to MB
+  } catch (error) {
+    console.warn('Project memory table not found, using default estimate:', error)
+    return 0 // Default to 0 if project_memory table doesn't exist
+  }
 }
 
 /**
