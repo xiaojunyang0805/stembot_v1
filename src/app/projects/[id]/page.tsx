@@ -29,8 +29,9 @@ interface Message {
 }
 
 export default function ProjectWorkspace({ params }: { params: { id: string } }) {
-  console.log('🚀 PROJECT PAGE COMPONENT LOADED');
+  console.log('🚀🚀🚀 PROJECT PAGE COMPONENT LOADED 🚀🚀🚀');
   console.log('📋 Project ID:', params.id);
+  console.log('⏰ Component load time:', new Date().toISOString());
   const { user } = useAuth();
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
@@ -1046,6 +1047,15 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   if (!projectData) {
     return null;
   }
+
+  // Basic JavaScript test
+  console.log('🚀 COMPONENT RENDER: Project page is rendering');
+  console.log('🔧 COMPONENT STATE:', {
+    uploadingFile,
+    isAITyping,
+    messagesCount: messages.length,
+    documentsCount: documents.length
+  });
 
   // Debug dialog state before rendering
   console.log('🎭 RENDER: Dialog state check:', {
