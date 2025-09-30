@@ -18,7 +18,7 @@ interface FormErrors {
 
 export function CustomLoginForm() {
   const router = useRouter()
-  const { signIn, loading, error, clearError } = useAuth()
+  const { signIn, signInWithGoogle, loading, error, clearError } = useAuth()
 
   const [formData, setFormData] = useState<FormData>({
     email: '',
@@ -352,6 +352,8 @@ export function CustomLoginForm() {
 
       {/* Google Sign In Button */}
       <button
+        onClick={() => signInWithGoogle()}
+        disabled={loading}
         style={{
           width: '100%',
           padding: '12px',
@@ -361,13 +363,14 @@ export function CustomLoginForm() {
           borderRadius: '8px',
           fontSize: '16px',
           fontWeight: '500',
-          cursor: 'pointer',
+          cursor: loading ? 'not-allowed' : 'pointer',
           transition: 'all 0.2s ease',
           marginBottom: '24px',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          gap: '8px'
+          gap: '8px',
+          opacity: loading ? 0.6 : 1
         }}
       >
         <span style={{ fontSize: '20px' }}>🔵</span>
