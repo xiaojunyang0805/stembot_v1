@@ -1,8 +1,8 @@
 /**
  * Register Page
  *
- * User registration page using the functional RegisterForm component
- * Integrates with the complete authentication flow
+ * User registration page using the custom authentication system
+ * Works with any email provider - no Google dependency
  */
 
 'use client'
@@ -11,12 +11,12 @@ import { useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import RegisterForm from '../../../components/auth/RegisterForm';
-import { useAuth } from '../../../providers/AuthProvider';
+import CustomAuthProvider, { useCustomAuth } from '../../../providers/CustomAuthProvider';
+import CustomRegisterForm from '../../../components/auth/CustomRegisterForm';
 
-export default function RegisterPage() {
+function RegisterPageContent() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading } = useCustomAuth();
 
   useEffect(() => {
     document.title = 'Sign Up - StemBot';
@@ -103,10 +103,21 @@ export default function RegisterPage() {
           }}>
             Start your learning journey today
           </p>
+          <div style={{
+            marginTop: '12px',
+            padding: '8px 12px',
+            backgroundColor: '#dcfce7',
+            border: '1px solid #bbf7d0',
+            borderRadius: '6px',
+            fontSize: '12px',
+            color: '#166534'
+          }}>
+            ✅ Custom Authentication - Works with ANY email provider!
+          </div>
         </div>
 
-        {/* Functional Registration Form */}
-        <RegisterForm />
+        {/* Custom Registration Form */}
+        <CustomRegisterForm />
 
         {/* Privacy Banner */}
         <div style={{
@@ -178,5 +189,13 @@ export default function RegisterPage() {
         `}</style>
       </div>
     </div>
+  );
+}
+
+export default function RegisterPage() {
+  return (
+    <CustomAuthProvider>
+      <RegisterPageContent />
+    </CustomAuthProvider>
   );
 }
