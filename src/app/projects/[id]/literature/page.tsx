@@ -573,9 +573,11 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                                 <div style={{ marginBottom: '0.75rem' }}>
                                   <p style={{
                                     fontSize: '0.875rem',
-                                    fontWeight: 'bold',
-                                    color: '#111827',
-                                    margin: '0 0 0.5rem 0'
+                                    fontWeight: '900',
+                                    color: '#000000',
+                                    margin: '0 0 0.5rem 0',
+                                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                                    textDecoration: 'none'
                                   }}>
                                     Summary:
                                   </p>
@@ -595,9 +597,11 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                                 <div style={{ marginBottom: '0.75rem' }}>
                                   <p style={{
                                     fontSize: '0.875rem',
-                                    fontWeight: 'bold',
-                                    color: '#111827',
-                                    margin: '0 0 0.5rem 0'
+                                    fontWeight: '900',
+                                    color: '#000000',
+                                    margin: '0 0 0.5rem 0',
+                                    fontFamily: 'system-ui, -apple-system, sans-serif',
+                                    textDecoration: 'none'
                                   }}>
                                     Key Points:
                                   </p>
