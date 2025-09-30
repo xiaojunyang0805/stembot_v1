@@ -2,8 +2,8 @@ import { createClient } from '@supabase/supabase-js'
 
 // Use service role key for duplicate detection to bypass RLS
 const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kutpbtpdgptcmrlabekq.supabase.co',
-  process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1dHBidHBkZ3B0Y21ybGFiZWtxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODI3MDcwNCwiZXhwIjoyMDczODQ2NzA0fQ.lMcRfuEUoY9QsTBd6MfISFmD8gqHUTdrG2RRoDlkwPU'
+  'https://kutpbtpdgptcmrlabekq.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1dHBidHBkZ3B0Y21ybGFiZWtxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODI3MDcwNCwiZXhwIjoyMDczODQ2NzA0fQ.lMcRfuEUoY9QsTBd6MfISFmD8gqHUTdrG2RRoDlkwPU'
 )
 
 export interface DuplicateDetectionResult {
@@ -58,6 +58,7 @@ export class DocumentDuplicateDetector {
     // FORCE VISIBLE DEBUGGING - Add to response for testing
     if (!global.debugInfo) global.debugInfo = [];
     global.debugInfo.push(`DB Query: ProjectID=${projectId}, Found=${existingDocs?.length || 0} docs`);
+    global.debugInfo.push(`Service Role Key Available: ${!!process.env.SUPABASE_SERVICE_ROLE_KEY}`);
 
     if (error) {
       console.error('❌ Database error:', error);
