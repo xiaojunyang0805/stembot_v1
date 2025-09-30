@@ -365,6 +365,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       newName: choice.newName,
       willTriggerDeletion: choice.action === 'overwrite' && !!choice.replaceDocumentId
     });
+    alert(`🔘 Confirm clicked: ${choice.action} (${choice.replaceDocumentId ? 'will delete ' + choice.replaceDocumentId : 'no deletion'})`);
     setShowDuplicateDialog(false);
 
     if (choice.action === 'cancel') {
@@ -722,11 +723,9 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   // Handle file upload and analysis
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     console.log('🚀 UPLOAD HANDLER CALLED');
-    alert('🚨 UPLOAD HANDLER CALLED - File selected! Check console');
     const file = event.target.files?.[0];
     if (!file) {
       console.log('❌ No file selected');
-      alert('❌ No file selected');
       return;
     }
 
@@ -735,8 +734,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       size: file.size,
       type: file.type
     });
-
-    alert(`📄 File: ${file.name} (${file.size} bytes) selected`);
 
     // Store reference for cleanup
     const inputElement = event.target;
@@ -767,14 +764,12 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       duplicateCheckData.append('projectId', params.id);
 
       console.log('📡 Making duplicate check request...');
-      alert('📡 Making duplicate check request - Please wait...');
       const duplicateResponse = await fetch('/api/documents/check-duplicates', {
         method: 'POST',
         body: duplicateCheckData
       });
 
       console.log('📨 Duplicate check response status:', duplicateResponse.status);
-      alert(`📨 Duplicate check response: ${duplicateResponse.status}`);
       const duplicateResult = await duplicateResponse.json();
       console.log('📄 Duplicate check result:', duplicateResult);
 
@@ -1700,7 +1695,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               <button
                 onClick={() => {
                   console.log('📎 UPLOAD BUTTON CLICKED');
-                  alert('🚨 UPLOAD BUTTON CLICKED - Check console for more details');
                   const fileInput = document.getElementById('chat-file-upload');
                   console.log('📄 File input element:', fileInput);
                   fileInput?.click();
