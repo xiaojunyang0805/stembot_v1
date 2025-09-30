@@ -23,6 +23,15 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
   const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
 
+  // Helper function to format message content with bold text
+  const formatMessageContent = (content: string): string => {
+    return content
+      // Convert **text** to <strong>text</strong> for bold formatting
+      .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+      // Convert line breaks to HTML <br> tags for proper HTML rendering
+      .replace(/\n/g, '<br>');
+  };
+
   // Toggle card expansion
   const toggleCardExpansion = (docId: string) => {
     setExpandedCards(prev => {
@@ -585,14 +594,15 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                                       letterSpacing: '0.05em'
                                     }}>SUMMARY:</span>
                                   </div>
-                                  <p style={{
+                                  <div style={{
                                     fontSize: '0.875rem',
                                     color: '#475569',
                                     lineHeight: '1.5',
                                     margin: 0
+                                  }} dangerouslySetInnerHTML={{
+                                    __html: formatMessageContent(typeof analysis.summary === 'string' ? analysis.summary : 'Analysis completed')
                                   }}>
-                                    {typeof analysis.summary === 'string' ? analysis.summary : 'Analysis completed'}
-                                  </p>
+                                  </div>
                                 </div>
                               )}
 
