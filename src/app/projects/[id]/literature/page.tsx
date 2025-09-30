@@ -685,7 +685,7 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                   fontSize: '0.875rem',
                   color: '#6b7280'
                 }}>
-                  Upload documents using the 📎 button in the Workspace chat
+                  Upload documents using the 📋 button in the Workspace chat
                 </p>
               </div>
             )}

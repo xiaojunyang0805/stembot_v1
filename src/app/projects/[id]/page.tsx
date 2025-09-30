@@ -1440,7 +1440,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                     padding: '1rem 0'
                   }}>
                     No documents uploaded yet.
-                    Use 📎 in chat to upload files.
+                    Use 📋 in chat to upload files.
                   </div>
                 )}
               </div>
@@ -1754,7 +1754,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                   }
                 }}
               >
-                📎
+                📋
               </button>
               <button
                 onClick={handleSendMessage}
