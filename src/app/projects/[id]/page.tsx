@@ -394,12 +394,12 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         ? new File([pendingFile], choice.newName, { type: pendingFile.type })
         : pendingFile;
 
-      // Create new upload progress message
+      // Create new user upload message for the processed file
       const uploadMessageId = `upload-${Date.now()}`;
       const uploadMessage: Message = {
         id: uploadMessageId,
-        role: 'ai',
-        content: `📤 **Processing "${fileToUpload.name}"...** ⚡\n\n📄 Extracting text and analyzing content...`,
+        role: 'user',
+        content: `📤 Proceeding with file upload... "${fileToUpload.name}"`,
         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
       };
 
@@ -685,12 +685,12 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     // Store reference for cleanup
     const inputElement = event.target;
 
-    // Create upload progress message with pulsing indicator
+    // Create user upload message (blue background, representing user's action)
     const uploadMessageId = `upload-${Date.now()}`;
     const uploadMessage: Message = {
       id: uploadMessageId,
-      role: 'ai',
-      content: `📤 **Uploading "${file.name}"...** ⚡\n\n🔍 Checking for duplicates...`,
+      role: 'user',
+      content: `📤 A file is uploading... "${file.name}"`,
       timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
     };
 
@@ -718,12 +718,16 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       if (duplicateResult.success && duplicateResult.isDuplicate) {
         console.log('⚠️ Duplicate detected:', duplicateResult);
 
-        // Update upload message for duplicate detection
-        setMessages(prev => prev.map(msg =>
-          msg.id === uploadMessageId
-            ? { ...msg, content: `📤 **File "${file.name}" selected**\n\n⚠️ **Duplicate detected!** Please choose how to proceed...` }
-            : msg
-        ));
+        // Keep the user upload message, add AI response about duplicate
+        const duplicateResponseId = `duplicate-${Date.now()}`;
+        const duplicateResponse: Message = {
+          id: duplicateResponseId,
+          role: 'ai',
+          content: `⚠️ **Duplicate detected!** I found a similar file in your project.\n\nPlease choose how you'd like to proceed with "${file.name}"...`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setMessages(prev => [...prev, duplicateResponse]);
 
         // Show duplicate dialog and wait for user choice
         setDuplicateMatches(duplicateResult.matches);
@@ -741,12 +745,15 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     } catch (error) {
       console.error('File upload error:', error);
 
-      // Update message with error
-      setMessages(prev => prev.map(msg =>
-        msg.id === uploadMessageId
-          ? { ...msg, content: `📤 **Upload failed for "${file.name}"**\n\n❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again.` }
-          : msg
-      ));
+      // Add AI error response
+      const errorResponseMessage: Message = {
+        id: `error-${Date.now()}`,
+        role: 'ai',
+        content: `❌ **Upload failed for "${file.name}"**\n\nError: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try uploading the file again.`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setMessages(prev => [...prev, errorResponseMessage]);
 
       setUploadingFile(false);
     } finally {
@@ -760,13 +767,17 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   // Separate function for the actual file analysis (after duplicate check)
   const proceedWithFileAnalysis = async (file: File, uploadMessageId?: string) => {
     try {
-      // Update progress message if provided
+      // Add AI processing response (don't update user message)
       if (uploadMessageId) {
-        setMessages(prev => prev.map(msg =>
-          msg.id === uploadMessageId
-            ? { ...msg, content: `📤 **Processing "${file.name}"...** ⚡\n\n📄 Extracting text and analyzing content...` }
-            : msg
-        ));
+        const processingResponseId = `processing-${Date.now()}`;
+        const processingResponse: Message = {
+          id: processingResponseId,
+          role: 'ai',
+          content: `📄 **Processing your file...** ⚡\n\nExtracting text and analyzing content from "${file.name}"...`,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setMessages(prev => [...prev, processingResponse]);
         scrollToBottom();
       }
 
@@ -820,23 +831,15 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           finalContent += `\nThese suggestions are based on your uploaded content. Feel free to explore any that interest you!`;
         }
 
-        // Update the existing upload message with final content
-        if (uploadMessageId) {
-          setMessages(prev => prev.map(msg =>
-            msg.id === uploadMessageId
-              ? { ...msg, content: finalContent }
-              : msg
-          ));
-        } else {
-          // Fallback: create new message if no ID provided
-          const uploadMessage: Message = {
-            id: `upload-${Date.now()}`,
-            role: 'ai',
-            content: finalContent,
-            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-          };
-          setMessages(prev => [...prev, uploadMessage]);
-        }
+        // Always create a new AI response with the final results
+        const finalResponseMessage: Message = {
+          id: `result-${Date.now()}`,
+          role: 'ai',
+          content: finalContent,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setMessages(prev => [...prev, finalResponseMessage]);
 
         console.log('File uploaded and analyzed successfully');
       } else {
