@@ -571,17 +571,20 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                               {/* Full Summary */}
                               {analysis.summary && (
                                 <div style={{ marginBottom: '0.75rem' }}>
-                                  <p style={{
+                                  <div style={{
                                     fontSize: '0.875rem',
                                     margin: '0 0 0.5rem 0',
                                     fontFamily: 'system-ui, -apple-system, sans-serif'
                                   }}>
-                                    <strong style={{
-                                      fontWeight: '900',
+                                    <span style={{
+                                      fontWeight: 'bold',
                                       color: '#000000',
-                                      fontSize: '0.875rem'
-                                    }}>Summary:</strong>
-                                  </p>
+                                      fontSize: '1rem',
+                                      display: 'inline-block',
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.05em'
+                                    }}>SUMMARY:</span>
+                                  </div>
                                   <p style={{
                                     fontSize: '0.875rem',
                                     color: '#475569',
@@ -596,17 +599,20 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                               {/* Key Points */}
                               {analysis.keyPoints && Array.isArray(analysis.keyPoints) && analysis.keyPoints.length > 0 && (
                                 <div style={{ marginBottom: '0.75rem' }}>
-                                  <p style={{
+                                  <div style={{
                                     fontSize: '0.875rem',
                                     margin: '0 0 0.5rem 0',
                                     fontFamily: 'system-ui, -apple-system, sans-serif'
                                   }}>
-                                    <strong style={{
-                                      fontWeight: '900',
+                                    <span style={{
+                                      fontWeight: 'bold',
                                       color: '#000000',
-                                      fontSize: '0.875rem'
-                                    }}>Key Points:</strong>
-                                  </p>
+                                      fontSize: '1rem',
+                                      display: 'inline-block',
+                                      textTransform: 'uppercase',
+                                      letterSpacing: '0.05em'
+                                    }}>KEY POINTS:</span>
+                                  </div>
                                   <ul style={{
                                     fontSize: '0.75rem',
                                     color: '#475569',
