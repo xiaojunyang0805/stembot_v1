@@ -379,16 +379,31 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         console.log('🗑️ Removing existing document:', choice.replaceDocumentId);
 
         const { error: deleteError } = await supabase
-          .from('documents')
+          .from('project_documents')
           .delete()
           .eq('id', choice.replaceDocumentId);
 
         if (deleteError) {
           console.error('Failed to delete existing document:', deleteError);
+          alert('Failed to replace existing file. Please try again.');
+          setUploadingFile(false);
+          return;
+        } else {
+          console.log('✅ Successfully deleted existing document');
         }
 
-        // Update local state
+        // Update local state immediately
         setDocuments(prev => prev.filter(doc => doc.id !== choice.replaceDocumentId));
+
+        // Show confirmation message to user
+        const replaceMessage: Message = {
+          id: `replace-${Date.now()}`,
+          role: 'ai',
+          content: '🔄 Replaced existing file successfully. Proceeding with upload...',
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        setMessages(prev => [...prev, replaceMessage]);
+        scrollToBottom();
       }
 
       // Process the file with optional renaming
