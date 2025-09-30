@@ -43,9 +43,17 @@ export function DuplicateDialog({
 
   if (!isOpen) return null;
 
+  console.log('🔘 DIALOG: Dialog is open with matches:', matches.length);
+  console.log('🔘 DIALOG: Initial selected action:', selectedAction);
+  console.log('🔘 DIALOG: Initial selected document ID:', selectedDocumentId);
+
   const topMatch = matches[0];
 
   const handleConfirm = () => {
+    console.log('🔘 DIALOG: Confirm button clicked');
+    console.log('🔘 DIALOG: Selected action:', selectedAction);
+    console.log('🔘 DIALOG: Selected document ID:', selectedDocumentId);
+
     let choice: DuplicateChoice;
 
     switch (selectedAction) {
@@ -70,7 +78,9 @@ export function DuplicateDialog({
         choice = { action: 'cancel' };
     }
 
+    console.log('🔘 DIALOG: Calling onChoice with:', choice);
     onChoice(choice);
+    console.log('🔘 DIALOG: onChoice called successfully');
   };
 
   const getSimilarityColor = (similarity: number) => {
@@ -251,7 +261,10 @@ export function DuplicateDialog({
                 name="action"
                 value="overwrite"
                 checked={selectedAction === 'overwrite'}
-                onChange={(e) => setSelectedAction(e.target.value)}
+                onChange={(e) => {
+                  console.log('🔘 DIALOG: Overwrite action selected');
+                  setSelectedAction(e.target.value);
+                }}
                 style={{ marginTop: '0.125rem' }}
               />
               <div style={{ flex: 1 }}>
