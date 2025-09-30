@@ -773,6 +773,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
       if (duplicateResult.success && duplicateResult.isDuplicate) {
         console.log('⚠️ Duplicate detected:', duplicateResult);
+        console.log('🚨 CRITICAL: About to show duplicate dialog!');
 
         // Keep the user upload message, add AI response about duplicate
         const duplicateResponseId = `duplicate-${Date.now()}`;
@@ -786,12 +787,22 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         setMessages(prev => [...prev, duplicateResponse]);
 
         // Show duplicate dialog and wait for user choice
+        console.log('🔧 Setting duplicate dialog state...');
+        console.log('  Matches:', duplicateResult.matches?.length || 0);
+        console.log('  Confidence:', duplicateResult.confidence);
+        console.log('  Recommendation:', duplicateResult.recommendation);
+
         setDuplicateMatches(duplicateResult.matches);
         setDuplicateConfidence(duplicateResult.confidence);
         setDuplicateRecommendation(duplicateResult.recommendation);
         setPendingFile(file);
+
+        console.log('🚨 SETTING showDuplicateDialog to TRUE');
         setShowDuplicateDialog(true);
+
         setUploadingFile(false); // Stop loading state until user decides
+
+        console.log('✅ Dialog should now be visible!');
         return; // Exit here, continue in handleDuplicateChoice
       }
 
@@ -1035,6 +1046,13 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   if (!projectData) {
     return null;
   }
+
+  // Debug dialog state before rendering
+  console.log('🎭 RENDER: Dialog state check:', {
+    showDuplicateDialog,
+    duplicateMatches: duplicateMatches.length,
+    pendingFile: pendingFile?.name || 'None'
+  });
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column' }}>
