@@ -29,6 +29,8 @@ interface Message {
 }
 
 export default function ProjectWorkspace({ params }: { params: { id: string } }) {
+  console.log('🚀 PROJECT PAGE COMPONENT LOADED');
+  console.log('📋 Project ID:', params.id);
   const { user } = useAuth();
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
@@ -890,8 +892,13 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   };
 
   useEffect(() => {
+    console.log('🔧 REACT useEffect RUNNING - Component mounted');
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    console.log('🚀 COMPONENT MOUNTED - Testing JavaScript execution');
+  }, []);
 
   const getPhaseIcon = (phase: string, status: string) => {
     const isCompleted = status === 'completed';
