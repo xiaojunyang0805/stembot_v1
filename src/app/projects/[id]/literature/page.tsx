@@ -573,13 +573,14 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                                 <div style={{ marginBottom: '0.75rem' }}>
                                   <p style={{
                                     fontSize: '0.875rem',
-                                    fontWeight: '900',
-                                    color: '#000000',
                                     margin: '0 0 0.5rem 0',
-                                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                                    textDecoration: 'none'
+                                    fontFamily: 'system-ui, -apple-system, sans-serif'
                                   }}>
-                                    Summary:
+                                    <strong style={{
+                                      fontWeight: '900',
+                                      color: '#000000',
+                                      fontSize: '0.875rem'
+                                    }}>Summary:</strong>
                                   </p>
                                   <p style={{
                                     fontSize: '0.875rem',
@@ -597,13 +598,14 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                                 <div style={{ marginBottom: '0.75rem' }}>
                                   <p style={{
                                     fontSize: '0.875rem',
-                                    fontWeight: '900',
-                                    color: '#000000',
                                     margin: '0 0 0.5rem 0',
-                                    fontFamily: 'system-ui, -apple-system, sans-serif',
-                                    textDecoration: 'none'
+                                    fontFamily: 'system-ui, -apple-system, sans-serif'
                                   }}>
-                                    Key Points:
+                                    <strong style={{
+                                      fontWeight: '900',
+                                      color: '#000000',
+                                      fontSize: '0.875rem'
+                                    }}>Key Points:</strong>
                                   </p>
                                   <ul style={{
                                     fontSize: '0.75rem',
