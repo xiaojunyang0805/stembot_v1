@@ -9,6 +9,9 @@ export const dynamic = 'force-dynamic'
  */
 export async function POST(request: NextRequest) {
   try {
+    // Clear debug info for this request
+    global.debugInfo = [];
+    global.debugInfo.push('API STARTED');
     console.log('🔍 DUPLICATE CHECK API - Starting duplicate detection...');
 
     const formData = await request.formData()
