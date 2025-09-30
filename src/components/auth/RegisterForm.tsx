@@ -795,23 +795,38 @@ return null;
         )}
       </div>
 
-      {/* Create Account Button */}
+      {/* Temporary Service Notice */}
+      <div style={{
+        marginBottom: '16px',
+        padding: '12px',
+        backgroundColor: '#fef3c7',
+        border: '1px solid #f59e0b',
+        borderRadius: '8px',
+        fontSize: '14px',
+        color: '#92400e',
+        textAlign: 'center'
+      }}>
+        ⚠️ <strong>Temporary Service Notice:</strong> Email registration is currently experiencing technical issues.
+        Please use <strong>Google Sign In</strong> below to register quickly and securely.
+      </div>
+
+      {/* Create Account Button - Temporarily Disabled */}
       <button
-        type="submit"
-        disabled={!isFormValid()}
+        type="button"
+        disabled={true}
         style={{
           width: '100%',
           padding: '14px',
-          backgroundColor: isFormValid() ? '#2563eb' : '#9ca3af',
+          backgroundColor: '#9ca3af',
           color: 'white',
           border: 'none',
           borderRadius: '8px',
           fontSize: '16px',
           fontWeight: '600',
-          cursor: isFormValid() ? 'pointer' : 'not-allowed',
+          cursor: 'not-allowed',
           transition: 'all 0.2s ease',
           marginBottom: '16px',
-          opacity: isFormValid() ? 1 : 0.6,
+          opacity: 0.6,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
@@ -853,39 +868,41 @@ return null;
         }
       `}</style>
 
-      {/* Google Sign Up Button */}
+      {/* Google Sign Up Button - Primary Option */}
       <button
         type="button"
         onClick={handleGoogleAuth}
         disabled={isLoading}
         style={{
           width: '100%',
-          padding: '12px',
-          backgroundColor: isLoading ? '#f3f4f6' : '#f9fafb',
-          border: `1px solid ${isLoading ? '#9ca3af' : '#d1d5db'}`,
+          padding: '14px',
+          backgroundColor: isLoading ? '#f3f4f6' : '#4285f4',
+          border: 'none',
           borderRadius: '8px',
           fontSize: '16px',
-          fontWeight: '500',
+          fontWeight: '600',
           cursor: isLoading ? 'not-allowed' : 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
           gap: '12px',
           transition: 'all 0.2s ease',
-          opacity: isLoading ? 0.6 : 1
+          opacity: isLoading ? 0.6 : 1,
+          color: 'white',
+          boxShadow: '0 2px 4px rgba(66, 133, 244, 0.3)'
         }}
         onMouseOver={(e) => {
           if (!isLoading) {
             const target = e.target as HTMLButtonElement;
-            target.style.backgroundColor = '#f3f4f6';
-            target.style.borderColor = '#9ca3af';
+            target.style.backgroundColor = '#3367d6';
+            target.style.transform = 'translateY(-1px)';
           }
         }}
         onMouseOut={(e) => {
           if (!isLoading) {
             const target = e.target as HTMLButtonElement;
-            target.style.backgroundColor = '#f9fafb';
-            target.style.borderColor = '#d1d5db';
+            target.style.backgroundColor = '#4285f4';
+            target.style.transform = 'translateY(0)';
           }
         }}
       >
@@ -906,7 +923,7 @@ return null;
             <path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"/>
           </svg>
         )}
-        {isLoading ? 'Signing up...' : 'Continue with Google'}
+        {isLoading ? 'Creating your account...' : 'Create Account with Google'}
       </button>
     </form>
 
