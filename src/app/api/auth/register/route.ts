@@ -60,25 +60,44 @@ export async function POST(request: NextRequest) {
     // Generate user ID
     const userId = crypto.randomUUID();
 
-    // Create user in database
+    // Create user in database with detailed error handling
+    let insertData: any = {
+      id: userId,
+      email: email.toLowerCase()
+    };
+
+    // Add custom auth fields if they exist
+    try {
+      insertData.password_hash = hashedPassword;
+      insertData.first_name = firstName;
+      insertData.last_name = lastName || '';
+      insertData.role = role || 'researcher';
+      insertData.email_verified = false;
+    } catch (err) {
+      console.error('Error preparing user data:', err);
+    }
+
     const { data: newUser, error: createError } = await supabase
       .from('users')
-      .insert({
-        id: userId,
-        email: email.toLowerCase(),
-        password_hash: hashedPassword,
-        first_name: firstName,
-        last_name: lastName || '',
-        role: role || 'researcher',
-        email_verified: false
-      })
-      .select('id, email, first_name, last_name, role, email_verified')
+      .insert(insertData)
+      .select('*')
       .single();
 
     if (createError) {
-      console.error('Database error creating user:', createError);
+      console.error('Database error creating user:', {
+        error: createError,
+        code: createError.code,
+        message: createError.message,
+        details: createError.details,
+        hint: createError.hint
+      });
+
       return NextResponse.json(
-        { error: 'Failed to create user account' },
+        {
+          error: 'Failed to create user account',
+          details: createError.message,
+          code: createError.code
+        },
         { status: 500 }
       );
     }
@@ -100,11 +119,11 @@ export async function POST(request: NextRequest) {
       user: {
         id: newUser.id,
         email: newUser.email,
-        firstName: newUser.first_name,
-        lastName: newUser.last_name,
-        role: newUser.role,
-        emailVerified: newUser.email_verified,
-        createdAt: new Date().toISOString()
+        firstName: newUser.first_name || firstName,
+        lastName: newUser.last_name || lastName || '',
+        role: newUser.role || role || 'researcher',
+        emailVerified: newUser.email_verified || false,
+        createdAt: newUser.created_at || new Date().toISOString()
       },
       token
     }, { status: 201 });
