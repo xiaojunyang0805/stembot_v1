@@ -57,12 +57,8 @@ export async function POST(request: NextRequest) {
     const saltRounds = 12;
     const hashedPassword = await bcrypt.hash(password, saltRounds);
 
-    // Generate user ID
-    const userId = crypto.randomUUID();
-
-    // Create user in database with detailed error handling
+    // Create user in database with detailed error handling - let DB auto-generate ID
     let insertData: any = {
-      id: userId,
       email: email.toLowerCase()
     };
 
@@ -107,7 +103,7 @@ export async function POST(request: NextRequest) {
       {
         userId: newUser.id,
         email: newUser.email,
-        role: newUser.role
+        role: newUser.role || 'researcher'
       },
       JWT_SECRET,
       { expiresIn: '7d' }
