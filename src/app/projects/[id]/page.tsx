@@ -378,10 +378,20 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         // Delete the existing document first
         console.log('🗑️ Removing existing document:', choice.replaceDocumentId);
 
+        // Get current user for authentication
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+        if (authError || !user) {
+          console.error('Authentication error:', authError);
+          alert('Authentication error. Please refresh and try again.');
+          setUploadingFile(false);
+          return;
+        }
+
         const { error: deleteError } = await supabase
           .from('project_documents')
           .delete()
-          .eq('id', choice.replaceDocumentId);
+          .eq('id', choice.replaceDocumentId)
+          .eq('user_id', user.id);
 
         if (deleteError) {
           console.error('Failed to delete existing document:', deleteError);
@@ -411,17 +421,15 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         ? new File([pendingFile], choice.newName, { type: pendingFile.type })
         : pendingFile;
 
-      // Create new user upload message for the processed file
+      // Update the existing upload message instead of creating a new one
       const uploadMessageId = `upload-${Date.now()}`;
-      const uploadMessage: Message = {
-        id: uploadMessageId,
-        role: 'user',
-        content: `📤 Proceeding with file upload... "${fileToUpload.name}"`,
-        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-      };
 
-      setMessages(prev => [...prev, uploadMessage]);
-      scrollToBottom();
+      // Update the existing upload message to show we're proceeding
+      setMessages(prev => prev.map(msg =>
+        msg.id.startsWith('upload-') && msg.content.includes(pendingFile.name)
+          ? { ...msg, content: `📤 ${choice.action === 'overwrite' ? 'Replacing and uploading' : 'Uploading'} "${fileToUpload.name}"...` }
+          : msg
+      ));
 
       await proceedWithFileAnalysis(fileToUpload, uploadMessageId);
 

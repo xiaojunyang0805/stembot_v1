@@ -3343,3 +3343,51 @@ The complete intelligent Socratic coaching system is now live with:
   3. Check console logs - Look for the emoji-prefixed debug messages
 
   The duplicate detection system is ready to use and will prevent document center clutter while giving users intelligent control over their file management! 🎯
+
+16:35, 30/09, 2025
+🔍 Reflection: Duplicate Detection Debugging Journey
+  The Real Problem vs. Perceived Problem
+  - What we thought: Upload handler not triggering, UI component issues, file processing problems
+  - What it actually was: Database authentication - Row Level Security blocking queries with wrong credentials
+
+  Key Debugging Lesson
+  The issue wasn't in the complex similarity algorithms, UI event handlers, or file processing logic. It was a simple but critical authentication problem: using anon key instead of service_role key     
+  for admin-level database queries.
+
+  Why This Was Hard to Spot
+  1. No obvious errors: RLS silently returned 0 documents instead of throwing auth errors
+  2. API appeared to work: The endpoint responded successfully with "no duplicates found"
+  3. Complex system: Multiple layers (UI → API → Database → Algorithms) made it hard to isolate
+  4. Misleading symptoms: Focus went to UI/JavaScript issues rather than backend authentication
+
+  The Breakthrough Moment
+  Adding database query debugging revealed:
+  📊 Database Query Results: Found 0 docs
+  This immediately exposed that documents existed but weren't being retrieved, pointing directly to the auth issue.
+
+  Technical Takeaway
+  When debugging complex systems:
+  1. Start with data flow verification - confirm each step receives expected inputs
+  2. Authentication issues can be silent killers - always verify database access permissions
+  3. Add logging at data boundaries - especially between services/layers
+  4. Test the simplest case first - direct API calls before full UI workflows
+  The real fix was just 2 lines of code changing the Supabase client configuration. Sometimes the biggest problems have the smallest solutions! 🎯
+
+16:45, 30/09, 2025
+✅ File Replacement Issue Fixed!
+  Root Cause & Solution:
+  - Problem: Code was trying to delete from wrong table 'documents' instead of 'project_documents'
+  - Fix: Changed table name in handleDuplicateChoice function src/app/projects/[id]/page.tsx:382  
+  - Enhancement: Added better error handling and user feedback
+
+  What Changed:
+  1. Table Name Fix: supabase.from('documents') → supabase.from('project_documents')
+  2. Error Handling: Added proper error checking and user alerts for failed deletions
+  3. User Feedback: Added confirmation message "🔄 Replaced existing file successfully"
+  4. Immediate UI Update: Document is removed from local state immediately after successful deletion
+
+  Testing Results:
+  - ✅ Database queries work correctly with proper table name
+  - ✅ Found 2 duplicate documents in test project (proving old issue existed)
+  - ✅ Build and type checking pass
+  - ✅ Ready for production deployment
