@@ -11,12 +11,12 @@ import { useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import CustomAuthProvider, { useCustomAuth } from '../../../providers/CustomAuthProvider';
+import { useAuth } from '../../../providers/UnifiedAuthProvider';
 import CustomRegisterForm from '../../../components/auth/CustomRegisterForm';
 
 function RegisterPageContent() {
   const router = useRouter();
-  const { user, loading } = useCustomAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     document.title = 'Sign Up - StemBot';
@@ -193,9 +193,5 @@ function RegisterPageContent() {
 }
 
 export default function RegisterPage() {
-  return (
-    <CustomAuthProvider>
-      <RegisterPageContent />
-    </CustomAuthProvider>
-  );
+  return <RegisterPageContent />;
 }

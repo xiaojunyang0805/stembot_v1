@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useCustomAuth } from '../../providers/CustomAuthProvider'
+import { useAuth } from '../../providers/UnifiedAuthProvider'
 
 interface FormData {
   fullName: string
@@ -24,7 +24,7 @@ interface FormErrors {
 
 export function CustomRegisterForm() {
   const router = useRouter()
-  const { signUp, loading, error, clearError } = useCustomAuth()
+  const { signUp, loading, error, clearError } = useAuth()
 
   const [formData, setFormData] = useState<FormData>({
     fullName: '',
@@ -147,9 +147,11 @@ export function CustomRegisterForm() {
       await signUp(
         formData.email,
         formData.password,
-        firstName,
-        lastName,
-        'researcher' // All users are researchers in this platform
+        {
+          firstName: firstName,
+          lastName: lastName,
+          role: 'researcher'
+        }
       )
 
       setSuccessMessage('Account created successfully! Redirecting...')

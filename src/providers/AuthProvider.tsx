@@ -469,12 +469,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
   )
 }
 
-export function useAuth() {
-  const context = useContext(AuthContext)
-  if (!context) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
-  return context
-}
+// Re-export unified auth for backward compatibility
+export { useAuth } from './UnifiedAuthProvider'
 
 export default AuthProvider

@@ -13,7 +13,7 @@ import { Inter } from 'next/font/google';
 import type { Metadata } from 'next';
 
 // Removed globals.css import to eliminate CSS build dependencies
-import { AuthProvider } from '../providers/AuthProvider';
+import { UnifiedAuthProvider } from '../providers/UnifiedAuthProvider';
 import { ThemeProvider, ThemeErrorBoundary } from '../providers/ThemeProvider';
 import { VersionSync, VersionDisplay } from '../components/common/VersionSync';
 
@@ -75,7 +75,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
             themes={['light', 'dark', 'system']}
             storageKey="stembot-theme"
           >
-            <AuthProvider>
+            <UnifiedAuthProvider>
               {/* TODO: Add ToastProvider for notifications */}
               {/* TODO: Add I18nProvider for internationalization */}
 
@@ -112,7 +112,7 @@ export default function RootLayout({ children }: RootLayoutProps) {
 
               {/* TODO: Add toast notifications portal */}
               <div id="toast-root" />
-            </AuthProvider>
+            </UnifiedAuthProvider>
           </ThemeProvider>
         </ThemeErrorBoundary>
       </body>

@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { useCustomAuth } from '../../providers/CustomAuthProvider'
+import { useAuth } from '../../providers/UnifiedAuthProvider'
 
 interface FormData {
   email: string
@@ -18,7 +18,7 @@ interface FormErrors {
 
 export function CustomLoginForm() {
   const router = useRouter()
-  const { signIn, loading, error, clearError } = useCustomAuth()
+  const { signIn, loading, error, clearError } = useAuth()
 
   const [formData, setFormData] = useState<FormData>({
     email: '',

@@ -11,12 +11,12 @@ import { useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import CustomAuthProvider, { useCustomAuth } from '../../../providers/CustomAuthProvider';
+import { useAuth } from '../../../providers/UnifiedAuthProvider';
 import CustomLoginForm from '../../../components/auth/CustomLoginForm';
 
 function LoginPageContent() {
   const router = useRouter();
-  const { user, loading } = useCustomAuth();
+  const { user, loading } = useAuth();
 
   useEffect(() => {
     document.title = 'Sign In - StemBot';
@@ -182,9 +182,5 @@ function LoginPageContent() {
 }
 
 export default function LoginPage() {
-  return (
-    <CustomAuthProvider>
-      <LoginPageContent />
-    </CustomAuthProvider>
-  );
+  return <LoginPageContent />;
 }
