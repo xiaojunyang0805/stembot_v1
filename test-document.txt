@@ -1,0 +1,6 @@
+This is a test document for duplicate detection.
+
+Content:
+- Testing duplicate detection functionality
+- Sample research paper content
+- Lorem ipsum dolor sit amet consectetur adipiscing elit

@@ -39,7 +39,7 @@ export class DocumentDuplicateDetector {
 
     // Get all existing documents for this project
     const { data: existingDocs, error } = await supabase
-      .from('documents')
+      .from('project_documents')
       .select('*')
       .eq('project_id', projectId)
       .eq('upload_status', 'completed');
