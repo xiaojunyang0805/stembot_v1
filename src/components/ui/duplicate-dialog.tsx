@@ -1,6 +1,6 @@
 'use client'
 
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 
 export interface DuplicateMatch {
   id: string;
@@ -40,6 +40,14 @@ export function DuplicateDialog({
   const [selectedAction, setSelectedAction] = useState<string>(recommendation);
   const [customName, setCustomName] = useState<string>('');
   const [selectedDocumentId, setSelectedDocumentId] = useState<string>(matches[0]?.id || '');
+
+  // Update selectedDocumentId when matches change
+  useEffect(() => {
+    if (matches && matches.length > 0 && matches[0]?.id) {
+      console.log('🔄 EFFECT: Updating selectedDocumentId to:', matches[0].id);
+      setSelectedDocumentId(matches[0].id);
+    }
+  }, [matches]);
 
   if (!isOpen) return null;
 
