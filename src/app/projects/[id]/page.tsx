@@ -1608,7 +1608,13 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               />
 
               <button
-                onClick={() => document.getElementById('chat-file-upload')?.click()}
+                onClick={() => {
+                  console.log('📎 UPLOAD BUTTON CLICKED');
+                  const fileInput = document.getElementById('chat-file-upload');
+                  console.log('📄 File input element:', fileInput);
+                  fileInput?.click();
+                  console.log('✅ File input click triggered');
+                }}
                 disabled={uploadingFile || isAITyping}
                 style={{
                   padding: '0.75rem',

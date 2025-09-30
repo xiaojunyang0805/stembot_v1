@@ -36,7 +36,9 @@
       "Bash(curl:*)",
       "Bash(for file in src/app/auth/*/page.tsx src/app/auth/layout.tsx)",
       "Bash(done)",
-      "mcp__chrome-devtools__navigate_page"
+      "mcp__chrome-devtools__navigate_page",
+      "mcp__chrome-devtools__list_pages",
+      "mcp__chrome-devtools__take_snapshot"
     ],
     "deny": [],
     "ask": []
