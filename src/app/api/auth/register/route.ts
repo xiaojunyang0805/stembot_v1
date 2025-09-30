@@ -69,36 +69,56 @@ export async function POST(request: NextRequest) {
       }
     });
 
-    if (authError) {
-      console.error('Auth user creation error:', authError);
+    if (authError || !authUser || !authUser.user) {
+      console.error('Auth user creation error:', { authError, authUser });
       return NextResponse.json(
-        { error: 'Failed to create authentication account' },
+        {
+          error: 'Failed to create authentication account',
+          details: authError?.message || 'No user data returned'
+        },
         { status: 500 }
       );
     }
 
+    console.log('Auth user created successfully:', { userId: authUser.user.id, email: authUser.user.email });
+
     // Now create/update the profile in users table with the auth UUID
+    const userProfile = {
+      id: authUser.user.id,
+      email: email.toLowerCase(),
+      password_hash: hashedPassword,
+      first_name: firstName,
+      last_name: lastName || '',
+      role: role || 'researcher',
+      email_verified: true
+    };
+
+    console.log('Creating user profile:', userProfile);
+
     const { data: newUser, error: createError } = await supabase
       .from('users')
-      .upsert({
-        id: authUser.user.id,
-        email: email.toLowerCase(),
-        password_hash: hashedPassword,
-        first_name: firstName,
-        last_name: lastName || '',
-        role: role || 'researcher',
-        email_verified: true
-      })
+      .upsert(userProfile)
       .select('*')
       .single();
 
     if (createError) {
-      console.error('Profile creation error:', createError);
+      console.error('Profile creation error:', {
+        error: createError,
+        code: createError.code,
+        message: createError.message,
+        details: createError.details,
+        userProfile
+      });
+
       // Try to clean up the auth user if profile creation fails
       await supabase.auth.admin.deleteUser(authUser.user.id);
 
       return NextResponse.json(
-        { error: 'Failed to create user profile' },
+        {
+          error: 'Failed to create user profile',
+          details: createError.message,
+          code: createError.code
+        },
         { status: 500 }
       );
     }
