@@ -919,6 +919,30 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
         setMessages(prev => [...prev, finalResponseMessage]);
 
+        // Save the upload conversation to database
+        try {
+          await saveConversation({
+            projectId: params.id,
+            userMessage: `📤 Uploaded file: "${result.fileInfo.name}"`,
+            aiResponse: finalContent,
+            modelUsed: 'document-analysis',
+            tokensUsed: 0, // File upload doesn't use AI model tokens
+            metadata: {
+              enhanced: false,
+              uploadType: 'document',
+              fileName: result.fileInfo.name,
+              fileSize: result.fileInfo.sizeMB,
+              timestamp: new Date().toISOString(),
+              projectPhase: project?.current_phase,
+              analysisType: 'file-upload'
+            }
+          });
+          console.log('✅ Upload conversation saved to database');
+        } catch (saveError) {
+          console.error('Failed to save upload conversation:', saveError);
+          // Don't show error to user as upload was successful
+        }
+
         console.log('File uploaded and analyzed successfully');
       } else {
         alert(`Upload failed: ${result.error}`);

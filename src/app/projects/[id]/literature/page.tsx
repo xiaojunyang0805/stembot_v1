@@ -21,6 +21,20 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
+  const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+
+  // Toggle card expansion
+  const toggleCardExpansion = (docId: string) => {
+    setExpandedCards(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(docId)) {
+        newSet.delete(docId);
+      } else {
+        newSet.add(docId);
+      }
+      return newSet;
+    });
+  };
 
   // Fetch project data and documents
   useEffect(() => {
@@ -496,59 +510,46 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                           borderRadius: '0.5rem',
                           padding: '1rem'
                         }}>
-                          <h4 style={{
-                            fontSize: '1rem',
-                            fontWeight: '600',
-                            color: '#1e293b',
-                            margin: '0 0 0.75rem 0',
+                          <div style={{
                             display: 'flex',
+                            justifyContent: 'space-between',
                             alignItems: 'center',
-                            gap: '0.5rem'
+                            marginBottom: '0.75rem'
                           }}>
-                            🤖 AI Analysis
-                          </h4>
-
-                          {/* Summary */}
-                          {analysis.summary && (
-                            <div style={{ marginBottom: '0.75rem' }}>
-                              <p style={{
-                                fontSize: '0.875rem',
-                                color: '#475569',
-                                lineHeight: '1.5',
-                                margin: 0
-                              }}>
-                                {typeof analysis.summary === 'string' ? analysis.summary : 'Analysis completed'}
-                              </p>
-                            </div>
-                          )}
-
-                          {/* Key Points */}
-                          {analysis.keyPoints && Array.isArray(analysis.keyPoints) && analysis.keyPoints.length > 0 && (
-                            <div style={{ marginBottom: '0.75rem' }}>
-                              <p style={{
+                            <h4 style={{
+                              fontSize: '1rem',
+                              fontWeight: '600',
+                              color: '#1e293b',
+                              margin: 0,
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.5rem'
+                            }}>
+                              🤖 AI Analysis
+                            </h4>
+                            <button
+                              onClick={() => toggleCardExpansion(doc.id)}
+                              style={{
+                                padding: '0.25rem 0.5rem',
+                                backgroundColor: '#e2e8f0',
+                                border: '1px solid #cbd5e0',
+                                borderRadius: '0.375rem',
                                 fontSize: '0.75rem',
-                                fontWeight: '600',
-                                color: '#64748b',
-                                margin: '0 0 0.375rem 0'
-                              }}>
-                                Key Points:
-                              </p>
-                              <ul style={{
-                                fontSize: '0.75rem',
-                                color: '#475569',
-                                margin: 0,
-                                paddingLeft: '1rem'
-                              }}>
-                                {analysis.keyPoints.slice(0, 3).map((point: string, index: number) => (
-                                  <li key={index} style={{ margin: '0.25rem 0' }}>
-                                    {typeof point === 'string' ? point : 'Key insight identified'}
-                                  </li>
-                                ))}
-                              </ul>
-                            </div>
-                          )}
+                                color: '#4a5568',
+                                cursor: 'pointer'
+                              }}
+                              onMouseEnter={(e) => {
+                                (e.target as HTMLButtonElement).style.backgroundColor = '#cbd5e0';
+                              }}
+                              onMouseLeave={(e) => {
+                                (e.target as HTMLButtonElement).style.backgroundColor = '#e2e8f0';
+                              }}
+                            >
+                              {expandedCards.has(doc.id) ? '▲ Collapse' : '▼ Expand'}
+                            </button>
+                          </div>
 
-                          {/* Document Type */}
+                          {/* Always show document type */}
                           {analysis.documentType && (
                             <div style={{
                               display: 'inline-block',
@@ -557,10 +558,75 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                               fontSize: '0.75rem',
                               fontWeight: '500',
                               padding: '0.25rem 0.5rem',
-                              borderRadius: '0.25rem'
+                              borderRadius: '0.25rem',
+                              marginBottom: '0.75rem'
                             }}>
                               {analysis.documentType}
                             </div>
+                          )}
+
+                          {/* Expandable detailed content */}
+                          {expandedCards.has(doc.id) ? (
+                            <>
+                              {/* Full Summary */}
+                              {analysis.summary && (
+                                <div style={{ marginBottom: '0.75rem' }}>
+                                  <p style={{
+                                    fontSize: '0.875rem',
+                                    color: '#475569',
+                                    lineHeight: '1.5',
+                                    margin: 0
+                                  }}>
+                                    {typeof analysis.summary === 'string' ? analysis.summary : 'Analysis completed'}
+                                  </p>
+                                </div>
+                              )}
+
+                              {/* Key Points */}
+                              {analysis.keyPoints && Array.isArray(analysis.keyPoints) && analysis.keyPoints.length > 0 && (
+                                <div style={{ marginBottom: '0.75rem' }}>
+                                  <p style={{
+                                    fontSize: '0.75rem',
+                                    fontWeight: '600',
+                                    color: '#64748b',
+                                    margin: '0 0 0.375rem 0'
+                                  }}>
+                                    Key Points:
+                                  </p>
+                                  <ul style={{
+                                    fontSize: '0.75rem',
+                                    color: '#475569',
+                                    margin: 0,
+                                    paddingLeft: '1rem'
+                                  }}>
+                                    {analysis.keyPoints.slice(0, 3).map((point: string, index: number) => (
+                                      <li key={index} style={{ margin: '0.25rem 0' }}>
+                                        {typeof point === 'string' ? point : 'Key insight identified'}
+                                      </li>
+                                    ))}
+                                  </ul>
+                                </div>
+                              )}
+                            </>
+                          ) : (
+                            /* Collapsed summary - just first 100 characters */
+                            analysis.summary && (
+                              <div style={{ marginBottom: '0.5rem' }}>
+                                <p style={{
+                                  fontSize: '0.75rem',
+                                  color: '#64748b',
+                                  lineHeight: '1.4',
+                                  margin: 0
+                                }}>
+                                  {typeof analysis.summary === 'string'
+                                    ? analysis.summary.length > 100
+                                      ? analysis.summary.substring(0, 100) + '...'
+                                      : analysis.summary
+                                    : 'Analysis completed'
+                                  }
+                                </p>
+                              </div>
+                            )
                           )}
                         </div>
                       ) : (
