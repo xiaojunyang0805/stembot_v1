@@ -394,7 +394,19 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         ? new File([pendingFile], choice.newName, { type: pendingFile.type })
         : pendingFile;
 
-      await proceedWithFileAnalysis(fileToUpload);
+      // Create new upload progress message
+      const uploadMessageId = `upload-${Date.now()}`;
+      const uploadMessage: Message = {
+        id: uploadMessageId,
+        role: 'ai',
+        content: `📤 **Processing "${fileToUpload.name}"...** ⚡\n\n📄 Extracting text and analyzing content...`,
+        timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+      };
+
+      setMessages(prev => [...prev, uploadMessage]);
+      scrollToBottom();
+
+      await proceedWithFileAnalysis(fileToUpload, uploadMessageId);
 
     } catch (error) {
       console.error('Error handling duplicate choice:', error);
@@ -673,6 +685,19 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     // Store reference for cleanup
     const inputElement = event.target;
 
+    // Create upload progress message with pulsing indicator
+    const uploadMessageId = `upload-${Date.now()}`;
+    const uploadMessage: Message = {
+      id: uploadMessageId,
+      role: 'ai',
+      content: `📤 **Uploading "${file.name}"...** ⚡\n\n🔍 Checking for duplicates...`,
+      timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    // Add upload message to chat
+    setMessages(prev => [...prev, uploadMessage]);
+    scrollToBottom();
+
     try {
       setUploadingFile(true);
       setFileAnalysisResult(null);
@@ -693,6 +718,13 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       if (duplicateResult.success && duplicateResult.isDuplicate) {
         console.log('⚠️ Duplicate detected:', duplicateResult);
 
+        // Update upload message for duplicate detection
+        setMessages(prev => prev.map(msg =>
+          msg.id === uploadMessageId
+            ? { ...msg, content: `📤 **File "${file.name}" selected**\n\n⚠️ **Duplicate detected!** Please choose how to proceed...` }
+            : msg
+        ));
+
         // Show duplicate dialog and wait for user choice
         setDuplicateMatches(duplicateResult.matches);
         setDuplicateConfidence(duplicateResult.confidence);
@@ -704,12 +736,19 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       }
 
       // Step 2: No duplicates or user chose to proceed - continue with analysis
-      await proceedWithFileAnalysis(file);
+      await proceedWithFileAnalysis(file, uploadMessageId);
 
     } catch (error) {
       console.error('File upload error:', error);
+
+      // Update message with error
+      setMessages(prev => prev.map(msg =>
+        msg.id === uploadMessageId
+          ? { ...msg, content: `📤 **Upload failed for "${file.name}"**\n\n❌ Error: ${error instanceof Error ? error.message : 'Unknown error'}\n\nPlease try again.` }
+          : msg
+      ));
+
       setUploadingFile(false);
-      alert('File upload failed. Please try again.');
     } finally {
       // Reset file input
       if (inputElement) {
@@ -719,8 +758,18 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   };
 
   // Separate function for the actual file analysis (after duplicate check)
-  const proceedWithFileAnalysis = async (file: File) => {
+  const proceedWithFileAnalysis = async (file: File, uploadMessageId?: string) => {
     try {
+      // Update progress message if provided
+      if (uploadMessageId) {
+        setMessages(prev => prev.map(msg =>
+          msg.id === uploadMessageId
+            ? { ...msg, content: `📤 **Processing "${file.name}"...** ⚡\n\n📄 Extracting text and analyzing content...` }
+            : msg
+        ));
+        scrollToBottom();
+      }
+
       const formData = new FormData();
       formData.append('file', file);
       formData.append('projectId', params.id);
@@ -753,32 +802,41 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         // Show analysis result
         setFileAnalysisResult(result);
 
-        // Add upload result to chat conversation
-        let content = `📄 **Document uploaded successfully!**\n\n**File:** ${result.fileInfo.name}\n**Size:** ${result.fileInfo.sizeMB} MB\n\n**Analysis Summary:**\n${result.analysis.summary}\n\n**Key Points:**\n${result.analysis.keyPoints?.map((point: string) => `• ${point}`).join('\n') || 'Processing complete'}`;
+        // Build final upload completion content
+        let finalContent = `📄 **Document uploaded successfully!**\n\n**File:** ${result.fileInfo.name}\n**Size:** ${result.fileInfo.sizeMB} MB\n\n**Analysis Summary:**\n${result.analysis.summary}\n\n**Key Points:**\n${result.analysis.keyPoints?.map((point: string) => `• ${point}`).join('\n') || 'Processing complete'}`;
 
         // Add question suggestions if available
         if (result.questionSuggestions && result.questionSuggestions.length > 0) {
-          content += `\n\n🎯 **Research Question Suggestions:**\n`;
+          finalContent += `\n\n🎯 **Research Question Suggestions:**\n`;
           result.questionSuggestions.forEach((suggestion: any, index: number) => {
             // Lower threshold for title-based suggestions (60) vs text-based (70)
             const minConfidence = suggestion.documentBasis?.includes('Based on') ? 60 : 70;
             if (suggestion.confidence > minConfidence) {
-              content += `\n**${index + 1}.** ${suggestion.suggestedQuestion}\n`;
-              content += `*${suggestion.reasoning}*\n`;
-              content += `*Based on: ${suggestion.documentBasis}*\n`;
+              finalContent += `\n**${index + 1}.** ${suggestion.suggestedQuestion}\n`;
+              finalContent += `*${suggestion.reasoning}*\n`;
+              finalContent += `*Based on: ${suggestion.documentBasis}*\n`;
             }
           });
-          content += `\nThese suggestions are based on your uploaded content. Feel free to explore any that interest you!`;
+          finalContent += `\nThese suggestions are based on your uploaded content. Feel free to explore any that interest you!`;
         }
 
-        const uploadMessage: Message = {
-          id: `upload-${Date.now()}`,
-          role: 'ai',
-          content,
-          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-        };
-
-        setMessages(prev => [...prev, uploadMessage]);
+        // Update the existing upload message with final content
+        if (uploadMessageId) {
+          setMessages(prev => prev.map(msg =>
+            msg.id === uploadMessageId
+              ? { ...msg, content: finalContent }
+              : msg
+          ));
+        } else {
+          // Fallback: create new message if no ID provided
+          const uploadMessage: Message = {
+            id: `upload-${Date.now()}`,
+            role: 'ai',
+            content: finalContent,
+            timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          setMessages(prev => [...prev, uploadMessage]);
+        }
 
         console.log('File uploaded and analyzed successfully');
       } else {
@@ -852,6 +910,10 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
+          }
+          @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
           }
         `}</style>
       </div>
