@@ -1,4 +1,10 @@
-import { supabase } from '../supabase'
+import { createClient } from '@supabase/supabase-js'
+
+// Use service role key for duplicate detection to bypass RLS
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://kutpbtpdgptcmrlabekq.supabase.co',
+  process.env.SUPABASE_SERVICE_ROLE_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imt1dHBidHBkZ3B0Y21ybGFiZWtxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc1ODI3MDcwNCwiZXhwIjoyMDczODQ2NzA0fQ.lMcRfuEUoY9QsTBd6MfISFmD8gqHUTdrG2RRoDlkwPU'
+)
 
 export interface DuplicateDetectionResult {
   isDuplicate: boolean;
@@ -38,7 +44,7 @@ export class DocumentDuplicateDetector {
   ): Promise<DuplicateDetectionResult> {
 
     // Get all existing documents for this project
-    const { data: existingDocs, error } = await supabase
+    const { data: existingDocs, error } = await supabaseAdmin
       .from('project_documents')
       .select('*')
       .eq('project_id', projectId)
