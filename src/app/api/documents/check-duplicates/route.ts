@@ -92,7 +92,8 @@ export async function POST(request: NextRequest) {
       matches: result.matchedDocuments,
       recommendation: result.recommendation,
       message,
-      timestamp: new Date().toISOString()
+      timestamp: new Date().toISOString(),
+      debug: global.debugInfo || [] // Include debug info for testing
     };
 
     console.log('📤 Sending response:', response);

@@ -49,6 +49,10 @@ export class DocumentDuplicateDetector {
     console.log('  Query Error:', error ? error.message : 'None');
     console.log('  Documents Found:', existingDocs?.length || 0);
 
+    // FORCE VISIBLE DEBUGGING - Add to response for testing
+    if (!global.debugInfo) global.debugInfo = [];
+    global.debugInfo.push(`DB Query: ProjectID=${projectId}, Found=${existingDocs?.length || 0} docs`);
+
     if (error) {
       console.error('❌ Database error:', error);
       return {
