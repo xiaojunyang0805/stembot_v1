@@ -11,13 +11,12 @@ import { useEffect } from 'react';
 
 import { useRouter } from 'next/navigation';
 
-import { AuthDebugger } from '../../../components/auth/AuthDebugger';
-import LoginForm from '../../../components/auth/LoginForm';
-import { useAuth } from '../../../providers/AuthProvider';
+import CustomAuthProvider, { useCustomAuth } from '../../../providers/CustomAuthProvider';
+import CustomLoginForm from '../../../components/auth/CustomLoginForm';
 
-export default function LoginPage() {
+function LoginPageContent() {
   const router = useRouter();
-  const { user, loading } = useAuth();
+  const { user, loading } = useCustomAuth();
 
   useEffect(() => {
     document.title = 'Sign In - StemBot';
@@ -63,9 +62,7 @@ export default function LoginPage() {
   }
 
   return (
-    <>
-      <AuthDebugger />
-      <div style={{
+    <div style={{
         minHeight: '100vh',
         background: 'linear-gradient(to bottom right, #dbeafe, #f0f9ff)',
         display: 'flex',
@@ -108,8 +105,8 @@ export default function LoginPage() {
           </p>
         </div>
 
-        {/* Functional Login Form */}
-        <LoginForm />
+        {/* Custom Login Form */}
+        <CustomLoginForm />
 
         {/* Privacy Banner */}
         <div style={{
@@ -181,6 +178,13 @@ export default function LoginPage() {
         `}</style>
       </div>
     </div>
-    </>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <CustomAuthProvider>
+      <LoginPageContent />
+    </CustomAuthProvider>
   );
 }
