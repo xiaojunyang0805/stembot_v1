@@ -365,7 +365,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       newName: choice.newName,
       willTriggerDeletion: choice.action === 'overwrite' && !!choice.replaceDocumentId
     });
-    alert(`🔘 Confirm clicked: ${choice.action} (${choice.replaceDocumentId ? 'will delete ' + choice.replaceDocumentId : 'no deletion'})`);
     setShowDuplicateDialog(false);
 
     if (choice.action === 'cancel') {
@@ -793,8 +792,6 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         console.log('  Matches:', duplicateResult.matches?.length || 0);
         console.log('  Confidence:', duplicateResult.confidence);
         console.log('  Recommendation:', duplicateResult.recommendation);
-        console.log('🔍 DETAILED MATCHES DATA:', duplicateResult.matches);
-        console.log('🔍 FIRST MATCH ID:', duplicateResult.matches?.[0]?.id);
 
         setDuplicateMatches(duplicateResult.matches);
         setDuplicateConfidence(duplicateResult.confidence);

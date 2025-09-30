@@ -44,25 +44,16 @@ export function DuplicateDialog({
   // Update selectedDocumentId when matches change
   useEffect(() => {
     if (matches && matches.length > 0 && matches[0]?.id) {
-      console.log('🔄 EFFECT: Updating selectedDocumentId to:', matches[0].id);
       setSelectedDocumentId(matches[0].id);
     }
   }, [matches]);
 
   if (!isOpen) return null;
 
-  console.log('🔘 DIALOG: Dialog is open with matches:', matches.length);
-  console.log('🔘 DIALOG: Initial selected action:', selectedAction);
-  console.log('🔘 DIALOG: Initial selected document ID:', selectedDocumentId);
-  console.log('🔘 DIALOG: First match data:', matches[0]);
-  console.log('🔘 DIALOG: All matches:', matches);
 
   const topMatch = matches[0];
 
   const handleConfirm = () => {
-    console.log('🔘 DIALOG: Confirm button clicked');
-    console.log('🔘 DIALOG: Selected action:', selectedAction);
-    console.log('🔘 DIALOG: Selected document ID:', selectedDocumentId);
 
     let choice: DuplicateChoice;
 
@@ -88,9 +79,7 @@ export function DuplicateDialog({
         choice = { action: 'cancel' };
     }
 
-    console.log('🔘 DIALOG: Calling onChoice with:', choice);
     onChoice(choice);
-    console.log('🔘 DIALOG: onChoice called successfully');
   };
 
   const getSimilarityColor = (similarity: number) => {
