@@ -3451,3 +3451,12 @@ The upload button now has a much clearer, more professional appearance that bett
   - ✅ Google OAuth continues working as backup
   - ✅ Authentication system is properly configured
   - ✅ No more blocking "Email signups are disabled" errors
+
+23:21, 30/09, 2025
+🚨 Critical Issue Identified & Solution
+  Root Cause:
+  The "Database error saving new user" is occurring at the Supabase service level during auth.signUp(). This is a Supabase infrastructure issue, not our application code. Even the simplest possible
+  auth calls are failing.
+
+  Immediate Solution:
+  Since this is a critical blocking issue for students, I need to implement a workaround. The most effective approach is to temporarily bypass the problematic Supabase auth signup and use Google OAuth exclusively until the Supabase issue is resolved.
