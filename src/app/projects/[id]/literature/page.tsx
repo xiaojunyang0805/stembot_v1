@@ -573,6 +573,14 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                                 <div style={{ marginBottom: '0.75rem' }}>
                                   <p style={{
                                     fontSize: '0.875rem',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    margin: '0 0 0.5rem 0'
+                                  }}>
+                                    Summary:
+                                  </p>
+                                  <p style={{
+                                    fontSize: '0.875rem',
                                     color: '#475569',
                                     lineHeight: '1.5',
                                     margin: 0
@@ -586,10 +594,10 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                               {analysis.keyPoints && Array.isArray(analysis.keyPoints) && analysis.keyPoints.length > 0 && (
                                 <div style={{ marginBottom: '0.75rem' }}>
                                   <p style={{
-                                    fontSize: '0.75rem',
-                                    fontWeight: '600',
-                                    color: '#64748b',
-                                    margin: '0 0 0.375rem 0'
+                                    fontSize: '0.875rem',
+                                    fontWeight: 'bold',
+                                    color: '#111827',
+                                    margin: '0 0 0.5rem 0'
                                   }}>
                                     Key Points:
                                   </p>
