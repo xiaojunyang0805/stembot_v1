@@ -679,8 +679,18 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
   // Handle file upload and analysis
   const handleFileUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    console.log('🚀 UPLOAD HANDLER CALLED');
     const file = event.target.files?.[0];
-    if (!file) return;
+    if (!file) {
+      console.log('❌ No file selected');
+      return;
+    }
+
+    console.log('📄 File selected:', {
+      name: file.name,
+      size: file.size,
+      type: file.type
+    });
 
     // Store reference for cleanup
     const inputElement = event.target;
@@ -699,21 +709,26 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     scrollToBottom();
 
     try {
+      console.log('🔧 Setting upload state...');
       setUploadingFile(true);
       setFileAnalysisResult(null);
 
       // Step 1: Check for duplicates first
       console.log('🔍 Checking for duplicate documents...');
+      console.log('📋 Project ID:', params.id);
       const duplicateCheckData = new FormData();
       duplicateCheckData.append('file', file);
       duplicateCheckData.append('projectId', params.id);
 
+      console.log('📡 Making duplicate check request...');
       const duplicateResponse = await fetch('/api/documents/check-duplicates', {
         method: 'POST',
         body: duplicateCheckData
       });
 
+      console.log('📨 Duplicate check response status:', duplicateResponse.status);
       const duplicateResult = await duplicateResponse.json();
+      console.log('📄 Duplicate check result:', duplicateResult);
 
       if (duplicateResult.success && duplicateResult.isDuplicate) {
         console.log('⚠️ Duplicate detected:', duplicateResult);
