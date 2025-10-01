@@ -72,16 +72,17 @@ docs/
 
 # Scripts that aren't needed in production
 scripts/
+.deployment-trigger
 
-# Development configuration files that might cause issues
+# Development configuration files that might cause issues (keep essential build configs)
 jest.config.js
 playwright.config.ts
 .eslintrc.js
 .prettierrc
 .prettierignore
-tsconfig.json
-tailwind.config.js
-postcss.config.js
+# tsconfig.json - REQUIRED for build
+# tailwind.config.js - REQUIRED for styling
+# postcss.config.js - REQUIRED for CSS processing
 
 # Supabase local development
 supabase/
