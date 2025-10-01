@@ -131,15 +131,67 @@ export async function GET(request: NextRequest) {
     const projectId = searchParams.get('id');
 
     if (!projectId) {
+      // If no project ID, return all projects for the user
+      if (!token) {
+        return NextResponse.json({
+          message: 'Project Creation & Retrieval API',
+          methods: {
+            POST: 'Create new project',
+            'GET (no params)': 'Get all user projects',
+            'GET (?id=PROJECT_ID)': 'Get specific project by ID'
+          },
+          requiredFields: ['title', 'researchQuestion', 'field', 'timeline'],
+          authentication: 'Bearer token in Authorization header',
+          status: 'ready'
+        });
+      }
+
+      // Verify JWT token
+      let userId: string;
+      try {
+        const decoded = jwt.verify(token, JWT_SECRET) as any;
+        userId = decoded.userId;
+      } catch (error) {
+        return NextResponse.json(
+          { error: 'Invalid authentication token' },
+          { status: 401 }
+        );
+      }
+
+      // Create Supabase client with service role to bypass RLS
+      const supabaseAdmin = createClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+          auth: {
+            autoRefreshToken: false,
+            persistSession: false
+          }
+        }
+      );
+
+      console.log('📖 Fetching all projects for user via API:', userId);
+
+      // Fetch all user projects using service role (bypasses RLS)
+      const { data, error } = await supabaseAdmin
+        .from('projects')
+        .select('*')
+        .eq('user_id', userId)
+        .order('updated_at', { ascending: false });
+
+      if (error) {
+        console.error('❌ Database fetch error:', error);
+        return NextResponse.json(
+          { error: `Failed to fetch projects: ${error.message}` },
+          { status: 500 }
+        );
+      }
+
+      console.log('✅ Projects fetched successfully:', data?.length || 0);
+
       return NextResponse.json({
-        message: 'Project Creation & Retrieval API',
-        methods: {
-          POST: 'Create new project',
-          GET: 'Get project by ID (requires ?id=PROJECT_ID query param)'
-        },
-        requiredFields: ['title', 'researchQuestion', 'field', 'timeline'],
-        authentication: 'Bearer token in Authorization header',
-        status: 'ready'
+        success: true,
+        projects: data || []
       });
     }
 
