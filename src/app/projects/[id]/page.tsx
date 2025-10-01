@@ -125,6 +125,59 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
       // Get recent context for better AI response
       const { data: recentContext } = await getRecentContext(params.id, 3);
 
+      // Calculate question context for AI awareness (same as in sendMessage)
+      const currentQuestion = newQuestion;
+      const conversationCount = messages.length;
+      const documentCount = documents.length;
+
+      const progressAnalysis = analyzeQuestionProgress(
+        currentQuestion,
+        conversationCount,
+        documentCount,
+        [] // TODO: Replace with real question history from database
+      );
+
+      // Create question history based on actual progress
+      const questionHistory: Array<{
+        id: string;
+        text: string;
+        stage: 'initial' | 'emerging' | 'focused' | 'research-ready';
+        createdAt: Date;
+        improvements: string[];
+      }> = [
+        {
+          id: '1',
+          text: oldQuestion || "Initial project setup",
+          stage: 'initial',
+          createdAt: new Date(project?.created_at || Date.now() - 7 * 24 * 60 * 60 * 1000),
+          improvements: []
+        }
+      ];
+
+      if (progressAnalysis.progress > 15) {
+        questionHistory.push({
+          id: '2',
+          text: currentQuestion,
+          stage: progressAnalysis.stage,
+          createdAt: new Date(),
+          improvements: progressAnalysis.recommendations.slice(0, 2).map(rec =>
+            rec.replace(/^[A-Z]/, char => char.toLowerCase()).replace(/[.!?]$/, '')
+          )
+        });
+      }
+
+      // Calculate time spent on question (days since creation)
+      const timeSpentOnQuestion = project?.created_at
+        ? Math.ceil((Date.now() - new Date(project.created_at).getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
+
+      // Create document context for question refinement
+      const documentsRelatedToQuestion = documents.map(doc => ({
+        name: doc.filename || (doc as any).name || 'Unnamed document',
+        type: (doc as any).type || 'document',
+        relevance: 'Supporting research for question development'
+      }));
+
       // Call AI with special research question change prompt
       const response = await fetch('/api/ai/enhanced-chat', {
         method: 'POST',
@@ -150,6 +203,14 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               oldQuestion: oldQuestion,
               newQuestion: newQuestion,
               changeType: 'research_question_update'
+            },
+            questionContext: {
+              currentQuestion,
+              questionStage: progressAnalysis.stage,
+              questionProgress: progressAnalysis.progress,
+              questionHistory,
+              timeSpentOnQuestion,
+              documentsRelatedToQuestion
             }
           },
           useEnhanced: true
@@ -536,6 +597,59 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
         console.warn('Error checking student progress:', error);
       }
 
+      // Calculate question context for AI awareness
+      const currentQuestion = project?.title || "Research question not yet defined";
+      const conversationCount = messages.length;
+      const documentCount = documents.length;
+
+      const progressAnalysis = analyzeQuestionProgress(
+        currentQuestion,
+        conversationCount,
+        documentCount,
+        [] // TODO: Replace with real question history from database
+      );
+
+      // Create question history based on actual progress
+      const questionHistory: Array<{
+        id: string;
+        text: string;
+        stage: 'initial' | 'emerging' | 'focused' | 'research-ready';
+        createdAt: Date;
+        improvements: string[];
+      }> = [
+        {
+          id: '1',
+          text: "Initial project setup",
+          stage: 'initial',
+          createdAt: new Date(project?.created_at || Date.now() - 7 * 24 * 60 * 60 * 1000),
+          improvements: []
+        }
+      ];
+
+      if (progressAnalysis.progress > 15) {
+        questionHistory.push({
+          id: '2',
+          text: currentQuestion,
+          stage: progressAnalysis.stage,
+          createdAt: new Date(project?.updated_at || Date.now()),
+          improvements: progressAnalysis.recommendations.slice(0, 2).map(rec =>
+            rec.replace(/^[A-Z]/, char => char.toLowerCase()).replace(/[.!?]$/, '')
+          )
+        });
+      }
+
+      // Calculate time spent on question (days since creation)
+      const timeSpentOnQuestion = project?.created_at
+        ? Math.ceil((Date.now() - new Date(project.created_at).getTime()) / (1000 * 60 * 60 * 24))
+        : 0;
+
+      // Create document context for question refinement
+      const documentsRelatedToQuestion = documents.map(doc => ({
+        name: doc.filename || (doc as any).name || 'Unnamed document',
+        type: (doc as any).type || 'document',
+        relevance: 'Supporting research for question development'
+      }));
+
       // Always use Enhanced AI (GPT-4o Mini with fallback to Ollama/Mock)
       const response = await fetch('/api/ai/enhanced-chat', {
         method: 'POST',
@@ -559,7 +673,15 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             researchMode: researchMode,
             documents: documents,
             qualityAnalysis: qualityAnalysis,
-            progressCheck: progressCheck
+            progressCheck: progressCheck,
+            questionContext: {
+              currentQuestion,
+              questionStage: progressAnalysis.stage,
+              questionProgress: progressAnalysis.progress,
+              questionHistory,
+              timeSpentOnQuestion,
+              documentsRelatedToQuestion
+            }
           },
           useEnhanced: true
         }),

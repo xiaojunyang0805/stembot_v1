@@ -180,8 +180,46 @@ function createDynamicSystemPrompt(projectContext?: any): string {
   const documentCount = projectContext?.documents?.length || 0;
   const questionChange = projectContext?.questionChange;
   const qualityAnalysis = projectContext?.qualityAnalysis;
+  const questionContext = projectContext?.questionContext;
 
   let basePrompt = isResearchMode ? SOCRATIC_RESEARCH_PROMPT : ENHANCED_SYSTEM_PROMPT;
+
+  // Add question evolution context if available
+  if (questionContext) {
+    basePrompt += `\n\n🎯 QUESTION EVOLUTION CONTEXT:
+
+📋 CURRENT RESEARCH QUESTION:
+"${questionContext.currentQuestion}"
+- Stage: ${questionContext.questionStage.toUpperCase()} (${questionContext.questionProgress}% complete)
+- Time spent refining: ${questionContext.timeSpentOnQuestion || 0} days
+
+📈 QUESTION EVOLUTION HISTORY:`;
+
+    if (questionContext.questionHistory && questionContext.questionHistory.length > 0) {
+      questionContext.questionHistory.slice(-3).forEach((version: any, index: number) => {
+        const versionNumber = questionContext.questionHistory.length - questionContext.questionHistory.slice(-3).length + index + 1;
+        basePrompt += `\nV${versionNumber} (${version.stage}): "${version.text}"`;
+        if (version.improvements && version.improvements.length > 0) {
+          basePrompt += ` → Improvements: ${version.improvements.join(', ')}`;
+        }
+      });
+    }
+
+    if (questionContext.documentsRelatedToQuestion && questionContext.documentsRelatedToQuestion.length > 0) {
+      basePrompt += `\n\n📚 DOCUMENTS INFORMING QUESTION:`;
+      questionContext.documentsRelatedToQuestion.forEach((doc: any) => {
+        basePrompt += `\n- ${doc.name} (${doc.type}): ${doc.relevance}`;
+      });
+    }
+
+    basePrompt += `\n\n💡 GUIDANCE FOR QUESTION-AWARE RESPONSES:
+- ACKNOWLEDGE PROGRESS: Reference improvements from previous versions (e.g., "Great refinement from 'studying AI' to 'AI in math education'!")
+- REFERENCE DOCUMENTS: Use uploaded documents to inform suggestions (e.g., "Your uploaded data suggests focusing on...")
+- SUGGEST NEXT REFINEMENT: Based on current stage, suggest specific next steps (e.g., "Consider specifying the age group...")
+- BUILD ON HISTORY: Connect current question to previous iterations and improvements made
+
+Always acknowledge the student's question evolution journey and provide contextual guidance based on their progression.`;
+  }
 
   // Special prompt for research question changes
   if (questionChange?.changeType === 'research_question_update') {
@@ -522,6 +560,24 @@ interface ChatRequest {
     recentContext?: any;
     researchMode?: boolean;
     documents?: any[];
+    questionContext?: {
+      currentQuestion: string;
+      questionStage: 'initial' | 'emerging' | 'focused' | 'research-ready';
+      questionProgress: number;
+      questionHistory: Array<{
+        id: string;
+        text: string;
+        stage: 'initial' | 'emerging' | 'focused' | 'research-ready';
+        createdAt: Date;
+        improvements: string[];
+      }>;
+      timeSpentOnQuestion?: number; // in days
+      documentsRelatedToQuestion?: Array<{
+        name: string;
+        type: string;
+        relevance: string;
+      }>;
+    };
   };
 }
 
