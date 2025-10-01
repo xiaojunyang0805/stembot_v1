@@ -5,26 +5,35 @@ import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../../providers/AuthProvider';
 import { getProject } from '../../../../lib/database/projects';
 import { getProjectDocuments, deleteDocument, type DocumentMetadata } from '../../../../lib/database/documents';
+import { getProjectSources, saveSourceToProject, removeSourceFromProject, convertDatabaseSourceToSourceData } from '../../../../lib/database/sources';
+import { convertDocumentToSource } from '../../../../lib/services/documentToSource';
 import { trackProjectActivity } from '../../../../lib/database/activity';
 import { ProjectQuestionHeader } from '../../../../components/shared/ProjectQuestionHeader';
 import { SearchStrategyCard } from '../../../../components/literature/SearchStrategyCard';
-import { SourceCardDemo } from '../../../../components/literature/SourceCardDemo';
+import { SourceCard, SourceData } from '../../../../components/literature/SourceCard';
+import { GapAnalysis } from '../../../../components/literature/GapAnalysis';
+import { createSampleSources } from '../../../../lib/services/credibilityAssessment';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
-export default function DocCenterPage({ params }: { params: { id: string } }) {
+export default function LiteratureReviewPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
   const router = useRouter();
   const [project, setProject] = useState<Project | null>(null);
   const [documents, setDocuments] = useState<DocumentMetadata[]>([]);
+  const [externalSources, setExternalSources] = useState<SourceData[]>([]);
+  const [allSources, setAllSources] = useState<SourceData[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [deletingDoc, setDeletingDoc] = useState<string | null>(null);
   const [expandedCards, setExpandedCards] = useState<Set<string>>(new Set());
+  const [activeFilter, setActiveFilter] = useState<'all' | 'external' | 'uploaded' | 'high-quality'>('all');
+  const [showSampleSources, setShowSampleSources] = useState(true);
+  const [isLoadingMoreSources, setIsLoadingMoreSources] = useState(false);
+  const [sourcesDisplayLimit, setSourcesDisplayLimit] = useState(5);
 
   // Helper function to format message content with bold text
   const formatMessageContent = (content: string): string => {
@@ -48,7 +57,7 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
     });
   };
 
-  // Fetch project data and documents
+  // Fetch project data, documents, and sources
   useEffect(() => {
     const fetchData = async () => {
       if (!user) return;
@@ -69,13 +78,33 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
           console.warn('Failed to track project activity:', err);
         });
 
-        // Fetch documents
-        const { data: documentsData, error: docsError } = await getProjectDocuments(params.id);
-        if (docsError) {
-          console.warn('Error loading documents:', docsError);
-        } else if (documentsData) {
-          setDocuments(documentsData);
+        // Fetch documents and external sources in parallel
+        const [documentsResult, sourcesResult] = await Promise.all([
+          getProjectDocuments(params.id),
+          getProjectSources(params.id)
+        ]);
+
+        // Handle documents
+        if (documentsResult.error) {
+          console.warn('Error loading documents:', documentsResult.error);
+        } else if (documentsResult.data) {
+          setDocuments(documentsResult.data);
         }
+
+        // Handle external sources
+        let externalSourcesData: SourceData[] = [];
+        if (sourcesResult.error) {
+          console.warn('Error loading sources:', sourcesResult.error);
+        } else if (sourcesResult.data) {
+          externalSourcesData = sourcesResult.data.map(convertDatabaseSourceToSourceData);
+        }
+
+        // Add sample sources for demonstration if no real sources exist
+        if (externalSourcesData.length === 0 && showSampleSources) {
+          externalSourcesData = createSampleSources();
+        }
+
+        setExternalSources(externalSourcesData);
 
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -86,8 +115,90 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
     };
 
     fetchData();
-  }, [params.id, user]);
+  }, [params.id, user, showSampleSources]);
 
+  // Convert documents to sources and combine with external sources
+  useEffect(() => {
+    const combineAllSources = async () => {
+      if (!project) return;
+
+      try {
+        // Convert documents to sources
+        const documentSources = await Promise.all(
+          documents.map(doc => convertDocumentToSource(doc, project.research_question || project.title))
+        );
+
+        // Combine all sources
+        const combined = [...externalSources, ...documentSources];
+        setAllSources(combined);
+
+      } catch (error) {
+        console.error('Error converting documents to sources:', error);
+        setAllSources(externalSources); // Fallback to just external sources
+      }
+    };
+
+    combineAllSources();
+  }, [documents, externalSources, project]);
+
+  // Handle source save/unsave
+  const handleToggleSaved = async (sourceId: string, isSaved: boolean) => {
+    try {
+      const source = allSources.find(s => s.id === sourceId);
+      if (!source) return;
+
+      if (isSaved) {
+        // Save source to project
+        if (!source.isUploaded) {
+          const { error } = await saveSourceToProject(params.id, source);
+          if (error) {
+            console.error('Error saving source:', error);
+            alert('Failed to save source');
+            return;
+          }
+        }
+      } else {
+        // Remove source from project
+        if (!source.isUploaded) {
+          const { error } = await removeSourceFromProject(params.id, sourceId);
+          if (error) {
+            console.error('Error removing source:', error);
+            alert('Failed to remove source');
+            return;
+          }
+        }
+      }
+
+      // Update local state
+      setAllSources(prev => prev.map(s =>
+        s.id === sourceId ? { ...s, isSaved } : s
+      ));
+
+      if (!source.isUploaded) {
+        setExternalSources(prev => prev.map(s =>
+          s.id === sourceId ? { ...s, isSaved } : s
+        ));
+      }
+
+    } catch (error) {
+      console.error('Error toggling source save state:', error);
+      alert('Failed to update source');
+    }
+  };
+
+  // Handle find sources from SearchStrategyCard
+  const handleFindSources = () => {
+    // For now, show external search links
+    alert('🔍 External Search Links\n\nUse these databases to find more sources:\n\n• PubMed (https://pubmed.ncbi.nlm.nih.gov/)\n• Google Scholar (https://scholar.google.com/)\n• ScienceDirect (https://www.sciencedirect.com/)\n\nCopy and paste promising sources into the interface or upload PDFs to analyze them with AI.');
+  };
+
+  // Handle upload paper
+  const handleUploadPaper = () => {
+    // Navigate to workspace for document upload
+    router.push(`/projects/${params.id}`);
+  };
+
+  // Handle document deletion
   const handleDeleteDocument = async (docId: string) => {
     if (!confirm('Are you sure you want to delete this document? This action cannot be undone.')) {
       return;
@@ -109,6 +220,32 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
     } finally {
       setDeletingDoc(null);
     }
+  };
+
+  // Filter sources based on active filter
+  const getFilteredSources = () => {
+    switch (activeFilter) {
+      case 'external':
+        return allSources.filter(s => !s.isUploaded);
+      case 'uploaded':
+        return allSources.filter(s => s.isUploaded);
+      case 'high-quality':
+        return allSources.filter(s => s.credibility.level === 'High');
+      default:
+        return allSources;
+    }
+  };
+
+  const filteredSources = getFilteredSources();
+  const displayedSources = filteredSources.slice(0, sourcesDisplayLimit);
+
+  // Load more sources
+  const handleLoadMoreSources = () => {
+    setIsLoadingMoreSources(true);
+    setTimeout(() => {
+      setSourcesDisplayLimit(prev => prev + 5);
+      setIsLoadingMoreSources(false);
+    }, 500);
   };
 
   if (loading) {
@@ -142,7 +279,7 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
   }
 
   return (
-    <div style={{ height: '100vh', backgroundColor: '#ffffff' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
       {/* Header */}
       <header style={{
         backgroundColor: 'white',
@@ -154,7 +291,7 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          maxWidth: '1400px',
+          maxWidth: '1200px',
           margin: '0 auto'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -193,535 +330,268 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
         </div>
       </header>
 
-
-      {/* Main Content */}
+      {/* Main Content - Full Width Layout */}
       <div style={{
-        display: 'flex',
-        height: 'calc(100vh - 140px)',
-        maxWidth: '1400px',
-        margin: '0 auto'
+        maxWidth: '1200px',
+        margin: '0 auto',
+        padding: '2rem'
       }}>
-        {/* Left Sidebar (25% width) */}
+        {/* Page Title */}
         <div style={{
-          width: isSidebarOpen ? '25%' : '0',
-          minWidth: isSidebarOpen ? '300px' : '0',
-          backgroundColor: '#f9fafb',
-          borderRight: '1px solid #e5e7eb',
-          overflow: 'hidden',
-          transition: 'all 0.3s ease'
+          display: 'flex',
+          alignItems: 'center',
+          gap: '1rem',
+          marginBottom: '2rem'
         }}>
-          <div style={{ padding: '1.5rem' }}>
-            {/* Navigation Menu */}
-            <div style={{ marginBottom: '2rem' }}>
-              <h3 style={{
-                fontSize: '1rem',
-                fontWeight: '600',
-                color: '#374151',
-                margin: '0 0 1rem 0'
-              }}>
-                Project Navigation
-              </h3>
-
-              {[
-                { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: false, icon: '💬' },
-                { id: 'documents', label: '📚 Document Center', path: `/projects/${params.id}/literature`, active: true, icon: '📚' },
-                { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
-                { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' }
-              ].map((nav) => (
-                <button
-                  key={nav.id}
-                  onClick={() => nav.active ? null : router.push(nav.path)}
-                  style={{
-                    width: '100%',
-                    padding: '0.75rem 1rem',
-                    marginBottom: '0.5rem',
-                    backgroundColor: nav.active ? '#eff6ff' : 'transparent',
-                    color: nav.active ? '#3b82f6' : '#6b7280',
-                    border: nav.active ? '1px solid #3b82f6' : '1px solid transparent',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: nav.active ? '600' : '500',
-                    cursor: nav.active ? 'default' : 'pointer',
-                    textAlign: 'left',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.5rem',
-                    transition: 'all 0.2s ease'
-                  }}
-                  onMouseEnter={(e) => {
-                    if (!nav.active) {
-                      (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
-                    }
-                  }}
-                  onMouseLeave={(e) => {
-                    if (!nav.active) {
-                      (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
-                    }
-                  }}
-                >
-                  <span>{nav.icon}</span>
-                  <span>{nav.label.replace(/^[^\s]+\s/, '')}</span>
-                </button>
-              ))}
-            </div>
-
-            {/* Research Question */}
-            <div style={{ marginBottom: '2rem' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem',
-                marginBottom: '0.75rem'
-              }}>
-                <span style={{ fontSize: '1.25rem' }}>🎯</span>
-                <h3 style={{
-                  fontSize: '1rem',
-                  fontWeight: '600',
-                  color: '#374151',
-                  margin: 0
-                }}>
-                  Research Question
-                </h3>
-              </div>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#6b7280',
-                lineHeight: '1.5',
-                margin: 0
-              }}>
-                {project.research_question}
-              </p>
-            </div>
-
-            {/* Recent Documents */}
-            <div style={{ marginBottom: '2rem' }}>
-              <div style={{
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'space-between',
-                marginBottom: '0.75rem'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span style={{ fontSize: '1.25rem' }}>📄</span>
-                  <h3 style={{
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    color: '#374151',
-                    margin: 0
-                  }}>
-                    Documents ({documents.length})
-                  </h3>
-                </div>
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                {documents.length > 0 ? documents.slice(0, 5).map((doc, index) => (
-                  <div key={doc.id} style={{
-                    fontSize: '0.75rem',
-                    color: '#6b7280',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.25rem',
-                    padding: '0.25rem',
-                    borderRadius: '0.25rem',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => {
-                    (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
-                  }}
-                  onMouseLeave={(e) => {
-                    (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
-                  }}
-                  >
-                    <span>📄</span>
-                    <span style={{
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                      flex: 1
-                    }}>
-                      {doc.original_name}
-                    </span>
-                  </div>
-                )) : (
-                  <div style={{
-                    fontSize: '0.75rem',
-                    color: '#9ca3af',
-                    fontStyle: 'italic',
-                    textAlign: 'center',
-                    padding: '1rem 0'
-                  }}>
-                    No documents uploaded yet.
-                    Go to Workspace to upload files.
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
+          <h1 style={{
+            fontSize: '2rem',
+            fontWeight: 'bold',
+            color: '#111827',
+            margin: 0
+          }}>
+            📚 Literature Review
+          </h1>
+          <span style={{
+            backgroundColor: '#eff6ff',
+            color: '#1e40af',
+            fontSize: '0.875rem',
+            fontWeight: '500',
+            padding: '0.5rem 1rem',
+            borderRadius: '0.5rem'
+          }}>
+            {allSources.length} sources collected
+          </span>
         </div>
 
-        {/* Main Content Area (75% width) */}
-        <div style={{
-          flex: 1,
-          padding: '2rem',
-          backgroundColor: '#ffffff',
-          overflow: 'auto'
-        }}>
+        {/* Research Question Header */}
+        {project && (
+          <ProjectQuestionHeader
+            question={project.research_question || project.title}
+            currentPhase="literature"
+            projectTitle={project.title}
+            onEdit={() => router.push(`/projects/${params.id}`)}
+          />
+        )}
+
+        {/* Search Strategy Section */}
+        {project && (
+          <div style={{ marginBottom: '3rem' }}>
+            <SearchStrategyCard
+              projectId={params.id}
+              researchQuestion={project.research_question || project.title}
+              onFindSources={handleFindSources}
+              onUploadPaper={handleUploadPaper}
+            />
+          </div>
+        )}
+
+        {/* Literature Collection Section */}
+        <div style={{ marginBottom: '3rem' }}>
+          {/* Section Header */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '2rem'
+            marginBottom: '1.5rem'
           }}>
-            <h1 style={{
-              fontSize: '2rem',
+            <h2 style={{
+              fontSize: '1.5rem',
               fontWeight: 'bold',
               color: '#111827',
-              margin: 0
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem'
             }}>
-              📚 Document Center
-            </h1>
-            <button
-              onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-              style={{
-                padding: '0.5rem',
-                backgroundColor: '#f3f4f6',
-                border: '1px solid #d1d5db',
-                borderRadius: '0.375rem',
-                cursor: 'pointer'
-              }}
-            >
-              {isSidebarOpen ? '◀' : '▶'}
-            </button>
+              📖 Your Literature Collection
+              <span style={{
+                fontSize: '0.875rem',
+                fontWeight: '500',
+                color: '#6b7280'
+              }}>
+                ({filteredSources.length} {activeFilter !== 'all' ? `${activeFilter} ` : ''}sources)
+              </span>
+            </h2>
+
+            {/* Sample Sources Toggle */}
+            {externalSources.some(s => s.id.startsWith('source-')) && (
+              <button
+                onClick={() => setShowSampleSources(!showSampleSources)}
+                style={{
+                  padding: '0.5rem 1rem',
+                  backgroundColor: showSampleSources ? '#fef3c7' : '#f3f4f6',
+                  color: showSampleSources ? '#a16207' : '#374151',
+                  border: '1px solid ' + (showSampleSources ? '#fcd34d' : '#d1d5db'),
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer'
+                }}
+              >
+                {showSampleSources ? '🧪 Hide Demo Sources' : '🧪 Show Demo Sources'}
+              </button>
+            )}
           </div>
 
-          {/* Research Question Header */}
-          {project && (
-            <ProjectQuestionHeader
-              question={project.research_question || project.title}
-              currentPhase="literature"
-              projectTitle={project.title}
-              onEdit={() => router.push(`/projects/${params.id}`)}
-            />
-          )}
-
-          {/* Search Strategy Card - WP3 Literature Discovery */}
-          {project && (
-            <div style={{ marginBottom: '2rem' }}>
-              <SearchStrategyCard
-                projectId={params.id}
-                researchQuestion={project.research_question || project.title}
-                onFindSources={() => {
-                  // TODO: Navigate to literature search interface
-                  console.log('Find Sources clicked');
-                }}
-                onUploadPaper={() => {
-                  // Navigate back to workspace for document upload
-                  router.push(`/projects/${params.id}`);
-                }}
-              />
-            </div>
-          )}
-
-          {/* SourceCard Demo - WP3 Literature Display */}
-          {project && (
-            <div style={{ marginBottom: '2rem' }}>
-              <SourceCardDemo
-                projectId={params.id}
-                researchQuestion={project.research_question || project.title}
-              />
-            </div>
-          )}
-
-          {/* Document Management Content */}
+          {/* Filter Tabs */}
           <div style={{
-            backgroundColor: '#f9fafb',
-            border: '1px solid #e5e7eb',
-            borderRadius: '0.5rem',
-            padding: '2rem'
+            display: 'flex',
+            gap: '0.5rem',
+            marginBottom: '1.5rem',
+            borderBottom: '1px solid #e5e7eb',
+            paddingBottom: '1rem'
           }}>
+            {[
+              { key: 'all', label: 'All Sources', count: allSources.length },
+              { key: 'external', label: 'External Sources', count: allSources.filter(s => !s.isUploaded).length },
+              { key: 'uploaded', label: 'Uploaded Documents', count: allSources.filter(s => s.isUploaded).length },
+              { key: 'high-quality', label: 'High Quality Only', count: allSources.filter(s => s.credibility.level === 'High').length }
+            ].map((filter) => (
+              <button
+                key={filter.key}
+                onClick={() => setActiveFilter(filter.key as any)}
+                style={{
+                  padding: '0.75rem 1rem',
+                  backgroundColor: activeFilter === filter.key ? '#eff6ff' : 'transparent',
+                  color: activeFilter === filter.key ? '#1e40af' : '#6b7280',
+                  border: activeFilter === filter.key ? '1px solid #3b82f6' : '1px solid transparent',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: activeFilter === filter.key ? '600' : '500',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease'
+                }}
+                onMouseEnter={(e) => {
+                  if (activeFilter !== filter.key) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (activeFilter !== filter.key) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                  }
+                }}
+              >
+                {filter.label} ({filter.count})
+              </button>
+            ))}
+          </div>
+
+          {/* Sources Display */}
+          {filteredSources.length > 0 ? (
+            <>
+              {/* Sources List */}
+              <div style={{ marginBottom: '2rem' }}>
+                {displayedSources.map((source) => (
+                  <SourceCard
+                    key={source.id}
+                    source={source}
+                    projectId={params.id}
+                    onToggleSaved={handleToggleSaved}
+                    onReadSummary={(sourceId) => {
+                      alert(`Reading summary for: ${source.title}\n\nThis would open a detailed AI-generated summary of the research paper.`);
+                    }}
+                    onCheckQuality={(sourceId) => {
+                      alert(`Quality assessment for: ${source.title}\n\nCredibility Level: ${source.credibility.level}\nScore: ${source.credibility.score}/100`);
+                    }}
+                  />
+                ))}
+              </div>
+
+              {/* Load More Button */}
+              {filteredSources.length > sourcesDisplayLimit && (
+                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                  <button
+                    onClick={handleLoadMoreSources}
+                    disabled={isLoadingMoreSources}
+                    style={{
+                      padding: '0.75rem 1.5rem',
+                      backgroundColor: isLoadingMoreSources ? '#f3f4f6' : '#3b82f6',
+                      color: isLoadingMoreSources ? '#6b7280' : 'white',
+                      border: '1px solid #3b82f6',
+                      borderRadius: '0.5rem',
+                      fontSize: '0.875rem',
+                      fontWeight: '500',
+                      cursor: isLoadingMoreSources ? 'not-allowed' : 'pointer',
+                      transition: 'all 0.2s ease'
+                    }}
+                  >
+                    {isLoadingMoreSources ? '⏳ Loading...' : `📚 Load More Sources (${filteredSources.length - sourcesDisplayLimit} remaining)`}
+                  </button>
+                </div>
+              )}
+            </>
+          ) : (
+            /* Empty State */
             <div style={{
-              textAlign: 'center',
-              color: '#6b7280',
-              marginBottom: '2rem'
+              backgroundColor: '#f9fafb',
+              border: '1px solid #e5e7eb',
+              borderRadius: '0.75rem',
+              padding: '3rem 2rem',
+              textAlign: 'center'
             }}>
-              <h2 style={{
-                fontSize: '1.5rem',
+              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📚</div>
+              <h3 style={{
+                fontSize: '1.25rem',
                 fontWeight: '600',
-                marginBottom: '1rem',
-                color: '#374151'
+                color: '#374151',
+                marginBottom: '1rem'
               }}>
-                Comprehensive Document Management
-              </h2>
+                No {activeFilter !== 'all' ? activeFilter + ' ' : ''}sources yet
+              </h3>
               <p style={{
                 fontSize: '1rem',
-                lineHeight: '1.6',
-                maxWidth: '600px',
-                margin: '0 auto'
+                color: '#6b7280',
+                lineHeight: '1.5',
+                marginBottom: '1.5rem',
+                maxWidth: '500px',
+                margin: '0 auto 1.5rem auto'
               }}>
-                This page will become your central hub for managing all project documents,
-                AI-suggested literature, analysis results, and research organization.
+                Start building your literature collection by searching external databases or uploading research papers for AI analysis.
               </p>
+              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                <button
+                  onClick={handleFindSources}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: '1px solid #3b82f6',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >
+                  🔍 Find External Sources
+                </button>
+                <button
+                  onClick={handleUploadPaper}
+                  style={{
+                    padding: '0.75rem 1.5rem',
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    border: '1px solid #10b981',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >
+                  📄 Upload Papers
+                </button>
+              </div>
             </div>
-
-            {/* Documents Grid */}
-            {documents.length > 0 && (
-              <div style={{
-                display: 'grid',
-                gridTemplateColumns: 'repeat(auto-fill, minmax(400px, 1fr))',
-                gap: '1.5rem',
-                marginTop: '2rem'
-              }}>
-                {documents.map((doc) => {
-                  const analysis = doc.analysis_result as any;
-                  return (
-                    <div key={doc.id} style={{
-                      backgroundColor: 'white',
-                      border: '1px solid #e5e7eb',
-                      borderRadius: '0.75rem',
-                      padding: '1.5rem',
-                      boxShadow: '0 1px 3px 0 rgba(0, 0, 0, 0.1)'
-                    }}>
-                      {/* Document Header */}
-                      <div style={{
-                        display: 'flex',
-                        justifyContent: 'space-between',
-                        alignItems: 'flex-start',
-                        marginBottom: '1rem'
-                      }}>
-                        <div style={{
-                          display: 'flex',
-                          alignItems: 'flex-start',
-                          gap: '0.75rem',
-                          flex: 1
-                        }}>
-                          <span style={{ fontSize: '1.5rem' }}>📄</span>
-                          <div style={{ flex: 1 }}>
-                            <h3 style={{
-                              fontSize: '1.125rem',
-                              fontWeight: '600',
-                              color: '#111827',
-                              margin: '0 0 0.5rem 0',
-                              lineHeight: '1.4'
-                            }}>
-                              {doc.original_name}
-                            </h3>
-                            <div style={{
-                              display: 'flex',
-                              gap: '1rem',
-                              fontSize: '0.875rem',
-                              color: '#6b7280'
-                            }}>
-                              <span>{(doc.file_size / (1024 * 1024)).toFixed(1)} MB</span>
-                              <span>•</span>
-                              <span>{new Date(doc.created_at).toLocaleDateString()}</span>
-                            </div>
-                          </div>
-                        </div>
-                        <button
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            handleDeleteDocument(doc.id);
-                          }}
-                          disabled={deletingDoc === doc.id}
-                          style={{
-                            padding: '0.5rem',
-                            backgroundColor: deletingDoc === doc.id ? '#f3f4f6' : '#fee2e2',
-                            border: '1px solid #fecaca',
-                            borderRadius: '0.375rem',
-                            color: deletingDoc === doc.id ? '#9ca3af' : '#dc2626',
-                            fontSize: '0.875rem',
-                            cursor: deletingDoc === doc.id ? 'not-allowed' : 'pointer',
-                            opacity: deletingDoc === doc.id ? 0.5 : 1
-                          }}
-                          onMouseEnter={(e) => {
-                            if (deletingDoc !== doc.id) {
-                              (e.target as HTMLButtonElement).style.backgroundColor = '#fecaca';
-                            }
-                          }}
-                          onMouseLeave={(e) => {
-                            if (deletingDoc !== doc.id) {
-                              (e.target as HTMLButtonElement).style.backgroundColor = '#fee2e2';
-                            }
-                          }}
-                        >
-                          {deletingDoc === doc.id ? '🔄' : '🗑️'}
-                        </button>
-                      </div>
-
-                      {/* AI Analysis Section */}
-                      {analysis ? (
-                        <div style={{
-                          backgroundColor: '#f8fafc',
-                          border: '1px solid #e2e8f0',
-                          borderRadius: '0.5rem',
-                          padding: '1rem'
-                        }}>
-                          <div style={{
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                            marginBottom: '0.75rem'
-                          }}>
-                            <h4 style={{
-                              fontSize: '1rem',
-                              fontWeight: '600',
-                              color: '#1e293b',
-                              margin: 0,
-                              display: 'flex',
-                              alignItems: 'center',
-                              gap: '0.5rem'
-                            }}>
-                              🤖 AI Analysis
-                            </h4>
-                            <button
-                              onClick={() => toggleCardExpansion(doc.id)}
-                              style={{
-                                padding: '0.25rem 0.5rem',
-                                backgroundColor: '#e2e8f0',
-                                border: '1px solid #cbd5e0',
-                                borderRadius: '0.375rem',
-                                fontSize: '0.75rem',
-                                color: '#4a5568',
-                                cursor: 'pointer'
-                              }}
-                              onMouseEnter={(e) => {
-                                (e.target as HTMLButtonElement).style.backgroundColor = '#cbd5e0';
-                              }}
-                              onMouseLeave={(e) => {
-                                (e.target as HTMLButtonElement).style.backgroundColor = '#e2e8f0';
-                              }}
-                            >
-                              {expandedCards.has(doc.id) ? '▲ Collapse' : '▼ Expand'}
-                            </button>
-                          </div>
-
-                          {/* Always show document type */}
-                          {analysis.documentType && (
-                            <div style={{
-                              display: 'inline-block',
-                              backgroundColor: '#dbeafe',
-                              color: '#1e40af',
-                              fontSize: '0.75rem',
-                              fontWeight: '500',
-                              padding: '0.25rem 0.5rem',
-                              borderRadius: '0.25rem',
-                              marginBottom: '0.75rem'
-                            }}>
-                              {analysis.documentType}
-                            </div>
-                          )}
-
-                          {/* Expandable detailed content */}
-                          {expandedCards.has(doc.id) ? (
-                            <>
-                              {/* Full Summary */}
-                              {analysis.summary && (
-                                <div style={{
-                                  fontSize: '0.875rem',
-                                  color: '#475569',
-                                  lineHeight: '1.5',
-                                  marginBottom: '0.75rem'
-                                }} dangerouslySetInnerHTML={{
-                                  __html: formatMessageContent(typeof analysis.summary === 'string' ? analysis.summary : 'Analysis completed')
-                                }}>
-                                </div>
-                              )}
-
-                              {/* Key Points */}
-                              {analysis.keyPoints && Array.isArray(analysis.keyPoints) && analysis.keyPoints.length > 0 && (
-                                <ul style={{
-                                  fontSize: '0.75rem',
-                                  color: '#475569',
-                                  margin: '0 0 0.75rem 0',
-                                  paddingLeft: '1rem'
-                                }}>
-                                  {analysis.keyPoints.slice(0, 3).map((point: string, index: number) => (
-                                    <li key={index} style={{ margin: '0.25rem 0' }}>
-                                      {typeof point === 'string' ? point : 'Key insight identified'}
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </>
-                          ) : (
-                            /* Collapsed summary - just first 100 characters */
-                            analysis.summary && (
-                              <div style={{ marginBottom: '0.5rem' }}>
-                                <p style={{
-                                  fontSize: '0.75rem',
-                                  color: '#64748b',
-                                  lineHeight: '1.4',
-                                  margin: 0
-                                }}>
-                                  {typeof analysis.summary === 'string'
-                                    ? analysis.summary.length > 100
-                                      ? analysis.summary.substring(0, 100) + '...'
-                                      : analysis.summary
-                                    : 'Analysis completed'
-                                  }
-                                </p>
-                              </div>
-                            )
-                          )}
-                        </div>
-                      ) : (
-                        <div style={{
-                          backgroundColor: '#fef3c7',
-                          border: '1px solid #fcd34d',
-                          borderRadius: '0.5rem',
-                          padding: '1rem',
-                          textAlign: 'center'
-                        }}>
-                          <p style={{
-                            fontSize: '0.875rem',
-                            color: '#92400e',
-                            margin: 0
-                          }}>
-                            ⚠️ No AI analysis available for this document
-                          </p>
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            )}
-
-            {documents.length === 0 && (
-              <div style={{
-                textAlign: 'center',
-                padding: '4rem',
-                color: '#9ca3af'
-              }}>
-                <span style={{ fontSize: '4rem', display: 'block', marginBottom: '1.5rem' }}>📚</span>
-                <p style={{
-                  fontSize: '1.25rem',
-                  fontWeight: '600',
-                  marginBottom: '0.75rem',
-                  color: '#374151'
-                }}>
-                  No documents uploaded yet
-                </p>
-                <p style={{
-                  fontSize: '1rem',
-                  marginBottom: '1.5rem'
-                }}>
-                  Upload your first research document to get AI-powered analysis
-                </p>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#6b7280'
-                }}>
-                  Upload documents using the 📋 button in the Workspace chat
-                </p>
-              </div>
-            )}
-          </div>
+          )}
         </div>
+
+        {/* Gap Analysis Section */}
+        {project && (
+          <GapAnalysis
+            sources={allSources}
+            researchQuestion={project.research_question || project.title}
+            projectId={params.id}
+          />
+        )}
       </div>
     </div>
   );

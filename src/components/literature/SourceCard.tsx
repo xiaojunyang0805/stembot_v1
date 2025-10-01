@@ -30,6 +30,7 @@ export interface CredibilityAssessment {
   sampleSize?: number;
   publicationYear: number;
   studyType?: string;
+  researchField?: string;
 }
 
 export interface SourceData {
@@ -47,6 +48,10 @@ export interface SourceData {
   credibility: CredibilityAssessment;
   isSaved?: boolean;
   addedToProject?: boolean;
+  isUploaded?: boolean;
+  documentId?: string;
+  originalFileName?: string;
+  uploadDate?: string;
 }
 
 interface SourceCardProps {
