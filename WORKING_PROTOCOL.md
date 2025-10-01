@@ -487,9 +487,43 @@ curl -s "https://stembotv1.vercel.app/api/[NEW_ROUTE]"
 "Check console errors and performance for https://stembotv1.vercel.app"
 ```
 
+## 🤖 **AUTOMATED DEPLOYMENT WORKFLOW**
+
+### **Claude Automated Deployment Checking**
+```bash
+# Run comprehensive deployment diagnosis
+bash scripts/auto-deploy-check.sh
+
+# Automatically attempt to fix deployment issues
+bash scripts/auto-deploy-fix.sh
+
+# Claude workflow integration
+# See: scripts/claude-deploy-workflow.md for complete automation guide
+```
+
+### **Automated Fix Strategies**
+1. **Force Redeploy** - `npx vercel --prod --force`
+2. **Git Trigger** - Trivial commit to trigger new deployment
+3. **Cache Bust** - Update timestamps to clear deployment cache
+
+### **Claude Integration Pattern**
+```
+User: "Check Vercel deployment errors"
+
+Claude Process:
+1. Run: bash scripts/auto-deploy-check.sh
+2. Analyze: Error patterns and root causes
+3. Execute: bash scripts/auto-deploy-fix.sh
+4. Monitor: Deployment progress and verification
+5. Report: Resolution status and prevention measures
+```
+
 ## ⚡ **QUICK REFERENCE COMMANDS**
 
 ```bash
+# Automated deployment check (preferred)
+bash scripts/auto-deploy-check.sh
+
 # Check current state
 git status
 git log --oneline -5
@@ -499,6 +533,9 @@ npm run type-check && npm run build
 
 # Verify deployment success
 curl -s -w "%{http_code}" "https://stembotv1.vercel.app" -o /dev/null
+
+# Automated fix attempt
+bash scripts/auto-deploy-fix.sh
 
 # Emergency rollback
 git reset --hard [WORKING_COMMIT]
