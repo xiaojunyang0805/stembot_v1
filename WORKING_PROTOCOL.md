@@ -250,16 +250,39 @@ curl -s "https://stembotv1.vercel.app/api/ai/search-strategy" \
 # Expected: JSON response with search strategy, NOT 405 or 500 error
 ```
 
-### **Method 2: Vercel CLI (Requires Authentication)**
+### **Method 2: Vercel CLI (Recommended for Deployment Issues)**
 ```bash
-# Login (opens browser - may timeout)
+# Login (opens browser for authentication)
 npx vercel login
 
-# Check deployments (after login)
+# Check recent deployments and their status
 npx vercel ls
 
-# Get deployment info
+# Get current production deployment info
 npx vercel --prod
+
+# Check specific deployment details
+npx vercel inspect [DEPLOYMENT_URL]
+
+# Force redeploy current branch
+npx vercel --prod --force
+
+# Check build logs for specific deployment
+npx vercel logs [DEPLOYMENT_URL]
+```
+
+### **Method 2.1: Diagnose Stuck Deployments**
+```bash
+# Compare local vs deployed build timestamps
+echo "Local build time:" && git log -1 --format="%ci %h %s"
+echo "Deployed build time:" && curl -s "https://stembotv1.vercel.app/api/version" | jq '.buildDate'
+
+# Check if deployments are being triggered
+npx vercel ls | head -5
+# Look for recent timestamps matching your git commits
+
+# If deployments are missing/old, force new deployment
+npx vercel --prod --force
 ```
 
 ### **Method 3: Chrome DevTools MCP (Automated UI Testing)**
@@ -373,7 +396,50 @@ if (!process.env.REQUIRED_VAR) {
    - Go to Vercel project → Settings → Environment Variables
    - Add missing variables for Production environment
 
-### **Error 3: Import/Export Issues**
+### **Error 3: Stuck/Stale Deployments (Most Common)**
+**Symptoms:**
+- Local build works perfectly, routes show in build output
+- API routes return 404 in production
+- Version endpoint shows old buildDate despite recent commits
+- New features don't appear on live site
+
+**Quick Diagnosis:**
+```bash
+# Check deployment freshness
+curl -s "https://stembotv1.vercel.app/api/version" | grep buildDate
+git log -1 --format="%ci %h %s"
+# Compare timestamps - if deployed build is hours/days old, deployment is stuck
+
+# Test if new routes exist
+curl -s "https://stembotv1.vercel.app/api/[NEW_ROUTE]"
+# If 404 but route exists in local build, deployment issue confirmed
+```
+
+**Root Causes:**
+- Vercel webhook disconnected from GitHub
+- Deployment pipeline silently failing
+- Branch/environment configuration mismatch
+- Build cache corruption
+
+**Fixes:**
+1. **Force redeploy via Vercel CLI:**
+```bash
+npx vercel login
+npx vercel --prod --force
+```
+
+2. **Check deployment status:**
+```bash
+npx vercel ls
+# Look for recent deployments matching your commits
+```
+
+3. **Manual trigger in Vercel Dashboard:**
+   - Go to project → Deployments
+   - Click "Redeploy" on latest commit
+   - Or create new deployment from main branch
+
+### **Error 4: Import/Export Issues**
 **Symptoms:**
 - Build fails with "Cannot find module" errors
 - TypeScript compilation errors in production
