@@ -7,6 +7,7 @@ import { getProject } from '../../../../lib/database/projects';
 import { getProjectDocuments, deleteDocument, type DocumentMetadata } from '../../../../lib/database/documents';
 import { trackProjectActivity } from '../../../../lib/database/activity';
 import { ProjectQuestionHeader } from '../../../../components/shared/ProjectQuestionHeader';
+import { SearchStrategyCard } from '../../../../components/literature/SearchStrategyCard';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
@@ -404,6 +405,24 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
               projectTitle={project.title}
               onEdit={() => router.push(`/projects/${params.id}`)}
             />
+          )}
+
+          {/* Search Strategy Card - WP3 Literature Discovery */}
+          {project && (
+            <div style={{ marginBottom: '2rem' }}>
+              <SearchStrategyCard
+                projectId={params.id}
+                researchQuestion={project.research_question || project.title}
+                onFindSources={() => {
+                  // TODO: Navigate to literature search interface
+                  console.log('Find Sources clicked');
+                }}
+                onUploadPaper={() => {
+                  // Navigate back to workspace for document upload
+                  router.push(`/projects/${params.id}`);
+                }}
+              />
+            </div>
           )}
 
           {/* Document Management Content */}
