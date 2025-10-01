@@ -4,6 +4,7 @@ import {
   getQuestionMemoryContext,
   QuestionMemoryHelpers
 } from '../../../../lib/memory/questionMemory';
+import { getLiteratureContextForChat, isLiteratureQuery } from '../../../../lib/chat/literatureContext';
 
 // Inline GPT-5 nano client to avoid import issues
 interface ChatMessage {
@@ -198,6 +199,16 @@ async function createDynamicSystemPrompt(projectContext?: any, userMessage?: str
       }
     } catch (error) {
       console.warn('Error retrieving memory context:', error);
+    }
+
+    // Add literature context if available
+    try {
+      const literatureContext = await getLiteratureContextForChat(projectContext.projectId, userMessage);
+      if (literatureContext.hasSources && literatureContext.contextPrompt) {
+        basePrompt += literatureContext.contextPrompt;
+      }
+    } catch (error) {
+      console.warn('Error retrieving literature context:', error);
     }
   }
 

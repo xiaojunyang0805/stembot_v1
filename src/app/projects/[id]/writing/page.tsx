@@ -7,6 +7,7 @@ import { getProject } from '../../../../lib/database/projects';
 import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
 import { trackProjectActivity } from '../../../../lib/database/activity';
 import { ProjectQuestionHeader } from '../../../../components/shared/ProjectQuestionHeader';
+import { CitationDatabase } from '../../../../components/writing/CitationDatabase';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
@@ -371,6 +372,11 @@ export default function WritingPage({ params }: { params: { id: string } }) {
             />
           )}
 
+          {/* Citation Database */}
+          <div style={{ marginBottom: '2rem' }}>
+            <CitationDatabase projectId={params.id} />
+          </div>
+
           {/* Writing Content */}
           <div style={{
             backgroundColor: '#f9fafb',
@@ -397,8 +403,8 @@ export default function WritingPage({ params }: { params: { id: string } }) {
                 maxWidth: '600px',
                 margin: '0 auto'
               }}>
-                This page will become your writing hub. AI will automatically extract
-                writing insights and research findings from your chat conversations.
+                AI-powered academic writing support with citations from your literature review.
+                Writing insights and research findings are automatically organized for your manuscript.
               </p>
             </div>
 

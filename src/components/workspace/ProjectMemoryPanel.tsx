@@ -1,6 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { LiteratureProgress, ProjectLiteratureState } from '@/lib/research/crossPhaseIntegration';
+import Link from 'next/link';
 
 // Question stages with colors and descriptions
 const QUESTION_STAGES = {
@@ -22,6 +24,8 @@ interface ProjectMemoryPanelProps {
   currentQuestion?: string;
   questionStage?: keyof typeof QUESTION_STAGES;
   questionHistory?: QuestionVersion[];
+  projectId?: string;
+  literatureState?: ProjectLiteratureState | null;
   className?: string;
 }
 
@@ -44,12 +48,23 @@ export function ProjectMemoryPanel({
       improvements: ['Added target population!', 'Made more specific']
     }
   ],
+  projectId,
+  literatureState,
   className = ""
 }: ProjectMemoryPanelProps) {
   const [showHistory, setShowHistory] = useState(false);
+  const [showLiterature, setShowLiterature] = useState(false);
 
   const currentStage = QUESTION_STAGES[questionStage];
   const progressPercentage = currentStage.progress;
+
+  // Extract literature metrics
+  const literatureProgress = literatureState?.literatureProgress;
+  const sourceCount = literatureProgress?.sourceCount || 0;
+  const gapsCount = literatureState?.gapAnalysis?.identifiedGaps.length || 0;
+  const literaturePercentage = literatureProgress?.progressPercentage || 0;
+  const latestSource = literatureState?.sources[0];
+  const hasLiterature = sourceCount > 0;
 
   return (
     <div
@@ -229,6 +244,189 @@ export function ProjectMemoryPanel({
           </span>
         </div>
       </div>
+
+      {/* Literature Review Section */}
+      {hasLiterature && (
+        <div style={{
+          backgroundColor: '#f0f9ff',
+          padding: '1rem',
+          borderRadius: '0.375rem',
+          marginBottom: '1rem',
+          border: '1px solid #bae6fd'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '0.75rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1rem' }}>📚</span>
+              <span style={{
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#0369a1'
+              }}>
+                Literature Review
+              </span>
+            </div>
+            <span style={{
+              fontSize: '0.75rem',
+              fontWeight: '600',
+              color: '#0369a1',
+              backgroundColor: '#dbeafe',
+              padding: '0.125rem 0.5rem',
+              borderRadius: '0.25rem'
+            }}>
+              {literaturePercentage}%
+            </span>
+          </div>
+
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: '1fr 1fr',
+            gap: '0.5rem',
+            marginBottom: '0.75rem'
+          }}>
+            <div style={{
+              backgroundColor: 'white',
+              padding: '0.5rem',
+              borderRadius: '0.25rem',
+              border: '1px solid #e0f2fe'
+            }}>
+              <div style={{
+                fontSize: '0.625rem',
+                color: '#6b7280',
+                marginBottom: '0.25rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                Sources
+              </div>
+              <div style={{
+                fontSize: '1.25rem',
+                fontWeight: '700',
+                color: '#0369a1'
+              }}>
+                {sourceCount}
+              </div>
+            </div>
+
+            <div style={{
+              backgroundColor: 'white',
+              padding: '0.5rem',
+              borderRadius: '0.25rem',
+              border: '1px solid #e0f2fe'
+            }}>
+              <div style={{
+                fontSize: '0.625rem',
+                color: '#6b7280',
+                marginBottom: '0.25rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                Gaps
+              </div>
+              <div style={{
+                fontSize: '1.25rem',
+                fontWeight: '700',
+                color: gapsCount > 0 ? '#f59e0b' : '#10b981'
+              }}>
+                {gapsCount}
+              </div>
+            </div>
+          </div>
+
+          {latestSource && (
+            <div style={{
+              backgroundColor: 'white',
+              padding: '0.625rem',
+              borderRadius: '0.25rem',
+              marginBottom: '0.75rem',
+              border: '1px solid #e0f2fe'
+            }}>
+              <div style={{
+                fontSize: '0.625rem',
+                color: '#6b7280',
+                marginBottom: '0.25rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                Latest Source
+              </div>
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#111827',
+                lineHeight: '1.3',
+                fontWeight: '500'
+              }}>
+                {latestSource.title.substring(0, 60)}{latestSource.title.length > 60 ? '...' : ''}
+              </div>
+              <div style={{
+                fontSize: '0.625rem',
+                color: '#6b7280',
+                marginTop: '0.25rem'
+              }}>
+                {latestSource.authors[0]} ({latestSource.year})
+              </div>
+            </div>
+          )}
+
+          {literatureProgress && literatureProgress.nextActions.length > 0 && (
+            <div style={{
+              backgroundColor: '#fef3c7',
+              padding: '0.5rem',
+              borderRadius: '0.25rem',
+              marginBottom: '0.75rem',
+              border: '1px solid #fde68a'
+            }}>
+              <div style={{
+                fontSize: '0.625rem',
+                color: '#92400e',
+                marginBottom: '0.25rem',
+                fontWeight: '600',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                Next Action
+              </div>
+              <div style={{
+                fontSize: '0.75rem',
+                color: '#78350f',
+                lineHeight: '1.3'
+              }}>
+                {literatureProgress.nextActions[0]}
+              </div>
+            </div>
+          )}
+
+          {projectId && (
+            <Link
+              href={`/projects/${projectId}/literature`}
+              style={{
+                display: 'block',
+                textAlign: 'center',
+                padding: '0.5rem',
+                backgroundColor: '#0369a1',
+                color: 'white',
+                borderRadius: '0.25rem',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                textDecoration: 'none',
+                transition: 'background-color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLAnchorElement).style.backgroundColor = '#075985';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLAnchorElement).style.backgroundColor = '#0369a1';
+              }}
+            >
+              View Literature Review →
+            </Link>
+          )}
+        </div>
+      )}
 
       {/* History Toggle */}
       <button

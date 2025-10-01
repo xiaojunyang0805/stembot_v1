@@ -7,6 +7,8 @@ import { getProject } from '../../../../lib/database/projects';
 import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
 import { trackProjectActivity } from '../../../../lib/database/activity';
 import { ProjectQuestionHeader } from '../../../../components/shared/ProjectQuestionHeader';
+import { LiteratureRecommendations } from '../../../../components/methodology/LiteratureRecommendations';
+import { SourceContext } from '../../../../components/methodology/SourceContext';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
@@ -371,6 +373,16 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
             />
           )}
 
+          {/* Literature-Based Recommendations */}
+          <div style={{ marginBottom: '2rem' }}>
+            <LiteratureRecommendations projectId={params.id} />
+          </div>
+
+          {/* Source Context */}
+          <div style={{ marginBottom: '2rem' }}>
+            <SourceContext projectId={params.id} />
+          </div>
+
           {/* Methodology Content */}
           <div style={{
             backgroundColor: '#f9fafb',
@@ -397,8 +409,8 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
                 maxWidth: '600px',
                 margin: '0 auto'
               }}>
-                This page will become your methodology planning center. AI will automatically extract
-                methodology discussions from your chat conversations and organize them here.
+                AI-powered methodology planning based on your literature review.
+                Methodology recommendations and source insights are automatically generated from your research.
               </p>
             </div>
 
