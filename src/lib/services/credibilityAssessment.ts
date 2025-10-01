@@ -296,8 +296,373 @@ function generateFallbackAssessment(source: Partial<SourceData>): CredibilityAss
 
 /**
  * Create sample source data for testing
+ * @param researchField - The research field to generate topic-appropriate demo sources
  */
-export function createSampleSources(): SourceData[] {
+export function createSampleSources(researchField?: string): SourceData[] {
+  // Determine topic based on research field
+  const field = researchField?.toLowerCase() || '';
+
+  // Generate topic-specific sources based on research field
+  if (field.includes('chemistry') || field.includes('chemical')) {
+    return createChemistrySources();
+  } else if (field.includes('biology') || field.includes('life sciences')) {
+    return createBiologySources();
+  } else if (field.includes('psychology') || field.includes('cognitive')) {
+    return createPsychologySources();
+  }
+
+  // Default: Return antibiotic resistance sources (original demo sources)
+  return createAntibioticResistanceSources();
+}
+
+/**
+ * Create chemistry-specific demo sources
+ */
+function createChemistrySources(): SourceData[] {
+  return [
+    {
+      id: 'source-1',
+      title: 'Buffer Capacity and pH Stability in Biological Systems Under Temperature Variation',
+      authors: ['Chen, L.', 'Rodriguez, M.', 'Williams, P.J.'],
+      journal: 'Journal of the American Chemical Society',
+      year: 2024,
+      doi: '10.1021/jacs.2024.12345',
+      abstract: 'This comprehensive study examines how different buffer compositions maintain pH stability under varying temperature conditions, with applications to biological research and industrial processes.',
+      keyFindings: [
+        'Phosphate buffers show superior stability at physiological temperatures',
+        'HEPES maintains pH more effectively than Tris above 30°C',
+        'Buffer capacity decreases linearly with temperature increase'
+      ],
+      relevanceExplanation: 'This study directly addresses buffer performance under thermal stress, providing quantitative data on pH stability mechanisms.',
+      fullTextUrl: 'https://example.com/jacs-2024',
+      credibility: {
+        level: 'High',
+        score: 94,
+        strengths: [
+          'Published in top-tier chemistry journal (JACS)',
+          'Very recent publication (2024)',
+          'Comprehensive experimental design with multiple buffer systems',
+          'Rigorous statistical analysis'
+        ],
+        limitations: [
+          'Limited to aqueous solutions at standard pressure',
+          'Does not examine extreme pH ranges'
+        ],
+        explanation: 'This is a high-quality source because it\'s published in JACS, one of the most prestigious chemistry journals. The research is current (2024) and uses rigorous experimental methods. The findings are highly reliable and directly applicable to buffer chemistry research.',
+        impactFactor: 16.4,
+        sampleSize: 150,
+        publicationYear: 2024,
+        studyType: 'Experimental study'
+      },
+      isSaved: false
+    },
+    {
+      id: 'source-2',
+      title: 'Thermodynamic Properties of Common Laboratory Buffer Solutions',
+      authors: ['Martinez, S.A.', 'Kim, H.J.'],
+      journal: 'Analytical Chemistry',
+      year: 2023,
+      doi: '10.1021/acs.analchem.2023.0678',
+      keyFindings: [
+        'Temperature coefficients vary significantly among buffer types',
+        'Good\'s buffers outperform traditional buffers in thermal stability',
+        'Ionic strength affects buffer performance more than previously thought'
+      ],
+      relevanceExplanation: 'This source provides thermodynamic data essential for understanding buffer behavior under varying conditions.',
+      fullTextUrl: 'https://example.com/anal-chem-2023',
+      credibility: {
+        level: 'Moderate',
+        score: 76,
+        strengths: [
+          'Peer-reviewed in respected chemistry journal',
+          'Recent publication (2023)',
+          'Good experimental controls'
+        ],
+        limitations: [
+          'Moderate impact journal (IF: 6.8)',
+          'Limited to standard laboratory conditions',
+          'Smaller dataset than comprehensive studies'
+        ],
+        explanation: 'This source has moderate credibility because it\'s published in a respected chemistry journal and uses sound methodology. However, it has a narrower scope than top-tier studies. It\'s excellent as supporting evidence but should be paired with higher-impact sources.',
+        impactFactor: 6.8,
+        sampleSize: 45,
+        publicationYear: 2023,
+        studyType: 'Comparative analysis'
+      },
+      isSaved: true
+    },
+    {
+      id: 'source-3',
+      title: 'pH Maintenance in Cell Culture Media: A Practical Guide',
+      authors: ['Thompson, R.K.'],
+      journal: 'Lab Techniques Quarterly',
+      year: 2021,
+      doi: '10.5432/ltq.2021.0234',
+      keyFindings: [
+        'HEPES preferred over bicarbonate for CO2-independent systems',
+        'Buffer concentration affects cell viability',
+        'Temperature control more critical than buffer choice'
+      ],
+      relevanceExplanation: 'While this practical guide provides useful context, it lacks the rigorous experimental validation of primary research articles.',
+      credibility: {
+        level: 'Low',
+        score: 52,
+        strengths: [
+          'Practical applications well-explained',
+          'Accessible writing style'
+        ],
+        limitations: [
+          'Review article rather than original research',
+          'Older publication (2021)',
+          'Lower-tier journal (IF: 1.8)',
+          'Single author - no peer collaboration',
+          'Limited experimental data'
+        ],
+        explanation: 'This source has lower credibility because it\'s a practical guide rather than rigorous research. Published in 2021 in a lower-impact journal, it summarizes existing knowledge but doesn\'t contribute new experimental data. Use it for background understanding, but rely on primary research for your main arguments.',
+        impactFactor: 1.8,
+        sampleSize: undefined,
+        publicationYear: 2021,
+        studyType: 'Review article'
+      },
+      isSaved: false
+    }
+  ];
+}
+
+/**
+ * Create biology-specific demo sources
+ */
+function createBiologySources(): SourceData[] {
+  return [
+    {
+      id: 'source-1',
+      title: 'Oxidative Stress Responses in Bacterial Species: Growth and Survival Mechanisms',
+      authors: ['Johnson, M.E.', 'Chen, Y.', 'Williams, A.R.'],
+      journal: 'Nature Microbiology',
+      year: 2024,
+      doi: '10.1038/s41564-024-01567-8',
+      abstract: 'This study examines how different bacterial species respond to oxidative stress through various antioxidant mechanisms and growth adaptations.',
+      keyFindings: [
+        'E. coli shows rapid catalase induction under H2O2 exposure',
+        'Gram-positive bacteria exhibit greater oxidative stress tolerance',
+        'Growth rate recovery correlates with antioxidant enzyme expression'
+      ],
+      relevanceExplanation: 'This study directly addresses bacterial responses to oxidative stress, providing mechanistic insights into survival strategies.',
+      fullTextUrl: 'https://example.com/nature-micro-2024',
+      credibility: {
+        level: 'High',
+        score: 95,
+        strengths: [
+          'Published in top-tier journal (Nature Microbiology)',
+          'Very recent publication (2024)',
+          'Large-scale comparative study (15 bacterial species)',
+          'Comprehensive molecular analysis'
+        ],
+        limitations: [
+          'Laboratory conditions may not reflect natural environments',
+          'Limited to aerobic bacteria'
+        ],
+        explanation: 'This is a high-quality source because it\'s published in Nature Microbiology, one of the most prestigious microbiology journals. The research is current (2024) and examines multiple bacterial species with rigorous methods. The findings are highly reliable and directly applicable to your research.',
+        impactFactor: 17.7,
+        sampleSize: 15,
+        publicationYear: 2024,
+        studyType: 'Comparative experimental study'
+      },
+      isSaved: false
+    },
+    {
+      id: 'source-2',
+      title: 'Bacterial Growth Kinetics Under Environmental Stressors',
+      authors: ['Garcia, R.S.', 'Patel, N.K.'],
+      journal: 'Microbiology Research',
+      year: 2023,
+      doi: '10.1099/mic.2023.004321',
+      keyFindings: [
+        'Temperature and pH interact with oxidative stress effects',
+        'Growth rate reductions range from 30-70% depending on species',
+        'Stress adaptation occurs within 2-3 generations'
+      ],
+      relevanceExplanation: 'This source provides quantitative data on growth rate changes under stress, useful for comparative analysis.',
+      fullTextUrl: 'https://example.com/microbiology-research-2023',
+      credibility: {
+        level: 'Moderate',
+        score: 73,
+        strengths: [
+          'Peer-reviewed publication',
+          'Recent research (2023)',
+          'Good experimental controls',
+          'Multiple environmental factors tested'
+        ],
+        limitations: [
+          'Moderate impact journal (IF: 3.5)',
+          'Limited to 6 bacterial species',
+          'Short-term study (48 hours)'
+        ],
+        explanation: 'This source has moderate credibility with sound methodology and recent publication. However, it\'s in a moderate-impact journal and has a smaller scope than comprehensive studies. Use it as supporting evidence alongside higher-impact sources.',
+        impactFactor: 3.5,
+        sampleSize: 6,
+        publicationYear: 2023,
+        studyType: 'Experimental study'
+      },
+      isSaved: true
+    },
+    {
+      id: 'source-3',
+      title: 'Bacterial Antioxidant Systems: A Case Study in E. coli',
+      authors: ['Anderson, T.L.'],
+      journal: 'Case Studies in Microbiology',
+      year: 2021,
+      doi: '10.5678/csm.2021.0892',
+      keyFindings: [
+        'SodA and SodB enzymes show differential expression patterns',
+        'Catalase activity increases 5-fold under oxidative stress',
+        'Biofilm formation enhances stress resistance'
+      ],
+      relevanceExplanation: 'While this case study provides detailed mechanistic insights for E. coli, findings may not generalize to other bacterial species.',
+      credibility: {
+        level: 'Low',
+        score: 48,
+        strengths: [
+          'Detailed molecular analysis',
+          'Clear methodology description'
+        ],
+        limitations: [
+          'Case study design - limited to single species',
+          'Older publication (2021)',
+          'Lower-tier journal (IF: 1.4)',
+          'Single-author study',
+          'Small sample size (n=3 strains)'
+        ],
+        explanation: 'This source has lower credibility because it\'s a case study limited to one bacterial species. Published in 2021 in a lower-impact journal, it provides useful mechanistic details but lacks generalizability. Use it for background information only, not as primary evidence.',
+        impactFactor: 1.4,
+        sampleSize: 3,
+        publicationYear: 2021,
+        studyType: 'Case study'
+      },
+      isSaved: false
+    }
+  ];
+}
+
+/**
+ * Create psychology-specific demo sources
+ */
+function createPsychologySources(): SourceData[] {
+  return [
+    {
+      id: 'source-1',
+      title: 'Sleep Deprivation Effects on Memory Consolidation in College Students',
+      authors: ['Martinez, A.C.', 'Wong, S.Y.', 'Brown, K.L.'],
+      journal: 'Nature Neuroscience',
+      year: 2024,
+      doi: '10.1038/s41593-024-01789-3',
+      abstract: 'This longitudinal study examines how sleep patterns affect memory consolidation and academic performance in undergraduate students.',
+      keyFindings: [
+        'Sleep deprivation (<6 hours) reduces memory consolidation by 40%',
+        'REM sleep shows strongest correlation with declarative memory',
+        'Weekend sleep recovery does not fully compensate for weekday deficits'
+      ],
+      relevanceExplanation: 'This study directly addresses sleep-memory relationships in the college student population, providing strong evidence for sleep\'s role in learning.',
+      fullTextUrl: 'https://example.com/nature-neuro-2024',
+      credibility: {
+        level: 'High',
+        score: 93,
+        strengths: [
+          'Published in top-tier journal (Nature Neuroscience)',
+          'Very recent publication (2024)',
+          'Large sample size (n=450 students)',
+          'Longitudinal design (6 months)'
+        ],
+        limitations: [
+          'Limited to undergraduate students (generalizability)',
+          'Self-reported sleep data may have bias'
+        ],
+        explanation: 'This is a high-quality source because it\'s published in Nature Neuroscience, one of the most respected journals in cognitive science. The study uses a large sample and longitudinal design, making the findings highly reliable for research on sleep and memory.',
+        impactFactor: 25.8,
+        sampleSize: 450,
+        publicationYear: 2024,
+        studyType: 'Longitudinal study'
+      },
+      isSaved: false
+    },
+    {
+      id: 'source-2',
+      title: 'Cognitive Performance and Sleep Quality in University Students',
+      authors: ['Lee, J.H.', 'Thompson, R.M.'],
+      journal: 'Journal of Cognitive Psychology',
+      year: 2023,
+      doi: '10.1080/20445911.2023.2234567',
+      keyFindings: [
+        'Sleep quality predicts GPA more strongly than sleep duration',
+        'Napping improves short-term memory performance',
+        'Chronotype affects optimal study timing'
+      ],
+      relevanceExplanation: 'This source provides evidence linking sleep quality to academic outcomes, supporting the importance of sleep for student success.',
+      fullTextUrl: 'https://example.com/jcognpsy-2023',
+      credibility: {
+        level: 'Moderate',
+        score: 74,
+        strengths: [
+          'Peer-reviewed publication',
+          'Recent research (2023)',
+          'Good sample size (n=280)',
+          'Multiple cognitive measures used'
+        ],
+        limitations: [
+          'Moderate impact journal (IF: 2.9)',
+          'Cross-sectional design (cannot establish causation)',
+          'Limited to one university'
+        ],
+        explanation: 'This source has moderate credibility with sound methodology and a decent sample size. However, the cross-sectional design limits causal conclusions. Use it as supporting evidence alongside experimental or longitudinal studies.',
+        impactFactor: 2.9,
+        sampleSize: 280,
+        publicationYear: 2023,
+        studyType: 'Cross-sectional study'
+      },
+      isSaved: true
+    },
+    {
+      id: 'source-3',
+      title: 'Sleep Patterns in College: A Survey of Student Habits',
+      authors: ['Davis, M.K.'],
+      journal: 'Student Life Quarterly',
+      year: 2020,
+      doi: '10.1234/slq.2020.0456',
+      keyFindings: [
+        'Average sleep duration: 6.2 hours on weeknights',
+        'Majority of students report insufficient sleep',
+        'Technology use before bed is common'
+      ],
+      relevanceExplanation: 'While this survey provides descriptive data on sleep habits, it lacks experimental controls and causal analysis.',
+      credibility: {
+        level: 'Low',
+        score: 45,
+        strengths: [
+          'Large survey sample (n=1200)',
+          'Descriptive statistics well-presented'
+        ],
+        limitations: [
+          'Survey methodology - self-report bias',
+          'Older publication (2020)',
+          'Lower-tier journal (IF: 0.8)',
+          'No experimental component or causal analysis',
+          'Limited to one institution'
+        ],
+        explanation: 'This source has lower credibility because it\'s a descriptive survey from 2020 without experimental controls. While it provides useful background on student sleep habits, it cannot establish cause-and-effect relationships. Use it only for context, not as primary evidence.',
+        impactFactor: 0.8,
+        sampleSize: 1200,
+        publicationYear: 2020,
+        studyType: 'Survey'
+      },
+      isSaved: false
+    }
+  ];
+}
+
+/**
+ * Create antibiotic resistance demo sources (original default)
+ */
+function createAntibioticResistanceSources(): SourceData[] {
   return [
     {
       id: 'source-1',

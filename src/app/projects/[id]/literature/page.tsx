@@ -106,7 +106,10 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
 
         // Add sample sources for demonstration if no real sources exist
         if (externalSourcesData.length === 0 && showSampleSources) {
-          externalSourcesData = createSampleSources();
+          // Pass research field to generate topic-appropriate demo sources
+          const metadata = projectData?.metadata as { field?: string } | undefined;
+          const researchField = projectData?.subject || metadata?.field || '';
+          externalSourcesData = createSampleSources(researchField);
         }
 
         setExternalSources(externalSourcesData);
