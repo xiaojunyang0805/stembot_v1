@@ -533,6 +533,82 @@ function generateNotifications(state: ProjectLiteratureState): CrossPhaseNotific
 }
 
 /**
+ * Store notifications in database
+ */
+async function storeNotifications(projectId: string, notifications: CrossPhaseNotification[]): Promise<void> {
+  try {
+    if (notifications.length === 0) return;
+
+    const { error } = await supabase
+      .from('project_notifications')
+      .insert(
+        notifications.map(notification => ({
+          project_id: projectId,
+          notification_data: notification,
+          type: notification.type,
+          priority: notification.priority,
+          read: false,
+          created_at: notification.createdAt
+        }))
+      );
+
+    if (error) {
+      console.warn('Failed to store notifications:', error);
+    }
+  } catch (error) {
+    console.warn('Error storing notifications:', error);
+  }
+}
+
+/**
+ * Update project memory with literature context
+ */
+async function updateProjectMemory(projectId: string, state: ProjectLiteratureState): Promise<void> {
+  try {
+    // Create memory context for AI chat
+    const memoryContext = {
+      literature_summary: {
+        source_count: state.sources.length,
+        high_quality_sources: state.literatureProgress.highQualitySourceCount,
+        main_themes: state.organization?.themes.map(t => t.name) || [],
+        methodologies_found: state.organization?.methodologies.map(m => m.methodologyType) || [],
+        research_gaps: state.gapAnalysis?.identifiedGaps.map(g => g.title) || [],
+        progress_percentage: state.literatureProgress.progressPercentage,
+        next_actions: state.literatureProgress.nextActions,
+        recommendations: state.methodologyRecommendations.map(r => ({
+          method: r.methodType,
+          rationale: r.rationale,
+          strength: r.recommendationStrength
+        }))
+      },
+      citations_available: state.citationDatabase.map(c => ({
+        key: c.citationKey,
+        citation: c.inTextCitation,
+        topics: c.topics,
+        findings: c.keyFindings.slice(0, 2) // Limit for memory efficiency
+      })),
+      last_updated: state.lastUpdated
+    };
+
+    // Store in project memory
+    const { error } = await supabase
+      .from('project_memory')
+      .upsert({
+        project_id: projectId,
+        memory_type: 'literature_context',
+        memory_data: memoryContext,
+        updated_at: new Date().toISOString()
+      });
+
+    if (error) {
+      console.warn('Failed to update project memory:', error);
+    }
+  } catch (error) {
+    console.warn('Error updating project memory:', error);
+  }
+}
+
+/**
  * Generate basic methodology recommendations when AI fails
  */
 function generateBasicMethodologyRecommendations(sources: SourceData[]): MethodologyRecommendation[] {
