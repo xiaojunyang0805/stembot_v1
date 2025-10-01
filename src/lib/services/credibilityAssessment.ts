@@ -1,13 +1,14 @@
 /**
  * Credibility Assessment Service
  *
- * AI-powered credibility assessment for research sources using GPT-4o-mini
- * Generates plain-language explanations for novice researchers
+ * AI-powered credibility assessment for research sources using advanced
+ * methodology analysis and novice-friendly explanations
  *
  * Location: src/lib/services/credibilityAssessment.ts
  */
 
 import { CredibilityAssessment, SourceData } from '@/components/literature/SourceCard';
+import { assessSourceCredibility, SourceMetadata } from '../research/credibilityChecker';
 
 // Base criteria for credibility assessment
 interface AssessmentCriteria {
@@ -20,47 +21,55 @@ interface AssessmentCriteria {
 }
 
 /**
- * Generate AI-powered credibility assessment for a research source
+ * Generate comprehensive AI-powered credibility assessment for a research source
  */
 export async function generateCredibilityAssessment(
   source: Partial<SourceData>,
   researchQuestion: string
 ): Promise<CredibilityAssessment> {
   try {
-    // First, generate basic assessment based on criteria
+    // Convert SourceData to SourceMetadata format for the new AI checker
+    const sourceMetadata: SourceMetadata = {
+      title: source.title || 'Unknown Title',
+      authors: source.authors || ['Unknown Author'],
+      journal: source.journal || 'Unknown Journal',
+      year: source.year || new Date().getFullYear(),
+      doi: source.doi,
+      abstract: source.abstract,
+      url: source.fullTextUrl
+    };
+
+    // Use the new AI-powered credibility checker
+    const comprehensiveAssessment = await assessSourceCredibility(sourceMetadata, researchQuestion);
+
+    return comprehensiveAssessment;
+  } catch (error) {
+    console.error('Error in comprehensive credibility assessment:', error);
+
+    // Fallback to basic assessment
     const basicAssessment = assessBasicCredibility({
       impactFactor: source.credibility?.impactFactor,
       sampleSize: source.credibility?.sampleSize,
       publicationYear: source.year || new Date().getFullYear(),
       studyType: source.credibility?.studyType,
       journal: source.journal || '',
-      peerReviewed: true // Assume peer-reviewed for now
+      peerReviewed: true
     });
 
-    // Generate AI-powered plain-language explanation
-    const aiExplanation = await generatePlainLanguageExplanation(
-      source,
-      researchQuestion,
-      basicAssessment
-    );
+    // Generate simple explanation for fallback
+    const fallbackExplanation = `This source has ${basicAssessment.level.toLowerCase()} credibility based on basic assessment. For a more detailed analysis, please try again.`;
 
     return {
       level: basicAssessment.level,
       score: basicAssessment.score,
       strengths: basicAssessment.strengths,
       limitations: basicAssessment.limitations,
-      explanation: aiExplanation,
+      explanation: fallbackExplanation,
       impactFactor: source.credibility?.impactFactor,
       sampleSize: source.credibility?.sampleSize,
       publicationYear: source.year || new Date().getFullYear(),
       studyType: source.credibility?.studyType
     };
-
-  } catch (error) {
-    console.error('Error generating credibility assessment:', error);
-
-    // Fallback to basic assessment without AI explanation
-    return generateFallbackAssessment(source);
   }
 }
 

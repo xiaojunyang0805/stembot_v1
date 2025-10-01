@@ -19,6 +19,15 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '@/lib/supabase';
 
+// Types for credibility metrics breakdown
+export interface CredibilityMetrics {
+  journalQuality: number; // 0-30 points
+  recency: number; // 0-20 points
+  sampleSize: number; // 0-20 points
+  methodology: number; // 0-30 points
+  totalScore: number; // 0-100
+}
+
 // Types for source data and credibility assessment
 export interface CredibilityAssessment {
   level: 'High' | 'Moderate' | 'Low';
@@ -31,6 +40,7 @@ export interface CredibilityAssessment {
   publicationYear: number;
   studyType?: string;
   researchField?: string;
+  metrics?: CredibilityMetrics; // Detailed scoring breakdown
 }
 
 export interface SourceData {
