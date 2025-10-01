@@ -32,7 +32,7 @@ export function CustomRegisterForm() {
     password: '',
     confirmPassword: '',
     userType: 'student',
-    termsAccepted: false
+    termsAccepted: true
   })
 
   const [errors, setErrors] = useState<FormErrors>({
