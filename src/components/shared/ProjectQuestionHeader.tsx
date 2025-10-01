@@ -8,7 +8,7 @@
 'use client';
 
 import React from 'react';
-import { analyzeQuestionProgress } from '../../lib/research/questionProgressEvaluator';
+import { analyzeQuestionProgressCached as analyzeQuestionProgress } from '../../lib/research/cachedQuestionAnalyzer';
 
 interface ProjectQuestionHeaderProps {
   question: string;
@@ -20,9 +20,9 @@ interface ProjectQuestionHeaderProps {
 }
 
 const PHASE_LABELS = {
-  question: 'Question Formation',
-  literature: 'Literature Review',
-  methodology: 'Methodology Design',
+  question: 'Exploring Your Question',
+  literature: 'Finding Sources',
+  methodology: 'Planning Your Study',
   writing: 'Writing & Analysis'
 };
 
@@ -34,10 +34,10 @@ const PHASE_ICONS = {
 };
 
 const PHASE_CONTEXTS = {
-  question: 'Refining your research question',
-  literature: 'Finding sources for your research question',
-  methodology: 'Designing study to answer your research question',
-  writing: 'Writing analysis for your research question'
+  question: 'Developing your research focus',
+  literature: 'Building your knowledge base',
+  methodology: 'Planning your approach',
+  writing: 'Sharing your findings'
 };
 
 export function ProjectQuestionHeader({
@@ -156,7 +156,7 @@ export function ProjectQuestionHeader({
         </div>
       </div>
 
-      {/* Progress Indicator */}
+      {/* Subtle Progress Indicator */}
       {showProgress && (
         <div style={{
           display: 'flex',
@@ -167,24 +167,27 @@ export function ProjectQuestionHeader({
           borderRadius: '0.375rem',
           border: '1px solid #f3f4f6'
         }}>
-          {/* Stage Badge */}
+          {/* Subtle Stage Badge */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             gap: '0.5rem'
           }}>
             <div style={{
-              width: '0.5rem',
-              height: '0.5rem',
+              width: '0.375rem',
+              height: '0.375rem',
               borderRadius: '50%',
-              backgroundColor: getStageColor(progressAnalysis.stage)
+              backgroundColor: getStageColor(progressAnalysis.stage),
+              opacity: 0.8
             }} />
             <span style={{
-              fontSize: '0.875rem',
-              fontWeight: '500',
-              color: getStageColor(progressAnalysis.stage)
+              fontSize: '0.75rem',
+              fontWeight: '400',
+              color: '#6b7280'
             }}>
-              {progressAnalysis.stage.charAt(0).toUpperCase() + progressAnalysis.stage.slice(1)} Stage
+              {progressAnalysis.stage === 'research-ready' ? '✨ Ready to research' :
+               progressAnalysis.stage === 'focused' ? 'Taking shape' :
+               progressAnalysis.stage === 'emerging' ? 'Developing' : 'Starting out'}
             </span>
           </div>
 
@@ -227,13 +230,27 @@ export function ProjectQuestionHeader({
             </div>
           </div>
 
-          {/* Next Steps Hint */}
-          {progressAnalysis.recommendations.length > 0 && (
+          {/* Gentle Next Steps Hint */}
+          {progressAnalysis.recommendations.length > 0 && progressAnalysis.stage !== 'research-ready' && (
             <div style={{
               fontSize: '0.75rem',
-              color: '#6b7280'
+              color: '#6b7280',
+              fontStyle: 'italic'
             }}>
-              💡 {progressAnalysis.recommendations[0]}
+              {progressAnalysis.stage === 'initial' ? '💭 What aspect interests you most?' :
+               progressAnalysis.stage === 'emerging' ? '🔍 Consider what you want to measure' :
+               '🎯 Think about your target audience'}
+            </div>
+          )}
+
+          {/* Celebration for research-ready */}
+          {progressAnalysis.stage === 'research-ready' && (
+            <div style={{
+              fontSize: '0.75rem',
+              color: '#10b981',
+              fontWeight: '500'
+            }}>
+              🎉 Your question looks ready for research!
             </div>
           )}
         </div>

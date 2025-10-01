@@ -14,7 +14,7 @@ import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from
 import { trackProjectActivity } from '../../../lib/database/activity';
 import { DuplicateDialog, type DuplicateChoice, type DuplicateMatch } from '../../../components/ui/duplicate-dialog';
 import { ProjectMemoryPanel } from '../../../components/workspace/ProjectMemoryPanel';
-import { analyzeQuestionProgress, evaluateProjectProgress } from '../../../lib/research/questionProgressEvaluator';
+import { analyzeQuestionProgressCached as analyzeQuestionProgress, evaluateProjectProgressCached as evaluateProjectProgress } from '../../../lib/research/cachedQuestionAnalyzer';
 import { supabase } from '../../../lib/supabase';
 import type { Project } from '../../../types/database';
 

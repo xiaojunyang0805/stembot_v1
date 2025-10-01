@@ -43,7 +43,8 @@
       "mcp__chrome-devtools__fill",
       "mcp__chrome-devtools__list_console_messages",
       "mcp__chrome-devtools__wait_for",
-      "Bash(npx supabase:*)"
+      "Bash(npx supabase:*)",
+      "mcp__chrome-devtools__handle_dialog"
     ],
     "deny": [],
     "ask": []
