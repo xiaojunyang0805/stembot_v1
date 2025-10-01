@@ -8,6 +8,7 @@ import { getProjectDocuments, deleteDocument, type DocumentMetadata } from '../.
 import { trackProjectActivity } from '../../../../lib/database/activity';
 import { ProjectQuestionHeader } from '../../../../components/shared/ProjectQuestionHeader';
 import { SearchStrategyCard } from '../../../../components/literature/SearchStrategyCard';
+import { SourceCardDemo } from '../../../../components/literature/SourceCardDemo';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
@@ -421,6 +422,16 @@ export default function DocCenterPage({ params }: { params: { id: string } }) {
                   // Navigate back to workspace for document upload
                   router.push(`/projects/${params.id}`);
                 }}
+              />
+            </div>
+          )}
+
+          {/* SourceCard Demo - WP3 Literature Display */}
+          {project && (
+            <div style={{ marginBottom: '2rem' }}>
+              <SourceCardDemo
+                projectId={params.id}
+                researchQuestion={project.research_question || project.title}
               />
             </div>
           )}
