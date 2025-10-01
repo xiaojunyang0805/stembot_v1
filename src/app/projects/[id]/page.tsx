@@ -13,6 +13,7 @@ import StorageIndicator from '../../../components/storage/StorageIndicator';
 import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from '../../../lib/database/documents';
 import { trackProjectActivity } from '../../../lib/database/activity';
 import { DuplicateDialog, type DuplicateChoice, type DuplicateMatch } from '../../../components/ui/duplicate-dialog';
+import { ProjectMemoryPanel } from '../../../components/workspace/ProjectMemoryPanel';
 import { supabase } from '../../../lib/supabase';
 import type { Project } from '../../../types/database';
 
@@ -1447,39 +1448,28 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             </div>
 
 
-            {/* Memory */}
+            {/* Question Evolution Memory Panel */}
             <div style={{ marginBottom: '2rem' }}>
-              <div style={{
-                backgroundColor: '#f3f4f6',
-                padding: '1rem',
-                borderRadius: '0.5rem',
-                border: '1px solid #e5e7eb'
-              }}>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  marginBottom: '0.75rem'
-                }}>
-                  <span style={{ fontSize: '1.25rem' }}>💡</span>
-                  <h3 style={{
-                    fontSize: '1rem',
-                    fontWeight: '600',
-                    color: '#374151',
-                    margin: 0
-                  }}>
-                    Memory
-                  </h3>
-                </div>
-                <p style={{
-                  fontSize: '0.75rem',
-                  color: '#6b7280',
-                  lineHeight: '1.4',
-                  margin: 0
-                }}>
-                  {projectData.memory.lastSession}
-                </p>
-              </div>
+              <ProjectMemoryPanel
+                currentQuestion={projectData.title || "Research question not yet defined"}
+                questionStage="emerging"
+                questionHistory={[
+                  {
+                    id: '1',
+                    text: "Initial research idea",
+                    stage: 'initial',
+                    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                    improvements: []
+                  },
+                  {
+                    id: '2',
+                    text: projectData.title || "Current research question",
+                    stage: 'emerging',
+                    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
+                    improvements: ['Made more specific', 'Added focus area']
+                  }
+                ]}
+              />
             </div>
 
           </div>
