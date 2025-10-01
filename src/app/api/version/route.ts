@@ -10,7 +10,7 @@ export async function GET() {
       version,
       buildDate,
       environment,
-      timestamp: new Date().toISOString(),
+      timestamp: "2025-10-01T09:33:00.278Z",
       status: 'healthy'
     });
   } catch (error) {
@@ -19,7 +19,7 @@ export async function GET() {
       {
         error: 'Failed to get version info',
         version: 'unknown',
-        timestamp: new Date().toISOString(),
+        timestamp: "2025-10-01T09:33:00.278Z",
         status: 'error'
       },
       { status: 500 }
