@@ -120,12 +120,90 @@ export async function POST(request: NextRequest) {
   }
 }
 
-export async function GET() {
-  return NextResponse.json({
-    message: 'Project Creation API',
-    method: 'POST',
-    requiredFields: ['title', 'researchQuestion', 'field', 'timeline'],
-    authentication: 'Bearer token in Authorization header or body',
-    status: 'ready'
-  });
+export async function GET(request: NextRequest) {
+  try {
+    // Get auth token from header
+    const authHeader = request.headers.get('authorization');
+    const token = authHeader?.replace('Bearer ', '');
+
+    // Get projectId from query params
+    const { searchParams } = new URL(request.url);
+    const projectId = searchParams.get('id');
+
+    if (!projectId) {
+      return NextResponse.json({
+        message: 'Project Creation & Retrieval API',
+        methods: {
+          POST: 'Create new project',
+          GET: 'Get project by ID (requires ?id=PROJECT_ID query param)'
+        },
+        requiredFields: ['title', 'researchQuestion', 'field', 'timeline'],
+        authentication: 'Bearer token in Authorization header',
+        status: 'ready'
+      });
+    }
+
+    if (!token) {
+      return NextResponse.json(
+        { error: 'Authentication required' },
+        { status: 401 }
+      );
+    }
+
+    // Verify JWT token
+    let userId: string;
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      userId = decoded.userId;
+    } catch (error) {
+      return NextResponse.json(
+        { error: 'Invalid authentication token' },
+        { status: 401 }
+      );
+    }
+
+    // Create Supabase client with service role to bypass RLS
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false
+        }
+      }
+    );
+
+    console.log('📖 Fetching project via API:', { userId, projectId });
+
+    // Fetch project using service role (bypasses RLS)
+    const { data, error } = await supabaseAdmin
+      .from('projects')
+      .select('*')
+      .eq('id', projectId)
+      .eq('user_id', userId) // Ensure user can only access their own projects
+      .single();
+
+    if (error) {
+      console.error('❌ Database fetch error:', error);
+      return NextResponse.json(
+        { error: `Failed to fetch project: ${error.message}` },
+        { status: 404 }
+      );
+    }
+
+    console.log('✅ Project fetched successfully:', data.id);
+
+    return NextResponse.json({
+      success: true,
+      project: data
+    });
+
+  } catch (error: any) {
+    console.error('❌ Project fetch error:', error);
+    return NextResponse.json(
+      { error: error.message || 'Internal server error' },
+      { status: 500 }
+    );
+  }
 }

@@ -272,6 +272,36 @@ export async function getUserProjects(): Promise<{ data: Project[] | null; error
 // Get a specific project by ID
 export async function getProject(projectId: string): Promise<{ data: Project | null; error: any }> {
   try {
+    // For custom JWT auth users, use API route with service role
+    if (typeof window !== 'undefined') {
+      const authToken = localStorage.getItem('authToken')
+      if (authToken) {
+        console.log('🔑 Fetching project via API for custom auth user')
+        try {
+          const response = await fetch(`/api/projects/create?id=${projectId}`, {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${authToken}`
+            }
+          })
+
+          const result = await response.json()
+
+          if (!response.ok) {
+            console.error('❌ API fetch error:', result.error)
+            return { data: null, error: new Error(result.error) }
+          }
+
+          console.log('✅ Project fetched via API:', result.project.id)
+          return { data: result.project, error: null }
+        } catch (apiError: any) {
+          console.error('❌ API request failed:', apiError)
+          return { data: null, error: apiError }
+        }
+      }
+    }
+
+    // Fallback to direct Supabase query for Supabase auth users
     const { data: { user }, error: authError } = await supabase.auth.getUser()
 
     if (authError || !user) {
