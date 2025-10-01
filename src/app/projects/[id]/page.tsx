@@ -14,6 +14,7 @@ import { getProjectDocuments, saveDocumentMetadata, type DocumentMetadata } from
 import { trackProjectActivity } from '../../../lib/database/activity';
 import { DuplicateDialog, type DuplicateChoice, type DuplicateMatch } from '../../../components/ui/duplicate-dialog';
 import { ProjectMemoryPanel } from '../../../components/workspace/ProjectMemoryPanel';
+import { analyzeQuestionProgress, evaluateProjectProgress } from '../../../lib/research/questionProgressEvaluator';
 import { supabase } from '../../../lib/supabase';
 import type { Project } from '../../../types/database';
 
@@ -1450,26 +1451,57 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
 
             {/* Question Evolution Memory Panel */}
             <div style={{ marginBottom: '2rem' }}>
-              <ProjectMemoryPanel
-                currentQuestion={projectData.title || "Research question not yet defined"}
-                questionStage="emerging"
-                questionHistory={[
+              {(() => {
+                // Calculate real progress based on project data
+                const currentQuestion = projectData.title || "Research question not yet defined";
+                const conversationCount = messages.length;
+                const documentCount = documents.length;
+
+                const progressAnalysis = analyzeQuestionProgress(
+                  currentQuestion,
+                  conversationCount,
+                  documentCount,
+                  [] // TODO: Replace with real question history from database
+                );
+
+                // Create realistic question history based on actual progress
+                const questionHistory: Array<{
+                  id: string;
+                  text: string;
+                  stage: 'initial' | 'emerging' | 'focused' | 'research-ready';
+                  createdAt: Date;
+                  improvements: string[];
+                }> = [
                   {
                     id: '1',
-                    text: "Initial research idea",
+                    text: "Initial project setup",
                     stage: 'initial',
-                    createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000),
+                    createdAt: new Date(project?.created_at || Date.now() - 7 * 24 * 60 * 60 * 1000),
                     improvements: []
-                  },
-                  {
-                    id: '2',
-                    text: projectData.title || "Current research question",
-                    stage: 'emerging',
-                    createdAt: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000),
-                    improvements: ['Made more specific', 'Added focus area']
                   }
-                ]}
-              />
+                ];
+
+                // Only add current version if there's meaningful progress
+                if (progressAnalysis.progress > 15) {
+                  questionHistory.push({
+                    id: '2',
+                    text: currentQuestion,
+                    stage: progressAnalysis.stage,
+                    createdAt: new Date(project?.updated_at || Date.now()),
+                    improvements: progressAnalysis.recommendations.slice(0, 2).map(rec =>
+                      rec.replace(/^[A-Z]/, char => char.toLowerCase()).replace(/[.!?]$/, '')
+                    )
+                  });
+                }
+
+                return (
+                  <ProjectMemoryPanel
+                    currentQuestion={currentQuestion}
+                    questionStage={progressAnalysis.stage}
+                    questionHistory={questionHistory}
+                  />
+                );
+              })()}
             </div>
 
           </div>
