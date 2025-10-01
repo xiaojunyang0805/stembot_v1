@@ -232,6 +232,24 @@ curl -s -o /dev/null -w "%{http_code}" "https://stembotv1.vercel.app/projects/[P
 # Expected: 200
 ```
 
+### **Method 1.5: Quick API Route Testing (For New Routes)**
+```bash
+# Test new API routes immediately after deployment
+curl -s "https://stembotv1.vercel.app/api/[NEW_ROUTE]"
+# Expected: Valid JSON response, NOT 405 Method Not Allowed
+
+# Example: Test SearchStrategy API
+curl -s "https://stembotv1.vercel.app/api/ai/search-strategy"
+# Expected: {"message":"Search Strategy API is running","methods":["POST"],"status":"healthy"}
+
+# Test POST functionality
+curl -s "https://stembotv1.vercel.app/api/ai/search-strategy" \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -d '{"researchQuestion":"test","projectId":"test"}'
+# Expected: JSON response with search strategy, NOT 405 or 500 error
+```
+
 ### **Method 2: Vercel CLI (Requires Authentication)**
 ```bash
 # Login (opens browser - may timeout)
@@ -277,6 +295,131 @@ curl -s "https://stembotv1.vercel.app/api/version" | jq '.status'
 - ✅ No console errors in Chrome DevTools
 - ✅ Visual layout renders correctly
 - ✅ Authentication flows work
+
+## 🚨 **COMMON VERCEL DEPLOYMENT ERRORS & FIXES**
+
+### **Error 1: API Route Returns 405 Method Not Allowed**
+**Symptoms:**
+```bash
+curl -s "https://stembotv1.vercel.app/api/new-route"
+# Returns: 405 Method Not Allowed
+```
+
+**Root Causes:**
+- Missing export function in route.ts
+- Incorrect file structure in `/api/` directory
+- Route file not properly deployed
+
+**Quick Diagnosis:**
+```bash
+# Check if route exists at all
+curl -s "https://stembotv1.vercel.app/api/new-route" -I | head -1
+# If 404: Route file missing or not deployed
+# If 405: Route exists but missing HTTP method export
+
+# Check local build includes the route
+npm run build | grep "api/new-route"
+# Should see: ƒ /api/new-route    0 B    0 B
+```
+
+**Fixes:**
+1. **Add GET method for debugging:**
+```typescript
+// In route.ts file
+export async function GET() {
+  return NextResponse.json({ message: 'API is running', status: 'healthy' });
+}
+```
+
+2. **Verify file structure:**
+```
+src/app/api/new-route/route.ts  ✅ Correct
+src/app/api/new-route.ts        ❌ Wrong
+```
+
+3. **Check exports:**
+```typescript
+// Must export HTTP methods
+export async function GET() { ... }
+export async function POST() { ... }
+```
+
+### **Error 2: Missing Environment Variables**
+**Symptoms:**
+```bash
+# API works locally but fails in production
+curl -s "https://stembotv1.vercel.app/api/ai/something"
+# Returns: 500 Internal Server Error
+```
+
+**Quick Diagnosis:**
+```bash
+# Check if environment-dependent features work
+curl -s "https://stembotv1.vercel.app/api/version"
+# If this works but others don't, likely env var issue
+```
+
+**Fixes:**
+1. **Add graceful fallbacks:**
+```typescript
+// Handle missing environment variables
+if (!process.env.REQUIRED_VAR) {
+  console.warn('REQUIRED_VAR not available, using fallback');
+  return fallbackFunction();
+}
+```
+
+2. **Add to Vercel dashboard:**
+   - Go to Vercel project → Settings → Environment Variables
+   - Add missing variables for Production environment
+
+### **Error 3: Import/Export Issues**
+**Symptoms:**
+- Build fails with "Cannot find module" errors
+- TypeScript compilation errors in production
+
+**Quick Diagnosis:**
+```bash
+# Check TypeScript compilation
+npm run type-check
+# Look for import path errors, missing types
+```
+
+**Fixes:**
+1. **Fix import paths:**
+```typescript
+// Use absolute imports with @/ alias
+import { Component } from '@/components/Component';
+// NOT relative: import { Component } from '../../../../components/Component';
+```
+
+2. **Check case sensitivity:**
+```typescript
+// Vercel is case-sensitive
+import { SearchStrategyCard } from '@/components/literature/SearchStrategyCard'; // ✅
+import { searchstrategycard } from '@/components/literature/searchstrategycard'; // ❌
+```
+
+### **Quick Deployment Verification Protocol**
+```bash
+# 1. Pre-deployment checks
+npm run type-check && npm run build
+
+# 2. Deploy
+git add . && git commit -m "..." && git push origin main
+
+# 3. Wait 2-3 minutes for deployment
+
+# 4. Immediate post-deployment verification
+curl -s -w "%{http_code}" "https://stembotv1.vercel.app" -o /dev/null
+curl -s "https://stembotv1.vercel.app/api/version"
+
+# 5. Test new features specifically
+curl -s "https://stembotv1.vercel.app/api/[NEW_ROUTE]"
+
+# 6. If any issues, check Chrome DevTools
+"Check console errors and performance for https://stembotv1.vercel.app"
+```
 
 ## ⚡ **QUICK REFERENCE COMMANDS**
 
