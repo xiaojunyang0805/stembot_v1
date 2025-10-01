@@ -10,10 +10,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import OpenAI from 'openai';
 
-// Initialize OpenAI client
-const openai = new OpenAI({
+// Initialize OpenAI client (only if API key is available)
+const openai = process.env.OPENAI_API_KEY ? new OpenAI({
   apiKey: process.env.OPENAI_API_KEY,
-});
+}) : null;
 
 // Academic database mapping for intelligent recommendations
 const ACADEMIC_DATABASES = {
@@ -146,6 +146,18 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Check if OpenAI API key is available, use fallback if not
+    if (!process.env.OPENAI_API_KEY) {
+      console.warn('OpenAI API key not available, using fallback search strategy generation');
+      const fallbackStrategy = generateFallbackStrategy(researchQuestion);
+      return NextResponse.json({
+        success: true,
+        searchStrategy: fallbackStrategy,
+        generatedAt: new Date().toISOString(),
+        source: 'fallback'
+      });
+    }
+
     // Generate search strategy using GPT-4o-mini
     const searchStrategy = await generateSearchStrategy(researchQuestion);
 
@@ -168,6 +180,11 @@ export async function POST(request: NextRequest) {
  * Generate optimized search strategy using OpenAI GPT-4o-mini
  */
 async function generateSearchStrategy(researchQuestion: string) {
+  // Fallback if OpenAI is not available
+  if (!openai) {
+    console.warn('OpenAI client not initialized, using fallback strategy');
+    return generateFallbackStrategy(researchQuestion);
+  }
   const prompt = `Generate academic search terms for this research question: "${researchQuestion}"
 
 Please provide:
