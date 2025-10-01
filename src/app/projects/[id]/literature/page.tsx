@@ -12,6 +12,7 @@ import { ProjectQuestionHeader } from '../../../../components/shared/ProjectQues
 import { SearchStrategyCard } from '../../../../components/literature/SearchStrategyCard';
 import { SourceCard, SourceData } from '../../../../components/literature/SourceCard';
 import { GapAnalysis } from '../../../../components/literature/GapAnalysis';
+import { SourceOrganizationView } from '../../../../components/literature/SourceOrganizationView';
 import { createSampleSources } from '../../../../lib/services/credibilityAssessment';
 import { ProjectMemoryPanel } from '../../../../components/workspace/ProjectMemoryPanel';
 import { analyzeQuestionProgressCached as analyzeQuestionProgress } from '../../../../lib/research/cachedQuestionAnalyzer';
@@ -900,6 +901,23 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
                 sources={allSources}
                 researchQuestion={project.research_question || project.title}
                 projectId={params.id}
+              />
+            )}
+
+            {/* Source Organization Section */}
+            {project && (
+              <SourceOrganizationView
+                sources={allSources}
+                researchQuestion={project.research_question || project.title}
+                projectId={params.id}
+                onSourceSelect={(source) => {
+                  // Handle source selection (could open in modal, navigate, etc.)
+                  console.log('Selected source:', source.title);
+                }}
+                onOrganizationChange={(organization) => {
+                  // Handle organization changes for caching/persistence
+                  console.log('Organization updated:', organization.metadata);
+                }}
               />
             )}
           </div>
