@@ -159,9 +159,64 @@ export async function createProject(projectData: {
       return { data: mockProject, error: null }
     }
 
-    // Real database insertion
-    console.log('💾 Real database: Inserting project')
-    // Use client component client for database operations in browser
+    // Real database insertion via API (bypasses RLS issues with custom auth)
+    console.log('💾 Real database: Inserting project via API')
+
+    // For custom JWT auth users, use API route with service role
+    if (typeof window !== 'undefined') {
+      const authToken = localStorage.getItem('authToken')
+      if (authToken) {
+        console.log('🔑 Using API route for custom auth user')
+        try {
+          const response = await fetch('/api/projects/create', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${authToken}`
+            },
+            body: JSON.stringify({
+              title: projectData.title,
+              researchQuestion: projectData.researchQuestion,
+              field: projectData.field,
+              timeline: projectData.timeline
+            })
+          })
+
+          const result = await response.json()
+
+          if (!response.ok) {
+            console.error('❌ API insert error:', result.error)
+            return { data: null, error: new Error(result.error) }
+          }
+
+          console.log('✅ Project created via API:', result.project.id)
+          const data = result.project
+          const error = null
+
+          // Track usage for successful project creation
+          if (data) {
+            try {
+              const usageTracker = new UsageTracker(user.id)
+              await usageTracker.trackUsage('project_created', {
+                projectId: data.id,
+                title: projectData.title,
+                field: projectData.field
+              })
+            } catch (usageError) {
+              console.warn('⚠️ Failed to track project creation usage:', usageError)
+            }
+          }
+
+          return { data, error }
+        } catch (apiError: any) {
+          console.error('❌ API request failed:', apiError)
+          return { data: null, error: apiError }
+        }
+      }
+    }
+
+    // Fallback to direct Supabase insert for Supabase auth users
+    console.log('💾 Using direct Supabase insert')
     const clientSupabase = typeof window !== 'undefined' ? createClientComponentClient() : supabase
     const { data, error } = await clientSupabase
       .from('projects')
