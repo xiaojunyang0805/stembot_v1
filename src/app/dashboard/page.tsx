@@ -88,9 +88,37 @@ export default function DashboardPage() {
   // Use the most recently active project (based on conversations) for memory recall
   const recentProject = mostRecentProject;
 
+  // Check question readiness for projects in question phase
+  const getQuestionStatus = (project: any) => {
+    if (project.current_phase !== 'question') return null;
+
+    // Simple heuristic to determine if question is research-ready
+    // In a real implementation, this would check AI analysis or user marking
+    const hasSpecificPopulation = project.title?.toLowerCase().includes('student') ||
+                                  project.title?.toLowerCase().includes('user') ||
+                                  project.title?.toLowerCase().includes('people');
+    const hasSpecificMethod = project.title?.toLowerCase().includes('how') ||
+                             project.title?.toLowerCase().includes('what') ||
+                             project.title?.toLowerCase().includes('why');
+    const isSpecific = project.title && project.title.split(' ').length > 4;
+
+    if (hasSpecificPopulation && hasSpecificMethod && isSpecific) {
+      return 'research-ready';
+    }
+    return 'vague';
+  };
+
   // Dynamic memory data based on actual projects and conversation context
   const memoryData = recentProject ? {
     lastSession: (() => {
+      const questionStatus = getQuestionStatus(recentProject);
+
+      if (questionStatus === 'research-ready') {
+        return `✅ Research question defined: "${recentProject.title}"`;
+      } else if (questionStatus === 'vague') {
+        return `Your research idea: "${recentProject.title}"`;
+      }
+
       if (recentContext?.recentMessages?.length > 0) {
         const lastMessage = recentContext.recentMessages[0];
         // Extract meaningful keywords from the last conversation
@@ -100,6 +128,14 @@ export default function DashboardPage() {
       return `Worked on "${recentProject.title}"`;
     })(),
     suggestedAction: (() => {
+      const questionStatus = getQuestionStatus(recentProject);
+
+      if (questionStatus === 'research-ready') {
+        return 'Start literature review';
+      } else if (questionStatus === 'vague') {
+        return "Let's make it more specific together";
+      }
+
       if (recentContext?.recentMessages?.length > 0) {
         const lastAIResponse = recentContext.recentMessages[0].aiResponse;
         // Smart suggestion based on AI's last response
@@ -121,10 +157,22 @@ export default function DashboardPage() {
         default: return 'Continue your research';
       }
     })(),
+    buttonText: (() => {
+      const questionStatus = getQuestionStatus(recentProject);
+
+      if (questionStatus === 'research-ready') {
+        return 'Continue to Literature →';
+      } else if (questionStatus === 'vague') {
+        return 'Continue →';
+      }
+
+      return 'Continue Research →';
+    })(),
     confidence: recentContext?.conversationCount > 0 ? 92 : 75
   } : {
     lastSession: "Ready to start your research journey",
     suggestedAction: "Create your first research project",
+    buttonText: "Start First Project →",
     confidence: 95
   };
 
@@ -391,7 +439,7 @@ export default function DashboardPage() {
               onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8'; }}
               onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb'; }}
             >
-              {recentProject ? 'Continue Research →' : 'Start First Project →'}
+              {memoryData.buttonText}
             </button>
           </div>
         </div>
