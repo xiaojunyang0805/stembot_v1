@@ -1,4 +1,4 @@
-import { supabase } from '../supabase'
+import { supabase, createClientComponentClient } from '../supabase'
 import { UsageTracker } from '../usage-tracking'
 import type { Database, ProjectInsert, ProjectUpdate, Project } from '../../types/database'
 
@@ -27,8 +27,11 @@ export async function createProject(projectData: {
         email: 'researcher@stembot.app'
       }
     } else {
+      // Use client component client to access session properly in browser
+      const clientSupabase = typeof window !== 'undefined' ? createClientComponentClient() : supabase
+
       // Try to get real user from Supabase
-      const { data: { user: supabaseUser }, error } = await supabase.auth.getUser()
+      const { data: { user: supabaseUser }, error } = await clientSupabase.auth.getUser()
       user = supabaseUser
       authError = error
       console.log('👤 Real auth check:', { user: user?.id, authError })
@@ -36,7 +39,7 @@ export async function createProject(projectData: {
 
     if (!useMocks && (authError || !user)) {
       console.error('❌ Authentication failed:', authError)
-      return { data: null, error: authError || new Error('User not authenticated') }
+      return { data: null, error: authError || new Error('Auth session missing!') }
     }
 
     // Check usage limits before creating project
@@ -130,7 +133,9 @@ export async function createProject(projectData: {
 
     // Real database insertion
     console.log('💾 Real database: Inserting project')
-    const { data, error } = await supabase
+    // Use client component client for database operations in browser
+    const clientSupabase = typeof window !== 'undefined' ? createClientComponentClient() : supabase
+    const { data, error } = await clientSupabase
       .from('projects')
       .insert(newProject)
       .select()
