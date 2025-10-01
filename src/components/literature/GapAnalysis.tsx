@@ -12,31 +12,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { SourceData } from './SourceCard';
+import { performGapAnalysis, GapAnalysisResult, GapOpportunity, ResearchOpportunity, MethodologicalGap } from '../../lib/research/gapAnalysis';
 
-interface GapAnalysis {
-  overallAssessment: string;
-  identifiedGaps: GapItem[];
-  researchOpportunities: ResearchOpportunity[];
-  methodologicalGaps: string[];
-  recommendations: string[];
-  confidenceLevel: 'High' | 'Moderate' | 'Low';
-  generatedAt: string;
-}
-
-interface GapItem {
-  area: string;
-  description: string;
-  severity: 'Critical' | 'Moderate' | 'Minor';
-  rationale: string;
-}
-
-interface ResearchOpportunity {
-  title: string;
-  description: string;
-  feasibility: 'High' | 'Moderate' | 'Low';
-  impact: 'High' | 'Moderate' | 'Low';
-  suggestedApproach: string;
-}
+// Using types from the gap analysis engine
+// GapAnalysisResult, GapOpportunity, ResearchOpportunity, MethodologicalGap are imported
 
 interface GapAnalysisProps {
   sources: SourceData[];
@@ -51,7 +30,7 @@ export const GapAnalysis: React.FC<GapAnalysisProps> = ({
   projectId,
   className = ''
 }) => {
-  const [analysis, setAnalysis] = useState<GapAnalysis | null>(null);
+  const [analysis, setAnalysis] = useState<GapAnalysisResult | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
@@ -68,153 +47,19 @@ export const GapAnalysis: React.FC<GapAnalysisProps> = ({
     setError(null);
 
     try {
-      // Prepare source summaries for analysis
-      const sourceSummaries = sources.map(source => ({
-        title: source.title,
-        year: source.year,
-        credibilityLevel: source.credibility.level,
-        keyFindings: source.keyFindings.slice(0, 3), // Limit for API
-        relevance: source.relevanceExplanation.substring(0, 200), // Limit length
-        journal: source.journal,
-        studyType: source.credibility.studyType || 'Unknown'
-      }));
-
-      const analysisPrompt = `Analyze literature gaps for this research question: "${researchQuestion}"
-
-Based on these ${sources.length} sources:
-${sourceSummaries.map(s => `- ${s.title} (${s.year}, ${s.credibilityLevel} quality): ${s.keyFindings.join('; ')}`).join('\n')}
-
-Provide gap analysis in this format:
-{
-  "overallAssessment": "Brief assessment of current literature state",
-  "identifiedGaps": [
-    {
-      "area": "Gap area name",
-      "description": "What's missing or understudied",
-      "severity": "Critical|Moderate|Minor",
-      "rationale": "Why this gap matters"
-    }
-  ],
-  "researchOpportunities": [
-    {
-      "title": "Specific research opportunity",
-      "description": "What could be studied",
-      "feasibility": "High|Moderate|Low",
-      "impact": "High|Moderate|Low",
-      "suggestedApproach": "How to approach this research"
-    }
-  ],
-  "methodologicalGaps": ["Methodological limitations or gaps"],
-  "recommendations": ["Actionable recommendations for future research"],
-  "confidenceLevel": "High|Moderate|Low"
-}
-
-Focus on actionable insights for novice researchers. Be specific and practical.`;
-
-      const response = await fetch('/api/ai/search-strategy', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          prompt: analysisPrompt,
-          projectId: projectId
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to generate gap analysis');
-      }
-
-      const data = await response.json();
-
-      if (data.success) {
-        // Try to parse structured response
-        try {
-          const parsedAnalysis = JSON.parse(data.explanation);
-          setAnalysis({
-            ...parsedAnalysis,
-            generatedAt: new Date().toISOString()
-          });
-        } catch {
-          // Fallback to text-based analysis
-          setAnalysis(generateFallbackAnalysis(data.explanation, sources));
-        }
-      } else {
-        throw new Error('Analysis generation failed');
-      }
+      // Use the new AI-powered gap analysis engine
+      const gapAnalysisResult = await performGapAnalysis(sources, researchQuestion, projectId);
+      setAnalysis(gapAnalysisResult);
 
     } catch (error) {
       console.error('Error generating gap analysis:', error);
       setError('Failed to generate analysis. Please try again.');
-
-      // Generate basic fallback analysis
-      setAnalysis(generateBasicFallbackAnalysis(sources, researchQuestion));
     } finally {
       setIsLoading(false);
     }
   };
 
-  const generateFallbackAnalysis = (textResponse: string, sources: SourceData[]): GapAnalysis => {
-    return {
-      overallAssessment: `Based on ${sources.length} sources, here's the analysis: ${textResponse.substring(0, 300)}...`,
-      identifiedGaps: [
-        {
-          area: 'Literature Coverage',
-          description: 'Analysis of current literature suggests areas for further investigation',
-          severity: 'Moderate',
-          rationale: 'Based on available sources and AI analysis'
-        }
-      ],
-      researchOpportunities: [
-        {
-          title: 'Extended Research',
-          description: 'Opportunities for deeper investigation based on current findings',
-          feasibility: 'Moderate',
-          impact: 'Moderate',
-          suggestedApproach: 'Build on existing research with focused study'
-        }
-      ],
-      methodologicalGaps: ['Further analysis needed to identify specific gaps'],
-      recommendations: ['Conduct additional literature search', 'Consider expert consultation'],
-      confidenceLevel: 'Low',
-      generatedAt: new Date().toISOString()
-    };
-  };
-
-  const generateBasicFallbackAnalysis = (sources: SourceData[], question: string): GapAnalysis => {
-    const highQualitySources = sources.filter(s => s.credibility.level === 'High').length;
-    const totalSources = sources.length;
-
-    return {
-      overallAssessment: `You have collected ${totalSources} sources, with ${highQualitySources} high-quality sources. This provides a foundation for understanding "${question}". Additional sources may be needed for comprehensive coverage.`,
-      identifiedGaps: [
-        {
-          area: 'Source Diversity',
-          description: totalSources < 5 ? 'Limited number of sources may not provide comprehensive coverage' : 'Good source collection, but consider expanding scope',
-          severity: totalSources < 3 ? 'Critical' : totalSources < 5 ? 'Moderate' : 'Minor',
-          rationale: 'Comprehensive literature reviews typically require 10+ high-quality sources'
-        }
-      ],
-      researchOpportunities: [
-        {
-          title: 'Expand Literature Search',
-          description: 'Search for additional sources to strengthen your literature foundation',
-          feasibility: 'High',
-          impact: 'High',
-          suggestedApproach: 'Use different search terms and databases to find complementary research'
-        }
-      ],
-      methodologicalGaps: ['Consider sources with different methodological approaches'],
-      recommendations: [
-        'Aim for 10+ high-quality sources',
-        'Include recent publications (last 5 years)',
-        'Ensure methodological diversity'
-      ],
-      confidenceLevel: 'Moderate',
-      generatedAt: new Date().toISOString()
-    };
-  };
+  // Old fallback functions removed - using AI-powered gap analysis engine
 
   if (sources.length < 3) {
     return (
@@ -434,23 +279,24 @@ Focus on actionable insights for novice researchers. Be specific and practical.`
                       marginBottom: '0.5rem'
                     }}>
                       <span style={{
-                        backgroundColor: gap.severity === 'Critical' ? '#fef2f2' :
-                                       gap.severity === 'Moderate' ? '#fef3c7' : '#f0fdf4',
-                        color: gap.severity === 'Critical' ? '#dc2626' :
-                               gap.severity === 'Moderate' ? '#a16207' : '#166534',
+                        backgroundColor: gap.overallScore >= 80 ? '#f0fdf4' :
+                                       gap.overallScore >= 60 ? '#fef3c7' : '#fef2f2',
+                        color: gap.overallScore >= 80 ? '#166534' :
+                               gap.overallScore >= 60 ? '#a16207' : '#dc2626',
                         fontSize: '0.75rem',
                         fontWeight: '500',
                         padding: '0.25rem 0.5rem',
                         borderRadius: '0.25rem'
                       }}>
-                        {gap.severity}
+                        {gap.overallScore >= 80 ? 'High Priority' :
+                         gap.overallScore >= 60 ? 'Moderate Priority' : 'Low Priority'}
                       </span>
                       <span style={{
                         fontSize: '0.875rem',
                         fontWeight: '600',
                         color: '#374151'
                       }}>
-                        {gap.area}
+                        {gap.title}
                       </span>
                     </div>
                     <p style={{
@@ -468,8 +314,15 @@ Focus on actionable insights for novice researchers. Be specific and practical.`
                       margin: 0,
                       fontStyle: 'italic'
                     }}>
-                      {gap.rationale}
+                      {gap.whyMatters}
                     </p>
+                    <div style={{
+                      marginTop: '0.5rem',
+                      fontSize: '0.75rem',
+                      color: '#059669'
+                    }}>
+                      💡 Approach: {gap.proposedApproach}
+                    </div>
                   </div>
                 ))}
               </div>
@@ -510,7 +363,7 @@ Focus on actionable insights for novice researchers. Be specific and practical.`
                       color: '#166534',
                       marginBottom: '0.5rem'
                     }}>
-                      {opportunity.title}
+                      🎯 {opportunity.suggestedQuestion}
                     </h5>
                     <p style={{
                       fontSize: '0.8rem',
@@ -518,33 +371,31 @@ Focus on actionable insights for novice researchers. Be specific and practical.`
                       lineHeight: '1.4',
                       margin: '0 0 0.5rem 0'
                     }}>
-                      {opportunity.description}
+                      {opportunity.rationale}
                     </p>
                     <div style={{
-                      display: 'flex',
-                      gap: '0.5rem',
+                      backgroundColor: '#ecfdf5',
+                      border: '1px solid #a7f3d0',
+                      borderRadius: '0.375rem',
+                      padding: '0.5rem',
                       marginBottom: '0.5rem'
                     }}>
-                      <span style={{
-                        backgroundColor: '#dcfce7',
-                        color: '#166534',
+                      <p style={{
                         fontSize: '0.75rem',
-                        fontWeight: '500',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '0.25rem'
+                        color: '#065f46',
+                        margin: '0 0 0.25rem 0',
+                        fontWeight: '500'
                       }}>
-                        Feasibility: {opportunity.feasibility}
-                      </span>
-                      <span style={{
-                        backgroundColor: '#dcfce7',
-                        color: '#166534',
+                        📋 Approach:
+                      </p>
+                      <p style={{
                         fontSize: '0.75rem',
-                        fontWeight: '500',
-                        padding: '0.25rem 0.5rem',
-                        borderRadius: '0.25rem'
+                        color: '#166534',
+                        margin: 0,
+                        lineHeight: '1.3'
                       }}>
-                        Impact: {opportunity.impact}
-                      </span>
+                        {opportunity.approach}
+                      </p>
                     </div>
                     <p style={{
                       fontSize: '0.75rem',
@@ -553,7 +404,7 @@ Focus on actionable insights for novice researchers. Be specific and practical.`
                       margin: 0,
                       fontStyle: 'italic'
                     }}>
-                      Approach: {opportunity.suggestedApproach}
+                      💭 Expected outcome: {opportunity.expectedOutcome}
                     </p>
                   </div>
                 ))}
