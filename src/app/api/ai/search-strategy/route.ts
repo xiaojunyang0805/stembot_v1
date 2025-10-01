@@ -134,6 +134,14 @@ const ACADEMIC_DATABASES = {
   ]
 };
 
+export async function GET() {
+  return NextResponse.json({
+    message: 'Search Strategy API is running',
+    methods: ['POST'],
+    status: 'healthy'
+  });
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
