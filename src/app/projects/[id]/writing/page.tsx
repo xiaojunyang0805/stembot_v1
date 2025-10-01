@@ -6,6 +6,7 @@ import { useAuth } from '../../../../providers/AuthProvider';
 import { getProject } from '../../../../lib/database/projects';
 import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
 import { trackProjectActivity } from '../../../../lib/database/activity';
+import { ProjectQuestionHeader } from '../../../../components/shared/ProjectQuestionHeader';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
@@ -359,6 +360,16 @@ export default function WritingPage({ params }: { params: { id: string } }) {
               {isSidebarOpen ? '◀' : '▶'}
             </button>
           </div>
+
+          {/* Research Question Header */}
+          {project && (
+            <ProjectQuestionHeader
+              question={project.research_question || project.title}
+              currentPhase="writing"
+              projectTitle={project.title}
+              onEdit={() => router.push(`/projects/${params.id}`)}
+            />
+          )}
 
           {/* Writing Content */}
           <div style={{

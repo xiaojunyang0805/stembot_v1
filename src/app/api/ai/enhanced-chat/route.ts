@@ -1,4 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
+import {
+  retrieveQuestionDiscussions,
+  getQuestionMemoryContext,
+  QuestionMemoryHelpers
+} from '../../../../lib/memory/questionMemory';
 
 // Inline GPT-5 nano client to avoid import issues
 interface ChatMessage {
@@ -174,7 +179,7 @@ Evaluate changes across these dimensions:
 Be direct, constructive, and focused on helping the student maintain research quality while adapting to their new direction.`;
 
 // Function to create dynamic system prompt based on context
-function createDynamicSystemPrompt(projectContext?: any): string {
+async function createDynamicSystemPrompt(projectContext?: any, userMessage?: string): Promise<string> {
   const isResearchMode = projectContext?.researchMode;
   const currentPhase = projectContext?.currentPhase;
   const documentCount = projectContext?.documents?.length || 0;
@@ -183,6 +188,18 @@ function createDynamicSystemPrompt(projectContext?: any): string {
   const questionContext = projectContext?.questionContext;
 
   let basePrompt = isResearchMode ? SOCRATIC_RESEARCH_PROMPT : ENHANCED_SYSTEM_PROMPT;
+
+  // Add memory context if we have a project and user message
+  if (projectContext?.projectId && userMessage) {
+    try {
+      const memoryContext = await getQuestionMemoryContext(projectContext.projectId, userMessage);
+      if (memoryContext) {
+        basePrompt += memoryContext;
+      }
+    } catch (error) {
+      console.warn('Error retrieving memory context:', error);
+    }
+  }
 
   // Add question evolution context if available
   if (questionContext) {
@@ -421,8 +438,11 @@ class GPT5NanoClient {
     }
 
     try {
+      // Get the latest user message for memory context
+      const userMessage = messages.filter(m => m.role === 'user').pop()?.content || '';
+
       // Create dynamic system prompt based on research mode
-      const systemPrompt = createDynamicSystemPrompt(projectContext);
+      const systemPrompt = await createDynamicSystemPrompt(projectContext, userMessage);
 
       const enhancedMessages = [
         { role: 'system' as const, content: systemPrompt },
@@ -480,6 +500,15 @@ class GPT5NanoClient {
         usage: data.usage
       });
 
+      // Store conversation in memory if we have project context
+      if (projectContext?.projectId && userMessage) {
+        try {
+          await this.storeConversationInMemory(projectContext, userMessage, assistantMessage);
+        } catch (error) {
+          console.warn('Failed to store conversation in memory:', error);
+        }
+      }
+
       return {
         success: true,
         response: assistantMessage,
@@ -493,6 +522,63 @@ class GPT5NanoClient {
         error: error instanceof Error ? error.message : 'Unknown error occurred'
       };
     }
+  }
+
+  async storeConversationInMemory(projectContext: any, userMessage: string, aiResponse: string): Promise<void> {
+    try {
+      const projectId = projectContext.projectId;
+      const questionContext = projectContext.questionContext;
+
+      // Determine the type of discussion based on content
+      const isQuestionRelated = this.isQuestionRelatedDiscussion(userMessage, aiResponse);
+
+      if (isQuestionRelated) {
+        // Store user's question or focus response
+        if (this.isStudentFocusResponse(userMessage)) {
+          await QuestionMemoryHelpers.storeStudentFocus(
+            projectId,
+            userMessage,
+            questionContext?.currentQuestion
+          );
+        }
+
+        // Store AI's suggestions for specificity
+        if (this.isAISuggestion(aiResponse)) {
+          await QuestionMemoryHelpers.storeAISuggestion(
+            projectId,
+            aiResponse,
+            questionContext?.currentQuestion
+          );
+        }
+
+        // Store general question refinement discussions
+        await QuestionMemoryHelpers.storeQuestionRefinement(
+          projectId,
+          questionContext?.currentQuestion || '',
+          questionContext?.currentQuestion || '',
+          `Discussion: ${userMessage.substring(0, 100)}...`,
+          questionContext?.questionStage
+        );
+      }
+    } catch (error) {
+      console.error('Error storing conversation in memory:', error);
+    }
+  }
+
+  private isQuestionRelatedDiscussion(userMessage: string, aiResponse: string): boolean {
+    const questionKeywords = ['question', 'research', 'focus', 'specific', 'topic', 'study', 'investigate'];
+    const messageText = (userMessage + ' ' + aiResponse).toLowerCase();
+    return questionKeywords.some(keyword => messageText.includes(keyword));
+  }
+
+  private isStudentFocusResponse(userMessage: string): boolean {
+    const focusKeywords = ['focus', 'interested in', 'want to study', 'looking at', 'examining'];
+    return focusKeywords.some(keyword => userMessage.toLowerCase().includes(keyword));
+  }
+
+  private isAISuggestion(aiResponse: string): boolean {
+    const suggestionKeywords = ['consider', 'suggest', 'recommend', 'might want to', 'could focus on'];
+    return suggestionKeywords.some(keyword => aiResponse.toLowerCase().includes(keyword));
   }
 
   async testConnection(): Promise<{
