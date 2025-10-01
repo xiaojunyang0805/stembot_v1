@@ -6,6 +6,16 @@ This document contains all essential protocols for protecting working functional
 
 ---
 
+## 🔑 **TEST ACCOUNT CREDENTIALS**
+
+### **Production Testing Account**
+- **Email:** 601404242@qq.com
+- **Password:** Woerner6163418=
+- **Usage:** For all automated and manual testing on https://stembotv1.vercel.app
+- **Chrome DevTools MCP Testing:** Use this account for all browser automation tests
+
+---
+
 ## 📋 **MANDATORY PRE-CHANGE CHECKLIST**
 
 ### **BEFORE ANY CODE CHANGES:**

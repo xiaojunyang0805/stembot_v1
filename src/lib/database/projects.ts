@@ -27,14 +27,42 @@ export async function createProject(projectData: {
         email: 'researcher@stembot.app'
       }
     } else {
-      // Use client component client to access session properly in browser
-      const clientSupabase = typeof window !== 'undefined' ? createClientComponentClient() : supabase
+      // Check for custom JWT auth token first (client-side only)
+      if (typeof window !== 'undefined') {
+        const authToken = localStorage.getItem('authToken')
+        if (authToken) {
+          console.log('🔑 Found custom auth token, verifying...')
+          try {
+            const verifyResponse = await fetch('/api/auth/verify', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ token: authToken })
+            })
 
-      // Try to get real user from Supabase
-      const { data: { user: supabaseUser }, error } = await clientSupabase.auth.getUser()
-      user = supabaseUser
-      authError = error
-      console.log('👤 Real auth check:', { user: user?.id, authError })
+            if (verifyResponse.ok) {
+              const verifyData = await verifyResponse.json()
+              user = {
+                id: verifyData.user.id,
+                email: verifyData.user.email
+              }
+              console.log('✅ Custom auth verified:', user.email)
+            } else {
+              console.warn('⚠️ Custom auth token invalid')
+            }
+          } catch (verifyError) {
+            console.warn('⚠️ Custom auth verification failed:', verifyError)
+          }
+        }
+      }
+
+      // Fallback to Supabase auth if custom auth didn't work
+      if (!user) {
+        const clientSupabase = typeof window !== 'undefined' ? createClientComponentClient() : supabase
+        const { data: { user: supabaseUser }, error } = await clientSupabase.auth.getUser()
+        user = supabaseUser
+        authError = error
+        console.log('👤 Supabase auth check:', { user: user?.id, authError })
+      }
     }
 
     if (!useMocks && (authError || !user)) {
