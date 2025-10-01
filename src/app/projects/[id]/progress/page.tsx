@@ -100,7 +100,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
       color: '#3b82f6'
     },
     documents: {
-      label: 'Document Center',
+      label: 'Literature Review',
       description: 'Research papers and document analysis',
       progress: documents.length > 0 ? Math.min(75, documents.length * 15) : 10,
       details: [
@@ -212,9 +212,9 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
 
               {[
                 { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: false, icon: '💬' },
-                { id: 'documents', label: '📚 Document Center', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
+                { id: 'literature', label: '📚 Literature Review', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
                 { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
-                { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' },
+                { id: 'writing', label: '✍️ Writing and Docs', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' },
                 { id: 'progress', label: '📊 Progress', path: `/projects/${params.id}/progress`, active: true, icon: '📊' }
               ].map((nav) => (
                 <button
@@ -491,7 +491,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
               margin: 0
             }}>
               {[
-                'Upload more research literature to Document Center for comprehensive analysis',
+                'Upload more research literature to Literature Review for comprehensive analysis',
                 'Develop detailed methodology section with experimental protocols',
                 'Begin drafting manuscript sections based on current research',
                 'Schedule regular progress reviews and milestone checkpoints'

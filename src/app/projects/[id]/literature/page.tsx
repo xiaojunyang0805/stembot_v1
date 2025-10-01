@@ -13,6 +13,8 @@ import { SearchStrategyCard } from '../../../../components/literature/SearchStra
 import { SourceCard, SourceData } from '../../../../components/literature/SourceCard';
 import { GapAnalysis } from '../../../../components/literature/GapAnalysis';
 import { createSampleSources } from '../../../../lib/services/credibilityAssessment';
+import { ProjectMemoryPanel } from '../../../../components/workspace/ProjectMemoryPanel';
+import { analyzeQuestionProgressCached as analyzeQuestionProgress } from '../../../../lib/research/cachedQuestionAnalyzer';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
@@ -34,6 +36,8 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
   const [showSampleSources, setShowSampleSources] = useState(true);
   const [isLoadingMoreSources, setIsLoadingMoreSources] = useState(false);
   const [sourcesDisplayLimit, setSourcesDisplayLimit] = useState(5);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isExpandedMode, setIsExpandedMode] = useState(false);
 
   // Helper function to format message content with bold text
   const formatMessageContent = (content: string): string => {
@@ -278,8 +282,55 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
     );
   }
 
+  // Project data for sidebar (similar to workspace page)
+  const projectData = project ? {
+    id: project.id,
+    title: project.title,
+    question: project.research_question,
+    phase: (() => {
+      switch (project.current_phase) {
+        case 'question': return 'Question Formation';
+        case 'literature': return 'Literature Review';
+        case 'methodology': return 'Methodology';
+        case 'writing': return 'Academic Writing';
+        default: return 'Active';
+      }
+    })(),
+    progress: {
+      question: {
+        status: project.current_phase === 'question' ? 'active' :
+                project.progress_data && (project.progress_data as any).question?.completed ? 'completed' : 'pending',
+        percentage: project.progress_data ? (project.progress_data as any).question?.progress || 0 : 0
+      },
+      literature: {
+        status: project.current_phase === 'literature' ? 'active' :
+                project.progress_data && (project.progress_data as any).literature?.completed ? 'completed' : 'pending',
+        percentage: project.progress_data ? (project.progress_data as any).literature?.progress || 0 : 0
+      },
+      methodology: {
+        status: project.current_phase === 'methodology' ? 'active' :
+                project.progress_data && (project.progress_data as any).methodology?.completed ? 'completed' : 'pending',
+        percentage: project.progress_data ? (project.progress_data as any).methodology?.progress || 0 : 0
+      },
+      writing: {
+        status: project.current_phase === 'writing' ? 'active' :
+                project.progress_data && (project.progress_data as any).writing?.completed ? 'completed' : 'pending',
+        percentage: project.progress_data ? (project.progress_data as any).writing?.progress || 0 : 0
+      }
+    },
+    memory: {
+      lastSession: `Working on "${project.title}" - ${project.current_phase} phase`,
+      contextHints: [
+        `Current phase: ${project.current_phase}`,
+        `Project created: ${new Date(project.created_at).toLocaleDateString()}`,
+        `Subject: ${project.subject}`,
+        'Continue your research with AI guidance'
+      ]
+    }
+  } : null;
+
   return (
-    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff' }}>
+    <div style={{ minHeight: '100vh', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <header style={{
         backgroundColor: 'white',
@@ -291,7 +342,7 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          maxWidth: '1200px',
+          maxWidth: '1400px',
           margin: '0 auto'
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -330,268 +381,529 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
         </div>
       </header>
 
-      {/* Main Content - Full Width Layout */}
+      {/* Main Content */}
       <div style={{
-        maxWidth: '1200px',
+        display: 'flex',
+        flex: 1,
+        maxWidth: '1400px',
         margin: '0 auto',
-        padding: '2rem'
+        width: '100%'
       }}>
-        {/* Page Title */}
+        {/* Left Sidebar (25% width) */}
         <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          gap: '1rem',
-          marginBottom: '2rem'
+          width: isSidebarOpen ? '25%' : '0',
+          minWidth: isSidebarOpen ? '300px' : '0',
+          backgroundColor: '#f9fafb',
+          borderRight: '1px solid #e5e7eb',
+          overflow: 'hidden',
+          transition: 'all 0.3s ease'
         }}>
-          <h1 style={{
-            fontSize: '2rem',
-            fontWeight: 'bold',
-            color: '#111827',
-            margin: 0
-          }}>
-            📚 Literature Review
-          </h1>
-          <span style={{
-            backgroundColor: '#eff6ff',
-            color: '#1e40af',
-            fontSize: '0.875rem',
-            fontWeight: '500',
-            padding: '0.5rem 1rem',
-            borderRadius: '0.5rem'
-          }}>
-            {allSources.length} sources collected
-          </span>
+          <div style={{ padding: '1.5rem' }}>
+            {/* Navigation Menu */}
+            <div style={{ marginBottom: '2rem' }}>
+              <h3 style={{
+                fontSize: '1rem',
+                fontWeight: '600',
+                color: '#374151',
+                margin: '0 0 1rem 0'
+              }}>
+                Project Navigation
+              </h3>
+
+              {[
+                { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: false, icon: '💬' },
+                { id: 'literature', label: '📚 Literature Review', path: `/projects/${params.id}/literature`, active: true, icon: '📚' },
+                { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
+                { id: 'writing', label: '✍️ Writing and Docs', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' },
+                { id: 'progress', label: '📊 Progress', path: `/projects/${params.id}/progress`, active: false, icon: '📊' }
+              ].map((nav) => (
+                <button
+                  key={nav.id}
+                  onClick={() => nav.active ? null : router.push(nav.path)}
+                  style={{
+                    width: '100%',
+                    padding: '0.75rem 1rem',
+                    marginBottom: '0.5rem',
+                    backgroundColor: nav.active ? '#eff6ff' : 'transparent',
+                    color: nav.active ? '#3b82f6' : '#6b7280',
+                    border: nav.active ? '1px solid #3b82f6' : '1px solid transparent',
+                    borderRadius: '0.5rem',
+                    fontSize: '0.875rem',
+                    fontWeight: nav.active ? '600' : '500',
+                    cursor: nav.active ? 'default' : 'pointer',
+                    textAlign: 'left',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    transition: 'all 0.2s ease'
+                  }}
+                  onMouseEnter={(e) => {
+                    if (!nav.active) {
+                      (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                    }
+                  }}
+                  onMouseLeave={(e) => {
+                    if (!nav.active) {
+                      (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                    }
+                  }}
+                >
+                  <span>{nav.icon}</span>
+                  <span>{nav.label.replace(/^[^\s]+\s/, '')}</span>
+                </button>
+              ))}
+            </div>
+
+            {/* Research Question */}
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem'
+              }}>
+                <span style={{ fontSize: '1.25rem' }}>🎯</span>
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#374151',
+                  margin: 0
+                }}>
+                  Research Question
+                </h3>
+              </div>
+              <p style={{
+                fontSize: '0.875rem',
+                color: '#6b7280',
+                lineHeight: '1.5',
+                margin: 0,
+                padding: '0.75rem',
+                backgroundColor: '#f9fafb',
+                borderRadius: '0.5rem',
+                border: '1px solid #e5e7eb'
+              }}>
+                {project?.research_question || 'No research question defined'}
+              </p>
+            </div>
+
+            {/* Sources Summary */}
+            <div style={{ marginBottom: '2rem' }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem',
+                marginBottom: '0.75rem'
+              }}>
+                <span style={{ fontSize: '1.25rem' }}>📚</span>
+                <h3 style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#374151',
+                  margin: 0
+                }}>
+                  Literature Collection ({allSources.length})
+                </h3>
+              </div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '0.75rem',
+                  color: '#6b7280'
+                }}>
+                  <span>External Sources:</span>
+                  <span>{allSources.filter(s => !s.isUploaded).length}</span>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '0.75rem',
+                  color: '#6b7280'
+                }}>
+                  <span>Uploaded Documents:</span>
+                  <span>{allSources.filter(s => s.isUploaded).length}</span>
+                </div>
+                <div style={{
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  fontSize: '0.75rem',
+                  color: '#22c55e',
+                  fontWeight: '600'
+                }}>
+                  <span>High Quality:</span>
+                  <span>{allSources.filter(s => s.credibility.level === 'High').length}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Question Evolution Memory Panel */}
+            <div style={{ marginBottom: '2rem' }}>
+              {(() => {
+                // Calculate progress for memory panel
+                const currentQuestion = project?.research_question || project?.title || "Research question not yet defined";
+                const conversationCount = 0; // Not applicable for literature page
+                const documentCount = documents.length;
+
+                const progressAnalysis = analyzeQuestionProgress(
+                  currentQuestion,
+                  conversationCount,
+                  documentCount,
+                  []
+                );
+
+                const questionHistory: Array<{
+                  id: string;
+                  text: string;
+                  stage: 'initial' | 'emerging' | 'focused' | 'research-ready';
+                  createdAt: Date;
+                  improvements: string[];
+                }> = [
+                  {
+                    id: '1',
+                    text: "Initial project setup",
+                    stage: 'initial',
+                    createdAt: new Date(project?.created_at || Date.now() - 7 * 24 * 60 * 60 * 1000),
+                    improvements: []
+                  }
+                ];
+
+                if (progressAnalysis.progress > 15) {
+                  questionHistory.push({
+                    id: '2',
+                    text: currentQuestion,
+                    stage: progressAnalysis.stage,
+                    createdAt: new Date(project?.updated_at || Date.now()),
+                    improvements: progressAnalysis.recommendations.slice(0, 2).map(rec =>
+                      rec.replace(/^[A-Z]/, char => char.toLowerCase()).replace(/[.!?]$/, '')
+                    )
+                  });
+                }
+
+                return (
+                  <ProjectMemoryPanel
+                    currentQuestion={currentQuestion}
+                    questionStage={progressAnalysis.stage}
+                    questionHistory={questionHistory}
+                  />
+                );
+              })()}
+            </div>
+          </div>
         </div>
 
-        {/* Research Question Header */}
-        {project && (
-          <ProjectQuestionHeader
-            question={project.research_question || project.title}
-            currentPhase="literature"
-            projectTitle={project.title}
-            onEdit={() => router.push(`/projects/${params.id}`)}
-          />
-        )}
-
-        {/* Search Strategy Section */}
-        {project && (
-          <div style={{ marginBottom: '3rem' }}>
-            <SearchStrategyCard
-              projectId={params.id}
-              researchQuestion={project.research_question || project.title}
-              onFindSources={handleFindSources}
-              onUploadPaper={handleUploadPaper}
-            />
-          </div>
-        )}
-
-        {/* Literature Collection Section */}
-        <div style={{ marginBottom: '3rem' }}>
-          {/* Section Header */}
+        {/* Right Literature Content Area */}
+        <div style={{
+          flex: 1,
+          display: 'flex',
+          flexDirection: 'column',
+          backgroundColor: '#ffffff',
+          width: isExpandedMode ? '100%' : 'auto'
+        }}>
+          {/* Content Header with Toggle and Expand Buttons */}
           <div style={{
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            marginBottom: '1.5rem'
+            padding: '1.5rem 1.5rem 0 1.5rem',
+            marginBottom: '1rem'
           }}>
-            <h2 style={{
-              fontSize: '1.5rem',
-              fontWeight: 'bold',
-              color: '#111827',
-              margin: 0,
+            <div style={{
               display: 'flex',
               alignItems: 'center',
-              gap: '0.5rem'
+              gap: '1rem'
             }}>
-              📖 Your Literature Collection
+              <h1 style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#111827',
+                margin: 0
+              }}>
+                📚 Literature Review
+              </h1>
               <span style={{
+                backgroundColor: '#eff6ff',
+                color: '#1e40af',
                 fontSize: '0.875rem',
                 fontWeight: '500',
-                color: '#6b7280'
+                padding: '0.5rem 1rem',
+                borderRadius: '0.5rem'
               }}>
-                ({filteredSources.length} {activeFilter !== 'all' ? `${activeFilter} ` : ''}sources)
+                {allSources.length} sources collected
               </span>
-            </h2>
-
-            {/* Sample Sources Toggle */}
-            {externalSources.some(s => s.id.startsWith('source-')) && (
+            </div>
+            <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
-                onClick={() => setShowSampleSources(!showSampleSources)}
+                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                style={{
+                  padding: '0.5rem',
+                  backgroundColor: '#f3f4f6',
+                  border: '1px solid #d1d5db',
+                  borderRadius: '0.375rem',
+                  cursor: 'pointer',
+                  fontSize: '0.875rem'
+                }}
+                title="Toggle Sidebar"
+              >
+                {isSidebarOpen ? '◀' : '▶'}
+              </button>
+              <button
+                onClick={() => setIsExpandedMode(!isExpandedMode)}
                 style={{
                   padding: '0.5rem 1rem',
-                  backgroundColor: showSampleSources ? '#fef3c7' : '#f3f4f6',
-                  color: showSampleSources ? '#a16207' : '#374151',
-                  border: '1px solid ' + (showSampleSources ? '#fcd34d' : '#d1d5db'),
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  cursor: 'pointer'
-                }}
-              >
-                {showSampleSources ? '🧪 Hide Demo Sources' : '🧪 Show Demo Sources'}
-              </button>
-            )}
-          </div>
-
-          {/* Filter Tabs */}
-          <div style={{
-            display: 'flex',
-            gap: '0.5rem',
-            marginBottom: '1.5rem',
-            borderBottom: '1px solid #e5e7eb',
-            paddingBottom: '1rem'
-          }}>
-            {[
-              { key: 'all', label: 'All Sources', count: allSources.length },
-              { key: 'external', label: 'External Sources', count: allSources.filter(s => !s.isUploaded).length },
-              { key: 'uploaded', label: 'Uploaded Documents', count: allSources.filter(s => s.isUploaded).length },
-              { key: 'high-quality', label: 'High Quality Only', count: allSources.filter(s => s.credibility.level === 'High').length }
-            ].map((filter) => (
-              <button
-                key={filter.key}
-                onClick={() => setActiveFilter(filter.key as any)}
-                style={{
-                  padding: '0.75rem 1rem',
-                  backgroundColor: activeFilter === filter.key ? '#eff6ff' : 'transparent',
-                  color: activeFilter === filter.key ? '#1e40af' : '#6b7280',
-                  border: activeFilter === filter.key ? '1px solid #3b82f6' : '1px solid transparent',
-                  borderRadius: '0.5rem',
-                  fontSize: '0.875rem',
-                  fontWeight: activeFilter === filter.key ? '600' : '500',
+                  backgroundColor: isExpandedMode ? '#3b82f6' : '#f3f4f6',
+                  color: isExpandedMode ? 'white' : '#374151',
+                  border: '1px solid ' + (isExpandedMode ? '#3b82f6' : '#d1d5db'),
+                  borderRadius: '0.375rem',
                   cursor: 'pointer',
-                  transition: 'all 0.2s ease'
+                  fontSize: '0.875rem',
+                  fontWeight: '500'
                 }}
-                onMouseEnter={(e) => {
-                  if (activeFilter !== filter.key) {
-                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
-                  }
-                }}
-                onMouseLeave={(e) => {
-                  if (activeFilter !== filter.key) {
-                    (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
-                  }
-                }}
+                title="Full Width Mode"
               >
-                {filter.label} ({filter.count})
+                {isExpandedMode ? '📖 Focused Mode' : '🔍 Expand View'}
               </button>
-            ))}
+            </div>
           </div>
 
-          {/* Sources Display */}
-          {filteredSources.length > 0 ? (
-            <>
-              {/* Sources List */}
+          {/* Main Literature Content */}
+          <div style={{
+            flex: 1,
+            padding: '0 1.5rem 1.5rem 1.5rem',
+            overflowY: 'auto'
+          }}>
+            {/* Research Question Header */}
+            {project && (
               <div style={{ marginBottom: '2rem' }}>
-                {displayedSources.map((source) => (
-                  <SourceCard
-                    key={source.id}
-                    source={source}
-                    projectId={params.id}
-                    onToggleSaved={handleToggleSaved}
-                    onReadSummary={(sourceId) => {
-                      alert(`Reading summary for: ${source.title}\n\nThis would open a detailed AI-generated summary of the research paper.`);
+                <ProjectQuestionHeader
+                  question={project.research_question || project.title}
+                  currentPhase="literature"
+                  projectTitle={project.title}
+                  onEdit={() => router.push(`/projects/${params.id}`)}
+                />
+              </div>
+            )}
+
+            {/* Search Strategy Section */}
+            {project && (
+              <div style={{ marginBottom: '3rem' }}>
+                <SearchStrategyCard
+                  projectId={params.id}
+                  researchQuestion={project.research_question || project.title}
+                  onFindSources={handleFindSources}
+                  onUploadPaper={handleUploadPaper}
+                />
+              </div>
+            )}
+
+            {/* Literature Collection Section */}
+            <div style={{ marginBottom: '3rem' }}>
+              {/* Section Header */}
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '1.5rem'
+              }}>
+                <h2 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: 'bold',
+                  color: '#111827',
+                  margin: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem'
+                }}>
+                  📖 Your Literature Collection
+                  <span style={{
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    color: '#6b7280'
+                  }}>
+                    ({filteredSources.length} {activeFilter !== 'all' ? `${activeFilter} ` : ''}sources)
+                  </span>
+                </h2>
+
+                {/* Sample Sources Toggle */}
+                {externalSources.some(s => s.id.startsWith('source-')) && (
+                  <button
+                    onClick={() => setShowSampleSources(!showSampleSources)}
+                    style={{
+                      padding: '0.5rem 1rem',
+                      backgroundColor: showSampleSources ? '#fef3c7' : '#f3f4f6',
+                      color: showSampleSources ? '#a16207' : '#374151',
+                      border: '1px solid ' + (showSampleSources ? '#fcd34d' : '#d1d5db'),
+                      borderRadius: '0.5rem',
+                      fontSize: '0.875rem',
+                      cursor: 'pointer'
                     }}
-                    onCheckQuality={(sourceId) => {
-                      alert(`Quality assessment for: ${source.title}\n\nCredibility Level: ${source.credibility.level}\nScore: ${source.credibility.score}/100`);
+                  >
+                    {showSampleSources ? '🧪 Hide Demo Sources' : '🧪 Show Demo Sources'}
+                  </button>
+                )}
+              </div>
+
+              {/* Filter Tabs */}
+              <div style={{
+                display: 'flex',
+                gap: '0.5rem',
+                marginBottom: '1.5rem',
+                borderBottom: '1px solid #e5e7eb',
+                paddingBottom: '1rem'
+              }}>
+                {[
+                  { key: 'all', label: 'All Sources', count: allSources.length },
+                  { key: 'external', label: 'External Sources', count: allSources.filter(s => !s.isUploaded).length },
+                  { key: 'uploaded', label: 'Uploaded Documents', count: allSources.filter(s => s.isUploaded).length },
+                  { key: 'high-quality', label: 'High Quality Only', count: allSources.filter(s => s.credibility.level === 'High').length }
+                ].map((filter) => (
+                  <button
+                    key={filter.key}
+                    onClick={() => setActiveFilter(filter.key as any)}
+                    style={{
+                      padding: '0.75rem 1rem',
+                      backgroundColor: activeFilter === filter.key ? '#eff6ff' : 'transparent',
+                      color: activeFilter === filter.key ? '#1e40af' : '#6b7280',
+                      border: activeFilter === filter.key ? '1px solid #3b82f6' : '1px solid transparent',
+                      borderRadius: '0.5rem',
+                      fontSize: '0.875rem',
+                      fontWeight: activeFilter === filter.key ? '600' : '500',
+                      cursor: 'pointer',
+                      transition: 'all 0.2s ease'
                     }}
-                  />
+                    onMouseEnter={(e) => {
+                      if (activeFilter !== filter.key) {
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                      }
+                    }}
+                    onMouseLeave={(e) => {
+                      if (activeFilter !== filter.key) {
+                        (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                      }
+                    }}
+                  >
+                    {filter.label} ({filter.count})
+                  </button>
                 ))}
               </div>
 
-              {/* Load More Button */}
-              {filteredSources.length > sourcesDisplayLimit && (
-                <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-                  <button
-                    onClick={handleLoadMoreSources}
-                    disabled={isLoadingMoreSources}
-                    style={{
-                      padding: '0.75rem 1.5rem',
-                      backgroundColor: isLoadingMoreSources ? '#f3f4f6' : '#3b82f6',
-                      color: isLoadingMoreSources ? '#6b7280' : 'white',
-                      border: '1px solid #3b82f6',
-                      borderRadius: '0.5rem',
-                      fontSize: '0.875rem',
-                      fontWeight: '500',
-                      cursor: isLoadingMoreSources ? 'not-allowed' : 'pointer',
-                      transition: 'all 0.2s ease'
-                    }}
-                  >
-                    {isLoadingMoreSources ? '⏳ Loading...' : `📚 Load More Sources (${filteredSources.length - sourcesDisplayLimit} remaining)`}
-                  </button>
+              {/* Sources Display */}
+              {filteredSources.length > 0 ? (
+                <>
+                  {/* Sources List */}
+                  <div style={{ marginBottom: '2rem' }}>
+                    {displayedSources.map((source) => (
+                      <SourceCard
+                        key={source.id}
+                        source={source}
+                        projectId={params.id}
+                        onToggleSaved={handleToggleSaved}
+                        onReadSummary={(sourceId) => {
+                          alert(`Reading summary for: ${source.title}\n\nThis would open a detailed AI-generated summary of the research paper.`);
+                        }}
+                        onCheckQuality={(sourceId) => {
+                          alert(`Quality assessment for: ${source.title}\n\nCredibility Level: ${source.credibility.level}\nScore: ${source.credibility.score}/100`);
+                        }}
+                      />
+                    ))}
+                  </div>
+
+                  {/* Load More Button */}
+                  {filteredSources.length > sourcesDisplayLimit && (
+                    <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+                      <button
+                        onClick={handleLoadMoreSources}
+                        disabled={isLoadingMoreSources}
+                        style={{
+                          padding: '0.75rem 1.5rem',
+                          backgroundColor: isLoadingMoreSources ? '#f3f4f6' : '#3b82f6',
+                          color: isLoadingMoreSources ? '#6b7280' : 'white',
+                          border: '1px solid #3b82f6',
+                          borderRadius: '0.5rem',
+                          fontSize: '0.875rem',
+                          fontWeight: '500',
+                          cursor: isLoadingMoreSources ? 'not-allowed' : 'pointer',
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        {isLoadingMoreSources ? '⏳ Loading...' : `📚 Load More Sources (${filteredSources.length - sourcesDisplayLimit} remaining)`}
+                      </button>
+                    </div>
+                  )}
+                </>
+              ) : (
+                /* Empty State */
+                <div style={{
+                  backgroundColor: '#f9fafb',
+                  border: '1px solid #e5e7eb',
+                  borderRadius: '0.75rem',
+                  padding: '3rem 2rem',
+                  textAlign: 'center'
+                }}>
+                  <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📚</div>
+                  <h3 style={{
+                    fontSize: '1.25rem',
+                    fontWeight: '600',
+                    color: '#374151',
+                    marginBottom: '1rem'
+                  }}>
+                    No {activeFilter !== 'all' ? activeFilter + ' ' : ''}sources yet
+                  </h3>
+                  <p style={{
+                    fontSize: '1rem',
+                    color: '#6b7280',
+                    lineHeight: '1.5',
+                    marginBottom: '1.5rem',
+                    maxWidth: '500px',
+                    margin: '0 auto 1.5rem auto'
+                  }}>
+                    Start building your literature collection by searching external databases or uploading research papers for AI analysis.
+                  </p>
+                  <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
+                    <button
+                      onClick={handleFindSources}
+                      style={{
+                        padding: '0.75rem 1.5rem',
+                        backgroundColor: '#3b82f6',
+                        color: 'white',
+                        border: '1px solid #3b82f6',
+                        borderRadius: '0.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      🔍 Find External Sources
+                    </button>
+                    <button
+                      onClick={handleUploadPaper}
+                      style={{
+                        padding: '0.75rem 1.5rem',
+                        backgroundColor: '#10b981',
+                        color: 'white',
+                        border: '1px solid #10b981',
+                        borderRadius: '0.5rem',
+                        fontSize: '0.875rem',
+                        fontWeight: '500',
+                        cursor: 'pointer'
+                      }}
+                    >
+                      📄 Upload Papers
+                    </button>
+                  </div>
                 </div>
               )}
-            </>
-          ) : (
-            /* Empty State */
-            <div style={{
-              backgroundColor: '#f9fafb',
-              border: '1px solid #e5e7eb',
-              borderRadius: '0.75rem',
-              padding: '3rem 2rem',
-              textAlign: 'center'
-            }}>
-              <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>📚</div>
-              <h3 style={{
-                fontSize: '1.25rem',
-                fontWeight: '600',
-                color: '#374151',
-                marginBottom: '1rem'
-              }}>
-                No {activeFilter !== 'all' ? activeFilter + ' ' : ''}sources yet
-              </h3>
-              <p style={{
-                fontSize: '1rem',
-                color: '#6b7280',
-                lineHeight: '1.5',
-                marginBottom: '1.5rem',
-                maxWidth: '500px',
-                margin: '0 auto 1.5rem auto'
-              }}>
-                Start building your literature collection by searching external databases or uploading research papers for AI analysis.
-              </p>
-              <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center' }}>
-                <button
-                  onClick={handleFindSources}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    backgroundColor: '#3b82f6',
-                    color: 'white',
-                    border: '1px solid #3b82f6',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: '500',
-                    cursor: 'pointer'
-                  }}
-                >
-                  🔍 Find External Sources
-                </button>
-                <button
-                  onClick={handleUploadPaper}
-                  style={{
-                    padding: '0.75rem 1.5rem',
-                    backgroundColor: '#10b981',
-                    color: 'white',
-                    border: '1px solid #10b981',
-                    borderRadius: '0.5rem',
-                    fontSize: '0.875rem',
-                    fontWeight: '500',
-                    cursor: 'pointer'
-                  }}
-                >
-                  📄 Upload Papers
-                </button>
-              </div>
             </div>
-          )}
-        </div>
 
-        {/* Gap Analysis Section */}
-        {project && (
-          <GapAnalysis
-            sources={allSources}
-            researchQuestion={project.research_question || project.title}
-            projectId={params.id}
-          />
-        )}
+            {/* Gap Analysis Section */}
+            {project && (
+              <GapAnalysis
+                sources={allSources}
+                researchQuestion={project.research_question || project.title}
+                projectId={params.id}
+              />
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );

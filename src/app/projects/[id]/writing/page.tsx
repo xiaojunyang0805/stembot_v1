@@ -175,9 +175,9 @@ export default function WritingPage({ params }: { params: { id: string } }) {
 
               {[
                 { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: false, icon: '💬' },
-                { id: 'documents', label: '📚 Document Center', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
+                { id: 'literature', label: '📚 Literature Review', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
                 { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
-                { id: 'writing', label: '✍️ Writing', path: `/projects/${params.id}/writing`, active: true, icon: '✍️' }
+                { id: 'writing', label: '✍️ Writing and Docs', path: `/projects/${params.id}/writing`, active: true, icon: '✍️' }
               ].map((nav) => (
                 <button
                   key={nav.id}
