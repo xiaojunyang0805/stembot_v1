@@ -216,7 +216,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
                 { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
                 { id: 'writing', label: '✍️ Writing and Docs', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' },
                 { id: 'progress', label: '📊 Progress', path: `/projects/${params.id}/progress`, active: true, icon: '📊' },
-                { id: 'settings', label: '⚙️ Settings', path: `/projects/${params.id}/settings`, active: false, icon: '⚙️' }
+                { id: 'settings', label: '⚙️ Project Settings', path: `/projects/${params.id}/settings`, active: false, icon: '⚙️' }
               ].map((nav) => (
                 <button
                   key={nav.id}
