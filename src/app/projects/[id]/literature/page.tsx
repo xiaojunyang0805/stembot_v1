@@ -419,7 +419,8 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
                 { id: 'literature', label: '📚 Literature Review', path: `/projects/${params.id}/literature`, active: true, icon: '📚' },
                 { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: false, icon: '🔬' },
                 { id: 'writing', label: '✍️ Writing and Docs', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' },
-                { id: 'progress', label: '📊 Progress', path: `/projects/${params.id}/progress`, active: false, icon: '📊' }
+                { id: 'progress', label: '📊 Progress', path: `/projects/${params.id}/progress`, active: false, icon: '📊' },
+                { id: 'settings', label: '⚙️ Settings', path: `/projects/${params.id}/settings`, active: false, icon: '⚙️' }
               ].map((nav) => (
                 <button
                   key={nav.id}

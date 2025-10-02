@@ -45,7 +45,9 @@
       "mcp__chrome-devtools__wait_for",
       "Bash(npx supabase:*)",
       "mcp__chrome-devtools__handle_dialog",
-      "Bash(bash:*)"
+      "Bash(bash:*)",
+      "mcp__chrome-devtools__evaluate_script",
+      "mcp__chrome-devtools__get_network_request"
     ],
     "deny": [],
     "ask": []

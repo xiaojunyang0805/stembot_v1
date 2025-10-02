@@ -179,7 +179,9 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
                 { id: 'workspace', label: '💬 Workspace', path: `/projects/${params.id}`, active: false, icon: '💬' },
                 { id: 'literature', label: '📚 Literature Review', path: `/projects/${params.id}/literature`, active: false, icon: '📚' },
                 { id: 'methodology', label: '🔬 Methodology', path: `/projects/${params.id}/methodology`, active: true, icon: '🔬' },
-                { id: 'writing', label: '✍️ Writing and Docs', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' }
+                { id: 'writing', label: '✍️ Writing and Docs', path: `/projects/${params.id}/writing`, active: false, icon: '✍️' },
+                { id: 'progress', label: '📊 Progress', path: `/projects/${params.id}/progress`, active: false, icon: '📊' },
+                { id: 'settings', label: '⚙️ Settings', path: `/projects/${params.id}/settings`, active: false, icon: '⚙️' }
               ].map((nav) => (
                 <button
                   key={nav.id}
