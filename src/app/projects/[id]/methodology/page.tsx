@@ -93,9 +93,13 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           setDocuments(documentsData);
         }
 
-        // Load existing methodology if it exists
-        const { data: existingMethodology } = await getProjectMethodology(params.id);
-        if (existingMethodology) {
+        // Load existing methodology if it exists (gracefully handle 404 if table doesn't exist)
+        const { data: existingMethodology, error: methodologyError } = await getProjectMethodology(params.id);
+
+        // If table doesn't exist (404), skip loading existing data
+        if (methodologyError && methodologyError.code === 'PGRST116') {
+          console.log('ℹ️ No existing methodology found (table may not exist yet)');
+        } else if (existingMethodology) {
           // Restore methodology state
           setRecommendation({
             title: existingMethodology.methodName,
@@ -137,11 +141,11 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
 
           // Restore procedure
           setProcedure(existingMethodology.procedureDraft || '');
-        } else {
-          // Load methodology recommendation automatically if no existing data
-          if (projectData?.research_question) {
-            await generateMethodologyRecommendation(projectData.research_question);
-          }
+        }
+
+        // Always generate recommendation if no existing methodology loaded
+        if (!existingMethodology && projectData?.research_question) {
+          await generateMethodologyRecommendation(projectData.research_question);
         }
 
       } catch (err) {
