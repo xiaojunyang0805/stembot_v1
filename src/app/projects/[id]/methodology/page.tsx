@@ -167,24 +167,36 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           messages: [
             {
               role: 'user',
-              content: `Based on this research question: "${researchQuestion}", recommend the best research methodology. Provide:
-1. Methodology title (e.g., "Experimental Study", "Survey Research", "Case Study")
-2. Why this methodology works for this question
-3. 4-6 key steps the student should follow
-4. Realistic time estimate
-5. One alternative methodology option
+              content: `You are a research methods advisor for undergraduate students. Based on this research question: "${researchQuestion}", recommend the most appropriate research methodology.
 
-Format your response as JSON with this structure:
+IMPORTANT: Tailor your recommendation to the research domain:
+- Chemistry/Biology: Focus on experimental controls, lab safety, measurement precision
+- Psychology/Social Science: Focus on validated instruments, ethical considerations, sampling strategies
+- Observational studies: Explain why manipulation isn't appropriate, focus on systematic observation
+
+Provide your recommendation in JSON format with:
+1. **title**: Clear methodology name (e.g., "Experimental Study", "Correlational Survey", "Observational Field Study")
+2. **rationale**: 2-3 sentences explaining why this methodology is ideal for THIS specific question. Use novice-friendly language.
+3. **keySteps**: 4-6 detailed, actionable steps. Include domain-specific considerations:
+   - For experiments: Control variables, randomization, measurement protocols
+   - For surveys: Question design, sampling, validated scales
+   - For observations: Coding schemes, inter-rater reliability, field protocols
+4. **timeEstimate**: Realistic timeline (format: "X-Y weeks")
+5. **alternative**: One alternative approach with brief rationale (especially if experimental design isn't feasible)
+
+JSON structure:
 {
   "title": "methodology name",
-  "rationale": "explanation",
-  "keySteps": ["step1", "step2", ...],
-  "timeEstimate": "X weeks",
+  "rationale": "why this works for this specific question, in student-friendly language",
+  "keySteps": ["step 1 with specific details", "step 2...", ...],
+  "timeEstimate": "4-8 weeks",
   "alternative": {
-    "title": "alternative name",
-    "description": "brief description"
+    "title": "alternative method name",
+    "description": "brief explanation of when/why to use this instead"
   }
-}`
+}
+
+Make your language encouraging and accessible for novice researchers.`
             }
           ],
           projectContext: {
