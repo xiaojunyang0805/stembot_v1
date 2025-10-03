@@ -590,11 +590,77 @@ Claude Process:
 ⚠️ KEY CHANGE: Force deployment BEFORE code debugging
 ```
 
+## 🗄️ **SUPABASE MIGRATION AUTOMATION**
+
+### **Automated SQL Migration Execution**
+✅ **System Status**: Fully deployed and operational
+- **Documentation**: See `SUPABASE_AUTOMATION.md` for complete guide
+- **Quick Reference**: See `MIGRATION_QUICK_START.md` for commands
+
+### **When You Need to Run Migrations:**
+
+```bash
+# 1. Start dev server (if not running)
+npm run dev
+
+# 2. Execute migration automatically
+node scripts/execute-migration.js supabase/migrations/[filename].sql
+
+# 3. Verify success
+curl http://localhost:3000/api/admin/test-migration
+```
+
+**No more manual copy-paste to Supabase dashboard!** ✅
+
+### **Available Migration Tools:**
+
+#### **API Endpoints:**
+- `POST /api/admin/execute-sql` - Execute SQL migrations
+- `GET /api/admin/test-migration` - Check connection & table status
+- `GET /api/admin/verify-schema` - Verify table schemas
+
+#### **Scripts:**
+- `scripts/execute-migration.js` - Node.js (cross-platform) ⭐ **RECOMMENDED**
+- `scripts/execute-migration.sh` - Bash (Linux/Mac)
+- `scripts/Execute-Migration.ps1` - PowerShell (Windows)
+
+### **Migration Workflow Example:**
+
+```bash
+# Step 1: Create migration file
+# File: supabase/migrations/YYYYMMDD_description.sql
+
+# Step 2: Test dry-run first (safe, no changes)
+node scripts/execute-migration.js --dry-run supabase/migrations/[filename].sql
+
+# Step 3: Execute for real
+node scripts/execute-migration.js supabase/migrations/[filename].sql
+
+# Step 4: Verify it worked
+curl http://localhost:3000/api/admin/test-migration
+```
+
+### **Security Notes:**
+- Uses `SUPABASE_SERVICE_ROLE_KEY` for admin access
+- Local-only by default (requires dev server)
+- See `SUPABASE_AUTOMATION.md` for production security recommendations
+
+### **Current Database Status:**
+- ✅ `project_methodology` table exists and verified
+- ✅ All RLS policies configured
+- ✅ Indexes created for performance
+- ✅ Triggers set up for auto-timestamps
+
+---
+
 ## ⚡ **QUICK REFERENCE COMMANDS**
 
 ```bash
 # 🚨 DEPLOYMENT CRISIS (Multiple consecutive failures)
 npx vercel --prod --force    # FIRST ACTION - Force deployment
+
+# 🗄️ SUPABASE MIGRATIONS (Automated)
+node scripts/execute-migration.js supabase/migrations/[file].sql
 
 # Automated deployment check (preferred for diagnosis)
 bash scripts/auto-deploy-check.sh
