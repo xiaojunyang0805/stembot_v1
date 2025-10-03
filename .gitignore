@@ -17,8 +17,11 @@ certificates/
 # PRIVATE DIRECTORIES (MOVED TO PRIVATE REPO)
 # ====================================
 # These directories should never exist in public repo
-/src/lib/supabase/
-/src/lib/pinecone/
+# NOTE: Specific files below are allowed for WP4-1.3
+/src/lib/supabase/*
+!/src/lib/supabase/methodology.ts
+/src/lib/pinecone/*
+!/src/lib/pinecone/methodologyEmbeddings.ts
 # /src/lib/ai/ - KEEPING FOR GPT-5 NANO INTEGRATION
 /src/lib/memory/
 /src/lib/embeddings/
@@ -28,7 +31,9 @@ certificates/
 # ====================================
 # CONFIG FILES WITH POTENTIAL SECRETS
 # ====================================
-supabase/
+# NOTE: Migrations are allowed for WP4-1.3
+supabase/*
+!supabase/migrations/
 .vercel/
 .supabase/
 
