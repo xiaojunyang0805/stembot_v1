@@ -1132,42 +1132,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   };
 
   // Show loading state
-  if (loading) {
-    return (
-      <div style={{
-        minHeight: '100vh',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        backgroundColor: '#ffffff'
-      }}>
-        <div style={{ textAlign: 'center' }}>
-          <div style={{
-            width: '48px',
-            height: '48px',
-            border: '4px solid #f3f4f6',
-            borderTop: '4px solid #3b82f6',
-            borderRadius: '50%',
-            animation: 'spin 1s linear infinite',
-            margin: '0 auto 16px'
-          }}></div>
-          <p style={{ color: '#6b7280', fontSize: '14px' }}>Loading project...</p>
-        </div>
-        <style jsx>{`
-          @keyframes spin {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
-          }
-          @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
-  // Show error state
+  // Show error state only
   if (error) {
     return (
       <div style={{
@@ -1271,7 +1236,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               color: '#111827',
               margin: 0
             }}>
-              {projectData.title}
+              {projectData?.title || 'Loading...'}
             </h1>
           </div>
 
@@ -1996,7 +1961,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
                 gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
                 gap: '0.5rem'
               }}>
-                {projectData.memory.contextHints.map((hint, index) => (
+                {projectData?.memory?.contextHints?.map((hint, index) => (
                   <div key={index} style={{
                     fontSize: '0.75rem',
                     color: '#92400e'
