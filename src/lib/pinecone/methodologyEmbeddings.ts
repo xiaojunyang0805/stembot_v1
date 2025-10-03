@@ -3,7 +3,7 @@
  * Creates and manages vector embeddings for methodology data in Pinecone
  */
 
-import type { MethodologyData } from '../supabase/methodology'
+import type { MethodologyData } from '@/lib/supabase/methodology'
 
 // ============================================================================
 // TYPE DEFINITIONS
