@@ -143,8 +143,13 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           setProcedure(existingMethodology.procedureDraft || '');
         }
 
-        // Set loading to false BEFORE generating recommendation
-        // This allows the page to render immediately
+        // If we need to generate recommendation, set loading state FIRST to prevent flash
+        if (!existingMethodology && projectData?.research_question) {
+          setLoadingRecommendation(true);
+        }
+
+        // Set loading to false AFTER setting recommendation loading state
+        // This ensures smooth transition from page load to recommendation load
         setLoading(false);
 
         // Generate recommendation in background if no existing methodology loaded
@@ -152,7 +157,7 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
         if (!existingMethodology && projectData?.research_question) {
           generateMethodologyRecommendation(projectData.research_question).catch(err => {
             console.error('Error generating recommendation:', err);
-            // Don't set error state - just log it
+            setLoadingRecommendation(false); // Clear loading state on error
           });
         }
 
