@@ -52,6 +52,7 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
   const [loadingRecommendation, setLoadingRecommendation] = useState(true); // Start as true to prevent flash
   const [recommendation, setRecommendation] = useState<MethodRecommendation | null>(null);
   const [methodologySelected, setMethodologySelected] = useState(false);
+  const [recommendationGenerated, setRecommendationGenerated] = useState(false); // Prevent re-generation
 
   // Study design state
   const [independentVars, setIndependentVars] = useState<Variable[]>([]);
@@ -144,11 +145,12 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           setProcedure(existingMethodology.procedureDraft || '');
         }
 
-        // Handle recommendation generation
-        if (!existingMethodology) {
+        // Handle recommendation generation (only generate once)
+        if (!existingMethodology && !recommendationGenerated) {
           if (projectData?.research_question) {
             // Keep loadingRecommendation=true (already set in initial state)
             // Generate recommendation in background - don't await
+            setRecommendationGenerated(true); // Mark as generated to prevent re-triggering
             generateMethodologyRecommendation(projectData.research_question).catch(err => {
               console.error('Error generating recommendation:', err);
               setLoadingRecommendation(false); // Clear loading state on error
