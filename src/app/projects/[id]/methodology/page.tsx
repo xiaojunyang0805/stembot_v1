@@ -143,15 +143,22 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           setProcedure(existingMethodology.procedureDraft || '');
         }
 
-        // Always generate recommendation if no existing methodology loaded
+        // Set loading to false BEFORE generating recommendation
+        // This allows the page to render immediately
+        setLoading(false);
+
+        // Generate recommendation in background if no existing methodology loaded
+        // Don't await - let it load asynchronously
         if (!existingMethodology && projectData?.research_question) {
-          await generateMethodologyRecommendation(projectData.research_question);
+          generateMethodologyRecommendation(projectData.research_question).catch(err => {
+            console.error('Error generating recommendation:', err);
+            // Don't set error state - just log it
+          });
         }
 
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load project data');
-      } finally {
         setLoading(false);
       }
     };
