@@ -196,11 +196,11 @@ Example format:
           padding: '1rem',
           border: '2px solid #d1d5db',
           borderRadius: '0.5rem',
-          fontSize: '0.875rem',
-          lineHeight: '1.6',
+          fontSize: '1rem',
+          lineHeight: '1.8',
           resize: 'vertical',
           outline: 'none',
-          fontFamily: 'monospace',
+          fontFamily: 'system-ui, -apple-system, sans-serif',
           backgroundColor: 'white'
         }}
       />
