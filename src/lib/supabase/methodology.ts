@@ -123,11 +123,11 @@ export async function saveMethodology(
       .from('projects')
       .select('id')
       .eq('id', projectId)
-      .single()
+      .maybeSingle()
 
     if (projectError || !project) {
-      console.error('❌ Project not found:', projectId)
-      return { data: null, error: new Error('Project not found') }
+      console.error('❌ Project not found:', projectId, projectError)
+      return { data: null, error: projectError || new Error('Project not found') }
     }
 
     // Check if methodology already exists for this project
