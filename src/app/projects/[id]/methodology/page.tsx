@@ -6,14 +6,36 @@ import { useAuth } from '../../../../providers/AuthProvider';
 import { getProject } from '../../../../lib/database/projects';
 import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
 import { trackProjectActivity } from '../../../../lib/database/activity';
-import { ProjectQuestionHeader } from '../../../../components/shared/ProjectQuestionHeader';
-import { LiteratureRecommendations } from '../../../../components/methodology/LiteratureRecommendations';
-import { SourceContext } from '../../../../components/methodology/SourceContext';
+import { MethodRecommendationCard } from '../../../../components/methodology/MethodRecommendationCard';
+import { StudyDesignForm } from '../../../../components/methodology/StudyDesignForm';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
+
+interface Variable {
+  id: string;
+  name: string;
+  description: string;
+}
+
+interface ParticipantsData {
+  targetPopulation: string;
+  sampleSize: string;
+  recruitmentStrategy: string;
+}
+
+interface MethodRecommendation {
+  title: string;
+  rationale: string;
+  keySteps: string[];
+  timeEstimate: string;
+  alternative?: {
+    title: string;
+    description: string;
+  };
+}
 
 export default function MethodologyPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
@@ -23,6 +45,22 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Methodology state
+  const [loadingRecommendation, setLoadingRecommendation] = useState(false);
+  const [recommendation, setRecommendation] = useState<MethodRecommendation | null>(null);
+  const [methodologySelected, setMethodologySelected] = useState(false);
+
+  // Study design state
+  const [independentVars, setIndependentVars] = useState<Variable[]>([]);
+  const [dependentVars, setDependentVars] = useState<Variable[]>([]);
+  const [controlVars, setControlVars] = useState<Variable[]>([]);
+  const [participants, setParticipants] = useState<ParticipantsData>({
+    targetPopulation: '',
+    sampleSize: '',
+    recruitmentStrategy: ''
+  });
+  const [procedure, setProcedure] = useState('');
 
   // Fetch project data and documents
   useEffect(() => {
@@ -53,6 +91,11 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           setDocuments(documentsData);
         }
 
+        // Load methodology recommendation automatically
+        if (projectData?.research_question) {
+          await generateMethodologyRecommendation(projectData.research_question);
+        }
+
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load project data');
@@ -63,6 +106,192 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
 
     fetchData();
   }, [params.id, user]);
+
+  // Generate methodology recommendation
+  const generateMethodologyRecommendation = async (researchQuestion: string) => {
+    setLoadingRecommendation(true);
+    try {
+      // Call AI API to generate recommendation
+      const response = await fetch('/api/ai/enhanced-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `Based on this research question: "${researchQuestion}", recommend the best research methodology. Provide:
+1. Methodology title (e.g., "Experimental Study", "Survey Research", "Case Study")
+2. Why this methodology works for this question
+3. 4-6 key steps the student should follow
+4. Realistic time estimate
+5. One alternative methodology option
+
+Format your response as JSON with this structure:
+{
+  "title": "methodology name",
+  "rationale": "explanation",
+  "keySteps": ["step1", "step2", ...],
+  "timeEstimate": "X weeks",
+  "alternative": {
+    "title": "alternative name",
+    "description": "brief description"
+  }
+}`
+            }
+          ],
+          projectContext: {
+            projectId: params.id,
+            researchQuestion: researchQuestion
+          },
+          useEnhanced: true
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        const content = data.message.content;
+
+        // Try to parse JSON from response
+        try {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          if (jsonMatch) {
+            const parsed = JSON.parse(jsonMatch[0]);
+            setRecommendation(parsed);
+          } else {
+            // Fallback recommendation
+            setRecommendation({
+              title: 'Survey Research',
+              rationale: 'Based on your research question, a survey approach would allow you to collect data from multiple participants efficiently.',
+              keySteps: [
+                'Design survey questions aligned with your research question',
+                'Pilot test the survey with a small group',
+                'Distribute survey to target population',
+                'Collect and organize responses',
+                'Analyze data using statistical methods',
+                'Draw conclusions and identify patterns'
+              ],
+              timeEstimate: '4-6 weeks',
+              alternative: {
+                title: 'Experimental Study',
+                description: 'If you want to establish cause-and-effect relationships, consider an experimental design with control and treatment groups.'
+              }
+            });
+          }
+        } catch (parseError) {
+          console.error('Error parsing recommendation:', parseError);
+          // Use fallback
+          setRecommendation({
+            title: 'Observational Study',
+            rationale: 'An observational approach allows you to study phenomena in natural settings without manipulation.',
+            keySteps: [
+              'Define what you will observe',
+              'Create observation protocol',
+              'Conduct observations systematically',
+              'Record detailed field notes',
+              'Analyze patterns and themes',
+              'Draw conclusions from observations'
+            ],
+            timeEstimate: '3-5 weeks'
+          });
+        }
+      }
+    } catch (error) {
+      console.error('Error generating recommendation:', error);
+      // Set fallback recommendation
+      setRecommendation({
+        title: 'Exploratory Study',
+        rationale: 'An exploratory approach will help you investigate your research question systematically.',
+        keySteps: [
+          'Review relevant literature',
+          'Identify key variables',
+          'Design data collection method',
+          'Collect data from participants',
+          'Analyze collected data',
+          'Draw conclusions and recommendations'
+        ],
+        timeEstimate: '4-6 weeks'
+      });
+    } finally {
+      setLoadingRecommendation(false);
+    }
+  };
+
+  // Handle methodology selection
+  const handleAcceptMethodology = () => {
+    setMethodologySelected(true);
+    // TODO: Save to database
+  };
+
+  const handleRequestDifferent = async () => {
+    if (project?.research_question) {
+      await generateMethodologyRecommendation(project.research_question);
+    }
+  };
+
+  // Handle study design saves
+  const handleSaveVariables = async (data: {
+    independentVars: Variable[];
+    dependentVars: Variable[];
+    controlVars: Variable[];
+  }) => {
+    setIndependentVars(data.independentVars);
+    setDependentVars(data.dependentVars);
+    setControlVars(data.controlVars);
+    // TODO: Save to database
+    console.log('Variables saved:', data);
+  };
+
+  const handleSaveParticipants = async (data: ParticipantsData) => {
+    setParticipants(data);
+    // TODO: Save to database
+    console.log('Participants saved:', data);
+  };
+
+  const handleSaveProcedure = async (procedureText: string) => {
+    setProcedure(procedureText);
+    // TODO: Save to database
+    console.log('Procedure saved:', procedureText);
+  };
+
+  const handleRequestProcedureFeedback = async (procedureText: string): Promise<string> => {
+    try {
+      const response = await fetch('/api/ai/enhanced-chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [
+            {
+              role: 'user',
+              content: `Review this research procedure and provide constructive feedback:
+
+${procedureText}
+
+Provide feedback on:
+1. Clarity and completeness
+2. Logical flow of steps
+3. Potential issues or missing details
+4. Suggestions for improvement`
+            }
+          ],
+          projectContext: {
+            projectId: params.id,
+            researchQuestion: project?.research_question
+          },
+          useEnhanced: true
+        })
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        return data.message.content;
+      } else {
+        return 'Unable to get feedback at this time. Please try again later.';
+      }
+    } catch (error) {
+      console.error('Error getting procedure feedback:', error);
+      return 'Error getting feedback. Please check your procedure and try again.';
+    }
+  };
 
   if (loading) {
     return (
@@ -95,7 +324,7 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
   }
 
   return (
-    <div style={{ height: '100vh', backgroundColor: '#ffffff' }}>
+    <div style={{ height: '100vh', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column' }}>
       {/* Header */}
       <header style={{
         backgroundColor: 'white',
@@ -146,13 +375,14 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
         </div>
       </header>
 
-
       {/* Main Content */}
       <div style={{
         display: 'flex',
-        height: 'calc(100vh - 140px)',
+        flex: 1,
         maxWidth: '1400px',
-        margin: '0 auto'
+        margin: '0 auto',
+        width: '100%',
+        overflow: 'hidden'
       }}>
         {/* Left Sidebar (25% width) */}
         <div style={{
@@ -163,7 +393,7 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           overflow: 'hidden',
           transition: 'all 0.3s ease'
         }}>
-          <div style={{ padding: '1.5rem' }}>
+          <div style={{ padding: '1.5rem', height: '100%', overflowY: 'auto' }}>
             {/* Navigation Menu */}
             <div style={{ marginBottom: '2rem' }}>
               <h3 style={{
@@ -242,7 +472,11 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
                 fontSize: '0.875rem',
                 color: '#6b7280',
                 lineHeight: '1.5',
-                margin: 0
+                margin: 0,
+                padding: '0.75rem',
+                backgroundColor: 'white',
+                borderRadius: '0.5rem',
+                border: '1px solid #e5e7eb'
               }}>
                 {project.research_question}
               </p>
@@ -285,22 +519,23 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
                 </button>
               </div>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-                {documents.length > 0 ? documents.slice(0, 3).map((doc, index) => (
+                {documents.length > 0 ? documents.slice(0, 3).map((doc) => (
                   <div key={doc.id} style={{
                     fontSize: '0.75rem',
                     color: '#6b7280',
                     display: 'flex',
                     alignItems: 'center',
                     gap: '0.25rem',
-                    padding: '0.25rem',
+                    padding: '0.5rem',
                     borderRadius: '0.25rem',
-                    cursor: 'pointer'
+                    cursor: 'pointer',
+                    backgroundColor: 'white'
                   }}
                   onMouseEnter={(e) => {
                     (e.target as HTMLDivElement).style.backgroundColor = '#f3f4f6';
                   }}
                   onMouseLeave={(e) => {
-                    (e.target as HTMLDivElement).style.backgroundColor = 'transparent';
+                    (e.target as HTMLDivElement).style.backgroundColor = 'white';
                   }}
                   >
                     <span>📄</span>
@@ -319,7 +554,9 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
                     color: '#9ca3af',
                     fontStyle: 'italic',
                     textAlign: 'center',
-                    padding: '1rem 0'
+                    padding: '1rem',
+                    backgroundColor: 'white',
+                    borderRadius: '0.375rem'
                   }}>
                     No documents uploaded yet.
                     Use 📎 in Workspace to upload files.
@@ -347,9 +584,12 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
               fontSize: '2rem',
               fontWeight: 'bold',
               color: '#111827',
-              margin: 0
+              margin: 0,
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.75rem'
             }}>
-              🔬 Methodology
+              <span>🔬</span> Methodology Planning
             </h1>
             <button
               onClick={() => setIsSidebarOpen(!isSidebarOpen)}
@@ -358,211 +598,38 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
                 backgroundColor: '#f3f4f6',
                 border: '1px solid #d1d5db',
                 borderRadius: '0.375rem',
-                cursor: 'pointer'
+                cursor: 'pointer',
+                fontSize: '1rem'
               }}
             >
               {isSidebarOpen ? '◀' : '▶'}
             </button>
           </div>
 
-          {/* Research Question Header */}
-          {project && (
-            <ProjectQuestionHeader
-              question={project.research_question || project.title}
-              currentPhase="methodology"
-              projectTitle={project.title}
-              onEdit={() => router.push(`/projects/${params.id}`)}
+          {/* Method Recommendation Card */}
+          <MethodRecommendationCard
+            recommendation={recommendation}
+            loading={loadingRecommendation}
+            onAccept={handleAcceptMethodology}
+            onRequestDifferent={handleRequestDifferent}
+          />
+
+          {/* Study Design Form (shown after methodology selected) */}
+          {methodologySelected && (
+            <StudyDesignForm
+              data={{
+                independentVars,
+                dependentVars,
+                controlVars,
+                participants,
+                procedure
+              }}
+              onSaveVariables={handleSaveVariables}
+              onSaveParticipants={handleSaveParticipants}
+              onSaveProcedure={handleSaveProcedure}
+              onRequestProcedureFeedback={handleRequestProcedureFeedback}
             />
           )}
-
-          {/* Literature-Based Recommendations */}
-          <div style={{ marginBottom: '2rem' }}>
-            <LiteratureRecommendations projectId={params.id} />
-          </div>
-
-          {/* Source Context */}
-          <div style={{ marginBottom: '2rem' }}>
-            <SourceContext projectId={params.id} />
-          </div>
-
-          {/* Methodology Content */}
-          <div style={{
-            backgroundColor: '#f9fafb',
-            border: '1px solid #e5e7eb',
-            borderRadius: '0.5rem',
-            padding: '2rem'
-          }}>
-            <div style={{
-              textAlign: 'center',
-              color: '#6b7280',
-              marginBottom: '2rem'
-            }}>
-              <h2 style={{
-                fontSize: '1.5rem',
-                fontWeight: '600',
-                marginBottom: '1rem',
-                color: '#374151'
-              }}>
-                Research Methodology Hub
-              </h2>
-              <p style={{
-                fontSize: '1rem',
-                lineHeight: '1.6',
-                maxWidth: '600px',
-                margin: '0 auto'
-              }}>
-                AI-powered methodology planning based on your literature review.
-                Methodology recommendations and source insights are automatically generated from your research.
-              </p>
-            </div>
-
-            {/* Methodology Planning Sections */}
-            <div style={{
-              display: 'grid',
-              gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-              gap: '1.5rem',
-              marginTop: '2rem'
-            }}>
-              <div style={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.5rem',
-                padding: '1.5rem'
-              }}>
-                <h3 style={{
-                  fontSize: '1.125rem',
-                  fontWeight: '600',
-                  color: '#111827',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span>📊</span> Research Design
-                </h3>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#6b7280',
-                  lineHeight: '1.5'
-                }}>
-                  AI will capture your research design discussions and organize them here.
-                  Talk about your study design in the Workspace chat.
-                </p>
-              </div>
-
-              <div style={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.5rem',
-                padding: '1.5rem'
-              }}>
-                <h3 style={{
-                  fontSize: '1.125rem',
-                  fontWeight: '600',
-                  color: '#111827',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span>👥</span> Participants
-                </h3>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#6b7280',
-                  lineHeight: '1.5'
-                }}>
-                  Sample size calculations, inclusion criteria, and recruitment strategies
-                  will be automatically extracted from your conversations.
-                </p>
-              </div>
-
-              <div style={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.5rem',
-                padding: '1.5rem'
-              }}>
-                <h3 style={{
-                  fontSize: '1.125rem',
-                  fontWeight: '600',
-                  color: '#111827',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span>📏</span> Instruments
-                </h3>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#6b7280',
-                  lineHeight: '1.5'
-                }}>
-                  Data collection tools, questionnaires, and measurement procedures
-                  discussed in chat will appear here.
-                </p>
-              </div>
-
-              <div style={{
-                backgroundColor: 'white',
-                border: '1px solid #e5e7eb',
-                borderRadius: '0.5rem',
-                padding: '1.5rem'
-              }}>
-                <h3 style={{
-                  fontSize: '1.125rem',
-                  fontWeight: '600',
-                  color: '#111827',
-                  marginBottom: '1rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}>
-                  <span>📈</span> Analysis Plan
-                </h3>
-                <p style={{
-                  fontSize: '0.875rem',
-                  color: '#6b7280',
-                  lineHeight: '1.5'
-                }}>
-                  Statistical methods and analysis approaches will be captured
-                  and organized automatically.
-                </p>
-              </div>
-            </div>
-
-            {/* Smart Memory Feature Preview */}
-            <div style={{
-              backgroundColor: '#eff6ff',
-              border: '1px solid #bfdbfe',
-              borderRadius: '0.5rem',
-              padding: '1.5rem',
-              marginTop: '2rem'
-            }}>
-              <h3 style={{
-                fontSize: '1.125rem',
-                fontWeight: '600',
-                color: '#1e40af',
-                marginBottom: '0.75rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.5rem'
-              }}>
-                <span>🧠</span> Smart Memory Integration
-              </h3>
-              <p style={{
-                fontSize: '0.875rem',
-                color: '#1e40af',
-                lineHeight: '1.5',
-                margin: 0
-              }}>
-                <strong>Coming soon:</strong> When you discuss methodology in the Workspace chat,
-                AI will automatically extract relevant information and organize it into the sections above.
-                This creates a comprehensive methodology overview that evolves with your research discussions.
-              </p>
-            </div>
-          </div>
         </div>
       </div>
     </div>
