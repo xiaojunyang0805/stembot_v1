@@ -9,6 +9,8 @@ import { trackProjectActivity } from '../../../../lib/database/activity';
 import { MethodRecommendationCard } from '../../../../components/methodology/MethodRecommendationCard';
 import { StudyDesignForm } from '../../../../components/methodology/StudyDesignForm';
 import type { Project } from '../../../../types/database';
+import { saveMethodology, getProjectMethodology, type MethodologyData } from '@/lib/supabase/methodology';
+import { createMethodologyEmbedding } from '@/lib/pinecone/methodologyEmbeddings';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -91,9 +93,55 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           setDocuments(documentsData);
         }
 
-        // Load methodology recommendation automatically
-        if (projectData?.research_question) {
-          await generateMethodologyRecommendation(projectData.research_question);
+        // Load existing methodology if it exists
+        const { data: existingMethodology } = await getProjectMethodology(params.id);
+        if (existingMethodology) {
+          // Restore methodology state
+          setRecommendation({
+            title: existingMethodology.methodName,
+            rationale: existingMethodology.reasoning || '',
+            keySteps: [], // We don't store steps, so we'll leave empty or regenerate
+            timeEstimate: '4-8 weeks' // Default fallback
+          });
+          setMethodologySelected(true);
+
+          // Restore variables
+          if (existingMethodology.independentVariables) {
+            setIndependentVars(existingMethodology.independentVariables.map((v: any, i: number) => ({
+              id: `iv-${i}`,
+              name: v.name,
+              description: v.description
+            })));
+          }
+          if (existingMethodology.dependentVariables) {
+            setDependentVars(existingMethodology.dependentVariables.map((v: any, i: number) => ({
+              id: `dv-${i}`,
+              name: v.name,
+              description: v.description
+            })));
+          }
+          if (existingMethodology.controlVariables) {
+            setControlVars(existingMethodology.controlVariables.map((v: any, i: number) => ({
+              id: `cv-${i}`,
+              name: v.name,
+              description: v.description
+            })));
+          }
+
+          // Restore participants
+          setParticipants({
+            targetPopulation: existingMethodology.participantCriteria || '',
+            sampleSize: existingMethodology.estimatedSampleSize?.toString() || '',
+            recruitmentStrategy: existingMethodology.recruitmentStrategy || ''
+          });
+
+          // Restore procedure
+          setProcedure(existingMethodology.procedureDraft || '');
+        } else {
+          // Load methodology recommendation automatically if no existing data
+          if (projectData?.research_question) {
+            await generateMethodologyRecommendation(projectData.research_question);
+          }
         }
 
       } catch (err) {
@@ -217,9 +265,37 @@ Format your response as JSON with this structure:
   };
 
   // Handle methodology selection
-  const handleAcceptMethodology = () => {
-    setMethodologySelected(true);
-    // TODO: Save to database
+  const handleAcceptMethodology = async () => {
+    if (!recommendation || !project) return;
+
+    try {
+      // Save methodology to database
+      const { data, error } = await saveMethodology(params.id, {
+        methodType: recommendation.title.toLowerCase().replace(' ', '_'),
+        methodName: recommendation.title,
+        reasoning: recommendation.rationale,
+        independentVariables: [],
+        dependentVariables: [],
+        controlVariables: []
+      });
+
+      if (error) {
+        console.error('Error saving methodology:', error);
+        alert('Failed to save methodology. Please try again.');
+        return;
+      }
+
+      // Create embedding for AI context
+      if (data) {
+        await createMethodologyEmbedding(params.id, data);
+      }
+
+      setMethodologySelected(true);
+      console.log('✅ Methodology saved successfully:', data);
+    } catch (err) {
+      console.error('Error in handleAcceptMethodology:', err);
+      alert('Failed to save methodology. Please try again.');
+    }
   };
 
   const handleRequestDifferent = async () => {
@@ -234,23 +310,110 @@ Format your response as JSON with this structure:
     dependentVars: Variable[];
     controlVars: Variable[];
   }) => {
-    setIndependentVars(data.independentVars);
-    setDependentVars(data.dependentVars);
-    setControlVars(data.controlVars);
-    // TODO: Save to database
-    console.log('Variables saved:', data);
+    try {
+      // Update local state
+      setIndependentVars(data.independentVars);
+      setDependentVars(data.dependentVars);
+      setControlVars(data.controlVars);
+
+      // Save to database
+      const { data: saved, error } = await saveMethodology(params.id, {
+        methodType: recommendation?.title.toLowerCase().replace(' ', '_') || 'unknown',
+        methodName: recommendation?.title || 'Research Method',
+        reasoning: recommendation?.rationale,
+        independentVariables: data.independentVars.map(v => ({ name: v.name, description: v.description })),
+        dependentVariables: data.dependentVars.map(v => ({ name: v.name, description: v.description })),
+        controlVariables: data.controlVars.map(v => ({ name: v.name, description: v.description })),
+        participantCriteria: participants.targetPopulation,
+        estimatedSampleSize: parseInt(participants.sampleSize) || undefined,
+        recruitmentStrategy: participants.recruitmentStrategy,
+        procedureDraft: procedure
+      });
+
+      if (error) {
+        console.error('Error saving variables:', error);
+        return;
+      }
+
+      // Update embedding
+      if (saved) {
+        await createMethodologyEmbedding(params.id, saved);
+      }
+
+      console.log('✅ Variables saved successfully');
+    } catch (err) {
+      console.error('Error in handleSaveVariables:', err);
+    }
   };
 
   const handleSaveParticipants = async (data: ParticipantsData) => {
-    setParticipants(data);
-    // TODO: Save to database
-    console.log('Participants saved:', data);
+    try {
+      // Update local state
+      setParticipants(data);
+
+      // Save to database
+      const { data: saved, error } = await saveMethodology(params.id, {
+        methodType: recommendation?.title.toLowerCase().replace(' ', '_') || 'unknown',
+        methodName: recommendation?.title || 'Research Method',
+        reasoning: recommendation?.rationale,
+        independentVariables: independentVars.map(v => ({ name: v.name, description: v.description })),
+        dependentVariables: dependentVars.map(v => ({ name: v.name, description: v.description })),
+        controlVariables: controlVars.map(v => ({ name: v.name, description: v.description })),
+        participantCriteria: data.targetPopulation,
+        estimatedSampleSize: parseInt(data.sampleSize) || undefined,
+        recruitmentStrategy: data.recruitmentStrategy,
+        procedureDraft: procedure
+      });
+
+      if (error) {
+        console.error('Error saving participants:', error);
+        return;
+      }
+
+      // Update embedding
+      if (saved) {
+        await createMethodologyEmbedding(params.id, saved);
+      }
+
+      console.log('✅ Participants saved successfully');
+    } catch (err) {
+      console.error('Error in handleSaveParticipants:', err);
+    }
   };
 
   const handleSaveProcedure = async (procedureText: string) => {
-    setProcedure(procedureText);
-    // TODO: Save to database
-    console.log('Procedure saved:', procedureText);
+    try {
+      // Update local state
+      setProcedure(procedureText);
+
+      // Save to database
+      const { data: saved, error } = await saveMethodology(params.id, {
+        methodType: recommendation?.title.toLowerCase().replace(' ', '_') || 'unknown',
+        methodName: recommendation?.title || 'Research Method',
+        reasoning: recommendation?.rationale,
+        independentVariables: independentVars.map(v => ({ name: v.name, description: v.description })),
+        dependentVariables: dependentVars.map(v => ({ name: v.name, description: v.description })),
+        controlVariables: controlVars.map(v => ({ name: v.name, description: v.description })),
+        participantCriteria: participants.targetPopulation,
+        estimatedSampleSize: parseInt(participants.sampleSize) || undefined,
+        recruitmentStrategy: participants.recruitmentStrategy,
+        procedureDraft: procedureText
+      });
+
+      if (error) {
+        console.error('Error saving procedure:', error);
+        return;
+      }
+
+      // Update embedding
+      if (saved) {
+        await createMethodologyEmbedding(params.id, saved);
+      }
+
+      console.log('✅ Procedure saved successfully');
+    } catch (err) {
+      console.error('Error in handleSaveProcedure:', err);
+    }
   };
 
   const handleRequestProcedureFeedback = async (procedureText: string): Promise<string> => {
