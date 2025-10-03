@@ -49,7 +49,7 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   // Methodology state
-  const [loadingRecommendation, setLoadingRecommendation] = useState(false);
+  const [loadingRecommendation, setLoadingRecommendation] = useState(true); // Start as true to prevent flash
   const [recommendation, setRecommendation] = useState<MethodRecommendation | null>(null);
   const [methodologySelected, setMethodologySelected] = useState(false);
 
@@ -108,6 +108,7 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
             timeEstimate: '4-8 weeks' // Default fallback
           });
           setMethodologySelected(true);
+          setLoadingRecommendation(false); // Clear loading since we have existing data
 
           // Restore variables
           if (existingMethodology.independentVariables) {
@@ -143,23 +144,23 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
           setProcedure(existingMethodology.procedureDraft || '');
         }
 
-        // If we need to generate recommendation, set loading state FIRST to prevent flash
-        if (!existingMethodology && projectData?.research_question) {
-          setLoadingRecommendation(true);
+        // Handle recommendation generation
+        if (!existingMethodology) {
+          if (projectData?.research_question) {
+            // Keep loadingRecommendation=true (already set in initial state)
+            // Generate recommendation in background - don't await
+            generateMethodologyRecommendation(projectData.research_question).catch(err => {
+              console.error('Error generating recommendation:', err);
+              setLoadingRecommendation(false); // Clear loading state on error
+            });
+          } else {
+            // No research question - can't generate recommendation
+            setLoadingRecommendation(false);
+          }
         }
 
-        // Set loading to false AFTER setting recommendation loading state
-        // This ensures smooth transition from page load to recommendation load
+        // Set loading to false AFTER handling recommendation state
         setLoading(false);
-
-        // Generate recommendation in background if no existing methodology loaded
-        // Don't await - let it load asynchronously
-        if (!existingMethodology && projectData?.research_question) {
-          generateMethodologyRecommendation(projectData.research_question).catch(err => {
-            console.error('Error generating recommendation:', err);
-            setLoadingRecommendation(false); // Clear loading state on error
-          });
-        }
 
       } catch (err) {
         console.error('Error fetching data:', err);
