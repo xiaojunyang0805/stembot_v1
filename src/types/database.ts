@@ -298,6 +298,56 @@ export interface Database {
           created_at?: string
         }
       }
+      project_methodology: {
+        Row: {
+          id: string
+          project_id: string
+          method_type: string
+          method_name: string
+          reasoning: string | null
+          independent_variables: Json
+          dependent_variables: Json
+          control_variables: Json
+          participant_criteria: string | null
+          estimated_sample_size: number | null
+          recruitment_strategy: string | null
+          procedure_draft: string | null
+          created_at: string
+          updated_at: string
+        }
+        Insert: {
+          id?: string
+          project_id: string
+          method_type: string
+          method_name: string
+          reasoning?: string | null
+          independent_variables?: Json
+          dependent_variables?: Json
+          control_variables?: Json
+          participant_criteria?: string | null
+          estimated_sample_size?: number | null
+          recruitment_strategy?: string | null
+          procedure_draft?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+        Update: {
+          id?: string
+          project_id?: string
+          method_type?: string
+          method_name?: string
+          reasoning?: string | null
+          independent_variables?: Json
+          dependent_variables?: Json
+          control_variables?: Json
+          participant_criteria?: string | null
+          estimated_sample_size?: number | null
+          recruitment_strategy?: string | null
+          procedure_draft?: string | null
+          created_at?: string
+          updated_at?: string
+        }
+      }
     }
     Views: {
       [_ in never]: never
@@ -342,6 +392,7 @@ export type ProjectMemory = Database['public']['Tables']['project_memory']['Row'
 export type Source = Database['public']['Tables']['sources']['Row']
 export type Conversation = Database['public']['Tables']['conversations']['Row']
 export type UserSession = Database['public']['Tables']['user_sessions']['Row']
+export type ProjectMethodology = Database['public']['Tables']['project_methodology']['Row']
 
 // Insert types
 export type UserInsert = Database['public']['Tables']['users']['Insert']
@@ -350,6 +401,7 @@ export type ProjectMemoryInsert = Database['public']['Tables']['project_memory']
 export type SourceInsert = Database['public']['Tables']['sources']['Insert']
 export type ConversationInsert = Database['public']['Tables']['conversations']['Insert']
 export type UserSessionInsert = Database['public']['Tables']['user_sessions']['Insert']
+export type ProjectMethodologyInsert = Database['public']['Tables']['project_methodology']['Insert']
 
 // Update types
 export type UserUpdate = Database['public']['Tables']['users']['Update']
@@ -358,6 +410,7 @@ export type ProjectMemoryUpdate = Database['public']['Tables']['project_memory']
 export type SourceUpdate = Database['public']['Tables']['sources']['Update']
 export type ConversationUpdate = Database['public']['Tables']['conversations']['Update']
 export type UserSessionUpdate = Database['public']['Tables']['user_sessions']['Update']
+export type ProjectMethodologyUpdate = Database['public']['Tables']['project_methodology']['Update']
 
 // Progress data type structure
 export interface ProjectProgressData {
