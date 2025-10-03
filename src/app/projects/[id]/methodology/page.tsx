@@ -485,118 +485,6 @@ Provide feedback on:
     }
   };
 
-  if (loading || !project) {
-    return (
-      <div style={{ height: '100vh', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column' }}>
-        {/* Header Skeleton */}
-        <header style={{
-          backgroundColor: 'white',
-          borderBottom: '1px solid #e5e7eb',
-          padding: '1rem 2rem',
-          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
-        }}>
-          <div style={{
-            display: 'flex',
-            alignItems: 'center',
-            gap: '1rem',
-            maxWidth: '1400px',
-            margin: '0 auto'
-          }}>
-            <div style={{
-              width: '120px',
-              height: '36px',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '0.375rem',
-              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-            }}></div>
-            <div style={{
-              width: '300px',
-              height: '28px',
-              backgroundColor: '#f3f4f6',
-              borderRadius: '0.375rem',
-              animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-            }}></div>
-          </div>
-        </header>
-
-        {/* Main Content Skeleton */}
-        <div style={{ flex: 1, display: 'flex', overflow: 'hidden' }}>
-          {/* Sidebar Skeleton */}
-          <div style={{
-            width: '25%',
-            minWidth: '300px',
-            backgroundColor: '#fafbfc',
-            borderRight: '1px solid #e5e7eb',
-            padding: '1.5rem',
-            overflow: 'auto'
-          }}>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-              {/* Navigation skeleton */}
-              <div style={{
-                width: '100%',
-                height: '200px',
-                backgroundColor: '#f3f4f6',
-                borderRadius: '0.5rem',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-              }}></div>
-              {/* Research question skeleton */}
-              <div style={{
-                width: '100%',
-                height: '120px',
-                backgroundColor: '#f3f4f6',
-                borderRadius: '0.5rem',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-              }}></div>
-            </div>
-          </div>
-
-          {/* Main Content Skeleton */}
-          <div style={{
-            flex: 1,
-            padding: '2rem',
-            backgroundColor: '#ffffff',
-            overflow: 'auto'
-          }}>
-            <div style={{
-              display: 'flex',
-              flexDirection: 'column',
-              gap: '2rem'
-            }}>
-              {/* Title skeleton */}
-              <div style={{
-                width: '300px',
-                height: '40px',
-                backgroundColor: '#f3f4f6',
-                borderRadius: '0.5rem',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-              }}></div>
-
-              {/* Main content card skeleton */}
-              <div style={{
-                width: '100%',
-                height: '400px',
-                backgroundColor: '#f3f4f6',
-                borderRadius: '0.75rem',
-                animation: 'pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite'
-              }}></div>
-            </div>
-          </div>
-        </div>
-
-        <style>{`
-          @keyframes pulse {
-            0%, 100% {
-              opacity: 1;
-            }
-            50% {
-              opacity: 0.5;
-            }
-          }
-        `}</style>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div style={{
@@ -611,6 +499,9 @@ Provide feedback on:
       </div>
     );
   }
+
+  // Don't wait for loading to finish - render page structure immediately
+  // This prevents layout shift flash
 
   return (
     <div style={{ height: '100vh', backgroundColor: '#ffffff', display: 'flex', flexDirection: 'column' }}>
@@ -658,7 +549,7 @@ Provide feedback on:
               color: '#111827',
               margin: 0
             }}>
-              {project.title}
+              {project?.title || 'Loading...'}
             </h1>
           </div>
         </div>
@@ -767,7 +658,7 @@ Provide feedback on:
                 borderRadius: '0.5rem',
                 border: '1px solid #e5e7eb'
               }}>
-                {project.research_question}
+                {project?.research_question || 'Loading...'}
               </p>
             </div>
 
