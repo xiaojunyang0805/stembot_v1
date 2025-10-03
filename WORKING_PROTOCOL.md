@@ -590,66 +590,186 @@ Claude Process:
 ⚠️ KEY CHANGE: Force deployment BEFORE code debugging
 ```
 
-## 🗄️ **SUPABASE MIGRATION AUTOMATION**
+## 🗄️ **SUPABASE CONFIGURATION & MIGRATION AUTOMATION**
 
-### **Automated SQL Migration Execution**
-✅ **System Status**: Fully deployed and operational
-- **Documentation**: See `SUPABASE_AUTOMATION.md` for complete guide
-- **Quick Reference**: See `MIGRATION_QUICK_START.md` for commands
+### **🔐 Authentication Configuration**
 
-### **When You Need to Run Migrations:**
+#### **Common Authentication Issues:**
+1. **Invalid API Key Error**
+   - Go to: https://app.supabase.com/projects → Select `kutpbtpdgptcmrlabekq`
+   - Navigate to: Settings → API
+   - Copy fresh `anon public` and `service_role` keys
+   - Update in `.env.local`
+
+2. **Email Signups Disabled Error**
+   - Go to: Authentication → Settings
+   - Enable "Email" under "Auth Providers"
+   - Option 1: Disable "Confirm email" for instant registration (MVP testing)
+   - Option 2: Configure SMTP for email confirmation
+
+3. **Test Authentication Config**
+   ```bash
+   node test-auth-config.js
+   # Expected: ✅ SUCCESS: Email authentication is properly configured!
+   ```
+
+### **⚡ Automated SQL Migration Execution**
+
+#### **🚨 CRITICAL LIMITATION DISCOVERED (Oct 2025)**
+**Issue:** Supabase security model prevents automated DDL execution via client libraries
+- `@supabase/supabase-js` doesn't support raw SQL execution
+- `public.exec()` RPC function doesn't exist (by design, prevents SQL injection)
+- Direct PostgreSQL connection requires exact connection string from dashboard
+
+#### **✅ RECOMMENDED APPROACH: Manual Migration via Dashboard**
+**Fastest and Most Reliable (5-10 minutes for all migrations):**
+
+1. **Go to Supabase SQL Editor:**
+   - URL: https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
+
+2. **Execute Migrations in Order:**
+   - Copy contents from `supabase/migrations/[filename].sql`
+   - Paste into SQL Editor
+   - Click "Run" button
+   - **Ignore "already exists" errors** (these are safe)
+   - Only worry about other error types
+
+3. **Migration Files to Execute:**
+   ```
+   001_create_research_database.sql
+   002-009_fix_user_registration.sql (auth fixes - may be obsolete)
+   20250101_create_credibility_assessments.sql
+   20250101130000_create_gap_analyses.sql
+   20250101140000_create_source_organizations.sql
+   20250101150000_create_cross_phase_tables.sql
+   20250929105340_add_conversations_table.sql
+   20250929140000_add_project_documents_table.sql
+   20251003_create_project_methodology.sql
+   ```
+
+4. **Verification Query:**
+   ```sql
+   SELECT table_name
+   FROM information_schema.tables
+   WHERE table_schema = 'public'
+   ORDER BY table_name;
+   ```
+
+#### **🔧 ALTERNATIVE: Supabase CLI Method**
+**If you have direct database connection string:**
 
 ```bash
-# 1. Start dev server (if not running)
+# Get connection string from: Settings → Database → Connection String (Direct)
+# Format: postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres
+
+npx supabase db push --db-url "YOUR_DIRECT_CONNECTION_STRING"
+
+# Or dry-run first:
+npx supabase db push --db-url "..." --dry-run
+```
+
+**Supabase CLI Version:** 2.48.3 ✅ (Installed)
+
+#### **⚠️ DEPRECATED: API Endpoint Method**
+**Note:** The following method exists but has limitations due to Supabase security:
+
+**Available Tools:**
+- `scripts/execute-migration.js` - Node.js script (requires dev server)
+- `scripts/run-all-migrations.js` - Batch executor (blocks on missing RPC)
+- API: `/api/admin/execute-sql` (POST) - Requires `public.exec()` RPC (doesn't exist)
+- API: `/api/admin/test-migration` (GET) - Connection testing
+
+**Why It Doesn't Work Automatically:**
+```javascript
+// This approach fails because Supabase doesn't provide exec() RPC
+const { error } = await supabase.rpc('exec', { query: statement })
+// Error: Could not find the function public.exec(query) in the schema cache
+```
+
+**If You Still Want to Try (requires dev server):**
+```bash
+# 1. Start dev server
 npm run dev
 
-# 2. Execute migration automatically
+# 2. Execute single migration
 node scripts/execute-migration.js supabase/migrations/[filename].sql
 
-# 3. Verify success
-curl http://localhost:3000/api/admin/test-migration
-```
-
-**No more manual copy-paste to Supabase dashboard!** ✅
-
-### **Available Migration Tools:**
-
-#### **API Endpoints:**
-- `POST /api/admin/execute-sql` - Execute SQL migrations
-- `GET /api/admin/test-migration` - Check connection & table status
-- `GET /api/admin/verify-schema` - Verify table schemas
-
-#### **Scripts:**
-- `scripts/execute-migration.js` - Node.js (cross-platform) ⭐ **RECOMMENDED**
-- `scripts/execute-migration.sh` - Bash (Linux/Mac)
-- `scripts/Execute-Migration.ps1` - PowerShell (Windows)
-
-### **Migration Workflow Example:**
-
-```bash
-# Step 1: Create migration file
-# File: supabase/migrations/YYYYMMDD_description.sql
-
-# Step 2: Test dry-run first (safe, no changes)
+# 3. Dry-run test
 node scripts/execute-migration.js --dry-run supabase/migrations/[filename].sql
 
-# Step 3: Execute for real
-node scripts/execute-migration.js supabase/migrations/[filename].sql
-
-# Step 4: Verify it worked
+# 4. Verify
 curl http://localhost:3000/api/admin/test-migration
 ```
 
-### **Security Notes:**
-- Uses `SUPABASE_SERVICE_ROLE_KEY` for admin access
-- Local-only by default (requires dev server)
-- See `SUPABASE_AUTOMATION.md` for production security recommendations
+### **📊 Migration Status Tracking**
 
-### **Current Database Status:**
-- ✅ `project_methodology` table exists and verified
-- ✅ All RLS policies configured
-- ✅ Indexes created for performance
-- ✅ Triggers set up for auto-timestamps
+**Current Database Tables:**
+- ✅ `projects` - Core project management
+- ✅ `project_methodology` - Methodology storage (WP4)
+- ✅ `conversations` - AI chat history
+- ✅ `project_documents` - Document uploads
+- ⚠️ Research tables (gap_analyses, source_organizations, etc.) - **Check if applied**
+
+**Verification After Migration:**
+```sql
+-- Check specific table exists
+SELECT table_name
+FROM information_schema.tables
+WHERE table_schema = 'public'
+AND table_name = 'project_methodology';
+
+-- List all RLS policies
+SELECT schemaname, tablename, policyname
+FROM pg_policies
+WHERE schemaname = 'public';
+```
+
+### **🔐 Security Best Practices**
+
+**Environment Variables Required:**
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://kutpbtpdgptcmrlabekq.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon_key_from_dashboard]
+SUPABASE_SERVICE_ROLE_KEY=[service_role_key_from_dashboard]
+```
+
+**Service Role Key Protection:**
+- ✅ Never expose in client-side code
+- ✅ Only use in API routes or server components
+- ✅ Grants full database access (bypass RLS)
+- ⚠️ Rotate if compromised
+
+**Production Security for API Endpoints:**
+```typescript
+// Add to /api/admin/* routes before deployment
+const ALLOWED_IPS = ['YOUR_IP_ADDRESS']
+const API_KEY = process.env.ADMIN_API_KEY
+
+// IP whitelist check
+const ip = request.headers.get('x-forwarded-for')
+if (!ALLOWED_IPS.includes(ip)) {
+  return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
+}
+```
+
+### **🚨 Troubleshooting Migration Issues**
+
+**Error: "Table already exists"**
+- ✅ This is OK! Use `CREATE TABLE IF NOT EXISTS` in migrations
+- ✅ Safe to re-run migrations with this error
+
+**Error: "Permission denied"**
+- Check RLS policies aren't blocking service role
+- Use service role key, not anon key for migrations
+
+**Error: "Cannot connect to API"**
+- Ensure dev server is running: `npm run dev`
+- Check `.env.local` has `SUPABASE_SERVICE_ROLE_KEY`
+
+**Error: "Migration causes screen jumping / 404s"**
+- Table doesn't exist yet, apply migration ASAP
+- Example: `project_methodology` table required for methodology page
+- Graceful error handling in code helps but migration is the fix
 
 ---
 
@@ -659,8 +779,22 @@ curl http://localhost:3000/api/admin/test-migration
 # 🚨 DEPLOYMENT CRISIS (Multiple consecutive failures)
 npx vercel --prod --force    # FIRST ACTION - Force deployment
 
-# 🗄️ SUPABASE MIGRATIONS (Automated)
+# 🗄️ SUPABASE MIGRATIONS
+# Method 1: Manual (Recommended - Always Works)
+# Go to: https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
+# Copy/paste migration SQL and run
+
+# Method 2: CLI (if you have connection string)
+npx supabase db push --db-url "postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres"
+
+# Method 3: API endpoint (deprecated - requires dev server + RPC doesn't exist)
 node scripts/execute-migration.js supabase/migrations/[file].sql
+
+# Verify Supabase tables exist
+# Run in SQL Editor: SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
+
+# Test Supabase authentication
+node test-auth-config.js
 
 # Automated deployment check (preferred for diagnosis)
 bash scripts/auto-deploy-check.sh
