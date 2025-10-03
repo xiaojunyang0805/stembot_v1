@@ -71,9 +71,10 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
         setLoading(true);
 
         // Fetch project data
-        const { data: projectData, error: projectError } = await getProject(params.id);
+        const { data: projectData, error: projectError} = await getProject(params.id);
         if (projectError) {
           setError('Failed to load project');
+          setLoading(false); // Ensure loading state is cleared
           return;
         }
         setProject(projectData);
