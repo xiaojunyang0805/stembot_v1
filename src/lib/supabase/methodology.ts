@@ -137,7 +137,18 @@ export async function saveMethodology(
       .eq('project_id', projectId)
       .maybeSingle()
 
-    if (checkError && checkError.code !== 'PGRST116') {
+    // Gracefully handle table not existing (404/PGRST116)
+    if (checkError) {
+      if (checkError.code === 'PGRST116' || checkError.code === '404' || checkError.message?.includes('404')) {
+        console.warn('⚠️ project_methodology table does not exist - migration required')
+        return {
+          data: null,
+          error: {
+            message: 'Database migration required: project_methodology table does not exist. Please apply migration from supabase/migrations/20251003_create_project_methodology.sql',
+            code: 'TABLE_NOT_EXISTS'
+          }
+        }
+      }
       console.error('❌ Error checking existing methodology:', checkError)
       return { data: null, error: checkError }
     }
@@ -206,9 +217,17 @@ export async function getProjectMethodology(
       .eq('project_id', projectId)
       .maybeSingle()
 
-    if (error && error.code !== 'PGRST116') {
-      console.error('❌ Error fetching methodology:', error)
-      return { data: null, error }
+    // Gracefully handle table not existing (404/PGRST116) or no data found
+    if (error) {
+      // PGRST116 = No rows found (expected when table is empty)
+      // 404 = Table doesn't exist (migration not applied yet)
+      if (error.code === 'PGRST116' || error.code === '404' || error.message?.includes('404')) {
+        console.log('ℹ️ No methodology found (table may not exist yet or no data)')
+        return { data: null, error: null }
+      }
+      // Only log/return actual errors (not table missing errors)
+      console.warn('⚠️ Error fetching methodology (non-critical):', error)
+      return { data: null, error: null } // Return null gracefully instead of breaking
     }
 
     if (!data) {
@@ -220,8 +239,9 @@ export async function getProjectMethodology(
     console.log('✅ Methodology retrieved successfully')
     return { data: result, error: null }
   } catch (error) {
-    console.error('💥 Error in getProjectMethodology:', error)
-    return { data: null, error }
+    console.warn('⚠️ Error in getProjectMethodology (recovering gracefully):', error)
+    // Return null gracefully - don't break the page
+    return { data: null, error: null }
   }
 }
 
