@@ -117,18 +117,13 @@ export async function saveMethodology(
   try {
     console.log('💾 Saving methodology for project:', projectId)
 
-    // Validate project exists
     const client = getSupabaseClient()
-    const { data: project, error: projectError } = await client
-      .from('projects')
-      .select('id')
-      .eq('id', projectId)
-      .maybeSingle()
 
-    if (projectError || !project) {
-      console.error('❌ Project not found:', projectId, projectError)
-      return { data: null, error: projectError || new Error('Project not found') }
-    }
+    // Note: We skip project validation because:
+    // 1. The project_methodology table has a foreign key constraint to projects(id)
+    // 2. If project doesn't exist, the insert will fail with a FK error
+    // 3. RLS on projects table might prevent seeing the project even if it exists
+    // This is more efficient and avoids false negatives from RLS
 
     // Check if methodology already exists for this project
     const { data: existing, error: checkError } = await client
