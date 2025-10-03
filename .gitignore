@@ -18,8 +18,11 @@ certificates/
 # ====================================
 # These directories should never exist in public repo
 # NOTE: Specific files below are allowed for WP4-1.3
+# Important: Allow the directory itself first, then block contents, then whitelist
+!/src/lib/supabase/
 /src/lib/supabase/*
 !/src/lib/supabase/methodology.ts
+!/src/lib/pinecone/
 /src/lib/pinecone/*
 !/src/lib/pinecone/methodologyEmbeddings.ts
 # /src/lib/ai/ - KEEPING FOR GPT-5 NANO INTEGRATION
