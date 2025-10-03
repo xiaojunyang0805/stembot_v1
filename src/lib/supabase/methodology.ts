@@ -3,7 +3,7 @@
  * Handles persistence of methodology decisions to Supabase
  */
 
-import { supabase, createClientComponentClient } from '../supabase'
+import { supabase, createClientComponentClient } from '@/lib/supabase'
 
 // ============================================================================
 // TYPE DEFINITIONS
