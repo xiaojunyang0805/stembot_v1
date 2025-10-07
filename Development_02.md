@@ -1,15 +1,3 @@
-## Quick Summary - Latest Work
-
-**WP5-4: Simple Word/PDF Export (Day 42 Afternoon)** ✅
-- One-click paper export to Word documents
-- Export button in Writing page → Clean dialog → Professional .docx output
-- Auto-formats: title page, all sections (Intro/Methods/Results/Discussion/Conclusion), references
-- 12pt Times New Roman, double-spaced, 1-inch margins, < 15 second generation
-- Files: ExportDialog.tsx, /api/writing/export/route.ts, updated writing page
-- Dependencies: Added `docx` library for document generation
-
----
-
 WP4-5-6
 WP4 Step 1 Implementation Summary
 
@@ -914,5 +902,17 @@ StemBot can then display suggestions in chat format with same memory-driven cont
 - Add `/writing-help [section]` chat command
 - Show writing progress in chat: "You've written 150/800 words"
 - Enable multi-section suggestions: "Compare your Methods to your Introduction"
+
+---
+
+## Quick Summary - WP5-4 Export Feature
+
+**WP5-4: Simple Word/PDF Export (Day 42 Afternoon)** ✅
+- One-click paper export to Word documents
+- Export button in Writing page → Clean dialog → Professional .docx output
+- Auto-formats: title page, all sections (Intro/Methods/Results/Discussion/Conclusion), references
+- 12pt Times New Roman, double-spaced, 1-inch margins, < 15 second generation
+- Files: ExportDialog.tsx, /api/writing/export/route.ts, updated writing page
+- Dependencies: Added `docx` library for document generation
 
 ---
