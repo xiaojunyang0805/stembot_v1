@@ -10,6 +10,8 @@ import type { Project } from '../../../../types/database';
 import ProjectTimeline from '../../../../components/ui/ProjectTimeline';
 import WritingProgressDetail from '../../../../components/ui/WritingProgressDetail';
 import RecentActivity from '../../../../components/ui/RecentActivity';
+import { getWritingStatus, WritingStatus } from '../../../../lib/ai/writingContext';
+import { detectWritingNudge, NudgeInfo } from '../../../../lib/ai/nudgeDetector';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -24,6 +26,8 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [progressData, setProgressData] = useState<any>(null);
+  const [writingNudge, setWritingNudge] = useState<NudgeInfo | null>(null);
+  const [showNudge, setShowNudge] = useState(true);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -58,6 +62,16 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
         if (progressResponse.ok) {
           const progressData = await progressResponse.json();
           setProgressData(progressData);
+        }
+
+        // Fetch writing status and check for nudges
+        const writingStatus = await getWritingStatus(params.id);
+        if (writingStatus) {
+          const nudge = detectWritingNudge(writingStatus, params.id);
+          if (nudge.shouldShow && nudge.type === 'inactivity') {
+            // Only show inactivity nudges on Progress page (not almost_done or low_progress)
+            setWritingNudge(nudge);
+          }
         }
 
       } catch (err) {
@@ -346,6 +360,83 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
               nextMilestone={progressData.nextMilestone}
               estimatedCompletion={progressData.estimatedCompletion}
             />
+          )}
+
+          {/* Inactivity Nudge Banner */}
+          {writingNudge && writingNudge.type === 'inactivity' && showNudge && (
+            <div style={{
+              backgroundColor: '#eff6ff',
+              border: '1px solid #93c5fd',
+              borderRadius: '0.5rem',
+              padding: '1rem 1.5rem',
+              marginBottom: '2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'space-between',
+              gap: '1rem'
+            }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+                <span style={{ fontSize: '1.5rem' }}>ℹ️</span>
+                <div style={{ flex: 1 }}>
+                  <p style={{
+                    fontSize: '0.875rem',
+                    color: '#1e40af',
+                    margin: 0,
+                    lineHeight: '1.5'
+                  }}>
+                    {writingNudge.message}
+                  </p>
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <button
+                  onClick={() => router.push(writingNudge.actionUrl)}
+                  style={{
+                    padding: '0.5rem 1rem',
+                    backgroundColor: '#3b82f6',
+                    color: 'white',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    cursor: 'pointer',
+                    whiteSpace: 'nowrap'
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
+                  }}
+                >
+                  {writingNudge.actionText}
+                </button>
+
+                <button
+                  onClick={() => setShowNudge(false)}
+                  style={{
+                    padding: '0.5rem',
+                    backgroundColor: 'transparent',
+                    color: '#6b7280',
+                    border: 'none',
+                    borderRadius: '0.375rem',
+                    fontSize: '1.25rem',
+                    cursor: 'pointer',
+                    lineHeight: 1
+                  }}
+                  title="Dismiss"
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLButtonElement).style.backgroundColor = 'transparent';
+                  }}
+                >
+                  ×
+                </button>
+              </div>
+            </div>
           )}
 
           {/* Overall Progress */}

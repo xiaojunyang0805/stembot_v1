@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { LiteratureProgress, ProjectLiteratureState } from '@/lib/research/crossPhaseIntegration';
 import Link from 'next/link';
+import { getWritingStatus, WritingStatus } from '@/lib/ai/writingContext';
+import { getMemoryPanelNudge } from '@/lib/ai/nudgeDetector';
 
 // Question stages with colors and descriptions
 const QUESTION_STAGES = {
@@ -63,6 +65,23 @@ export function ProjectMemoryPanel({
 }: ProjectMemoryPanelProps) {
   const [showHistory, setShowHistory] = useState(false);
   const [showLiterature, setShowLiterature] = useState(false);
+  const [writingStatus, setWritingStatus] = useState<WritingStatus | null>(null);
+  const [writingNudge, setWritingNudge] = useState<{ message: string; actionUrl: string } | null>(null);
+
+  // Fetch writing status when component mounts
+  useEffect(() => {
+    if (projectId) {
+      getWritingStatus(projectId).then(status => {
+        setWritingStatus(status);
+        if (status) {
+          const nudge = getMemoryPanelNudge(status, projectId);
+          setWritingNudge(nudge);
+        }
+      }).catch(err => {
+        console.warn('Failed to fetch writing status for memory panel:', err);
+      });
+    }
+  }, [projectId]);
 
   const currentStage = QUESTION_STAGES[questionStage];
   const progressPercentage = currentStage.progress;
@@ -602,6 +621,66 @@ export function ProjectMemoryPanel({
               View Details →
             </Link>
           )}
+        </div>
+      )}
+
+      {/* Writing Progress Nudge */}
+      {writingNudge && (
+        <div style={{
+          backgroundColor: '#fef3c7',
+          padding: '1rem',
+          borderRadius: '0.375rem',
+          marginBottom: '1rem',
+          border: '1px solid #fde68a'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            marginBottom: '0.5rem'
+          }}>
+            <span style={{ fontSize: '1rem' }}>💡</span>
+            <span style={{
+              fontSize: '0.875rem',
+              fontWeight: '600',
+              color: '#92400e'
+            }}>
+              Writing Tip
+            </span>
+          </div>
+
+          <p style={{
+            fontSize: '0.75rem',
+            color: '#78350f',
+            margin: 0,
+            marginBottom: '0.75rem',
+            lineHeight: '1.4'
+          }}>
+            {writingNudge.message}
+          </p>
+
+          <Link
+            href={writingNudge.actionUrl}
+            style={{
+              display: 'inline-block',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#f59e0b',
+              color: 'white',
+              borderRadius: '0.25rem',
+              fontSize: '0.75rem',
+              fontWeight: '500',
+              textDecoration: 'none',
+              transition: 'background-color 0.2s ease'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLAnchorElement).style.backgroundColor = '#d97706';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLAnchorElement).style.backgroundColor = '#f59e0b';
+            }}
+          >
+            Continue Writing →
+          </Link>
         </div>
       )}
 
