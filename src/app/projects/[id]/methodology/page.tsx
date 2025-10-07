@@ -11,6 +11,13 @@ import { StudyDesignForm } from '../../../../components/methodology/StudyDesignF
 import type { Project } from '../../../../types/database';
 import { saveMethodology, getProjectMethodology, type MethodologyData } from '@/lib/supabase/methodology';
 import { createMethodologyEmbedding } from '@/lib/pinecone/methodologyEmbeddings';
+import {
+  ErrorDisplay,
+  SaveErrorDisplay,
+  GenericMethodologyGuidelines,
+  MethodologyLocalStorage,
+  retryWithBackoff
+} from '../../../../components/methodology/ErrorBoundary';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -47,6 +54,11 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+
+  // Error handling state
+  const [recommendationError, setRecommendationError] = useState<string | null>(null);
+  const [saveError, setSaveError] = useState<string | null>(null);
+  const [criticalCheckError, setCriticalCheckError] = useState<string | null>(null);
 
   // Methodology state
   const [loadingRecommendation, setLoadingRecommendation] = useState(true); // Start as true to prevent flash
@@ -174,12 +186,15 @@ export default function MethodologyPage({ params }: { params: { id: string } }) 
     fetchData();
   }, [params.id, user]);
 
-  // Generate methodology recommendation
+  // Generate methodology recommendation with retry logic
   const generateMethodologyRecommendation = async (researchQuestion: string) => {
     setLoadingRecommendation(true);
+    setRecommendationError(null); // Clear previous errors
+
     try {
-      // Call AI API to generate recommendation
-      const response = await fetch('/api/ai/enhanced-chat', {
+      // Retry with exponential backoff
+      const response = await retryWithBackoff(
+        () => fetch('/api/ai/enhanced-chat', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -224,7 +239,10 @@ Make your language encouraging and accessible for novice researchers.`
           },
           useEnhanced: true
         })
-      });
+      }),
+        3, // max retries
+        1000 // initial delay in ms
+      );
 
       if (response.ok) {
         const data = await response.json();
@@ -276,6 +294,8 @@ Make your language encouraging and accessible for novice researchers.`
       }
     } catch (error) {
       console.error('Error generating recommendation:', error);
+      setRecommendationError('We encountered an issue generating a personalized recommendation. You can try again or use the generic guidelines below.');
+
       // Set fallback recommendation
       setRecommendation({
         title: 'Exploratory Study',
@@ -295,24 +315,49 @@ Make your language encouraging and accessible for novice researchers.`
     }
   };
 
-  // Handle methodology selection
+  // Retry recommendation generation
+  const retryRecommendation = () => {
+    if (project?.research_question) {
+      generateMethodologyRecommendation(project.research_question);
+    }
+  };
+
+  // Handle methodology selection with error handling and retry
   const handleAcceptMethodology = async () => {
     if (!recommendation || !project) return;
 
     try {
-      // Save methodology to database
-      const { data, error } = await saveMethodology(params.id, {
-        methodType: recommendation.title.toLowerCase().replace(' ', '_'),
-        methodName: recommendation.title,
-        reasoning: recommendation.rationale,
-        independentVariables: [],
-        dependentVariables: [],
-        controlVariables: []
+      setSaveError(null); // Clear previous errors
+
+      // Save to local storage first as backup
+      MethodologyLocalStorage.save(params.id, {
+        recommendation,
+        timestamp: Date.now()
       });
+
+      // Save methodology to database with retry logic
+      const saveOperation = async () => {
+        const result = await saveMethodology(params.id, {
+          methodType: recommendation.title.toLowerCase().replace(' ', '_'),
+          methodName: recommendation.title,
+          reasoning: recommendation.rationale,
+          independentVariables: [],
+          dependentVariables: [],
+          controlVariables: []
+        });
+
+        if (result.error) {
+          throw new Error('Failed to save methodology');
+        }
+
+        return result;
+      };
+
+      const { data, error } = await retryWithBackoff(saveOperation, 3, 1000);
 
       if (error) {
         console.error('Error saving methodology:', error);
-        alert('Failed to save methodology. Please try again.');
+        setSaveError('Failed to save methodology after multiple attempts. Your work is saved locally.');
         return;
       }
 
@@ -325,7 +370,7 @@ Make your language encouraging and accessible for novice researchers.`
       console.log('✅ Methodology saved successfully:', data);
     } catch (err) {
       console.error('Error in handleAcceptMethodology:', err);
-      alert('Failed to save methodology. Please try again.');
+      setSaveError('An unexpected error occurred while saving. Your work is saved locally and we\'ll keep trying to sync it.');
     }
   };
 
@@ -787,6 +832,28 @@ Provide feedback on:
               {isSidebarOpen ? '◀' : '▶'}
             </button>
           </div>
+
+          {/* Error Displays */}
+          {recommendationError && (
+            <ErrorDisplay
+              error={recommendationError}
+              onRetry={retryRecommendation}
+              showFallback={true}
+              fallbackContent={<GenericMethodologyGuidelines />}
+            />
+          )}
+
+          {saveError && (
+            <SaveErrorDisplay
+              onRetry={() => {
+                // Retry last save operation
+                if (methodologySelected) {
+                  handleAcceptMethodology();
+                }
+              }}
+              localCopySaved={true}
+            />
+          )}
 
           {/* Method Recommendation Card */}
           <MethodRecommendationCard
