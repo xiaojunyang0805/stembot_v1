@@ -1,7 +1,7 @@
 -- Create credibility_assessments table for caching AI-powered credibility assessments
 -- This table stores credibility assessments to avoid re-analyzing the same papers
 
-CREATE TABLE credibility_assessments (
+CREATE TABLE IF NOT EXISTS credibility_assessments (
   id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
 
   -- Source identification
@@ -20,10 +20,10 @@ CREATE TABLE credibility_assessments (
 );
 
 -- Add indexes for efficient querying
-CREATE INDEX idx_credibility_assessments_source_hash ON credibility_assessments(source_hash);
-CREATE INDEX idx_credibility_assessments_journal ON credibility_assessments(journal);
-CREATE INDEX idx_credibility_assessments_year ON credibility_assessments(year);
-CREATE INDEX idx_credibility_assessments_created_at ON credibility_assessments(created_at);
+CREATE INDEX IF NOT EXISTS idx_credibility_assessments_source_hash ON credibility_assessments(source_hash);
+CREATE INDEX IF NOT EXISTS idx_credibility_assessments_journal ON credibility_assessments(journal);
+CREATE INDEX IF NOT EXISTS idx_credibility_assessments_year ON credibility_assessments(year);
+CREATE INDEX IF NOT EXISTS idx_credibility_assessments_created_at ON credibility_assessments(created_at);
 
 -- Add RLS (Row Level Security) - assessments are public for efficiency
 ALTER TABLE credibility_assessments ENABLE ROW LEVEL SECURITY;

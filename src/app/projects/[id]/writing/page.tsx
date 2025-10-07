@@ -22,6 +22,9 @@ export default function WritingPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [outline, setOutline] = useState<any>(null);
+  const [generatingOutline, setGeneratingOutline] = useState(false);
+  const [loadingOutline, setLoadingOutline] = useState(true);
 
   // Fetch project data and documents
   useEffect(() => {
@@ -52,16 +55,51 @@ export default function WritingPage({ params }: { params: { id: string } }) {
           setDocuments(documentsData);
         }
 
+        // Fetch existing outline
+        const outlineResponse = await fetch(`/api/writing/get-outline?projectId=${params.id}`);
+        if (outlineResponse.ok) {
+          const outlineData = await outlineResponse.json();
+          if (outlineData.outline) {
+            setOutline(outlineData.outline.outline_data);
+          }
+        }
+        setLoadingOutline(false);
+
       } catch (err) {
         console.error('Error fetching data:', err);
         setError('Failed to load project data');
       } finally {
         setLoading(false);
+        setLoadingOutline(false);
       }
     };
 
     fetchData();
   }, [params.id, user]);
+
+  // Generate outline
+  const handleGenerateOutline = async () => {
+    setGeneratingOutline(true);
+    try {
+      const response = await fetch('/api/writing/generate-outline', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ projectId: params.id })
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to generate outline');
+      }
+
+      const data = await response.json();
+      setOutline(data.outline);
+    } catch (err) {
+      console.error('Error generating outline:', err);
+      alert('Failed to generate outline. Please try again.');
+    } finally {
+      setGeneratingOutline(false);
+    }
+  };
 
   if (loading) {
     return (
@@ -378,6 +416,208 @@ export default function WritingPage({ params }: { params: { id: string } }) {
           <div style={{ marginBottom: '2rem' }}>
             <CitationDatabase projectId={params.id} />
           </div>
+
+          {/* Paper Outline Section */}
+          {!loadingOutline && !outline && (
+            <div style={{
+              backgroundColor: '#eff6ff',
+              border: '2px solid #3b82f6',
+              borderRadius: '0.5rem',
+              padding: '2rem',
+              marginBottom: '2rem',
+              textAlign: 'center'
+            }}>
+              <h2 style={{
+                fontSize: '1.5rem',
+                fontWeight: '600',
+                color: '#1e40af',
+                marginBottom: '1rem'
+              }}>
+                📝 Generate Your Paper Outline
+              </h2>
+              <p style={{
+                fontSize: '1rem',
+                color: '#1e40af',
+                lineHeight: '1.6',
+                marginBottom: '1.5rem',
+                maxWidth: '600px',
+                margin: '0 auto 1.5rem auto'
+              }}>
+                Get started with a structured outline based on your research question,
+                literature sources, and methodology.
+              </p>
+              <button
+                onClick={handleGenerateOutline}
+                disabled={generatingOutline}
+                style={{
+                  backgroundColor: generatingOutline ? '#9ca3af' : '#3b82f6',
+                  color: 'white',
+                  padding: '0.75rem 2rem',
+                  borderRadius: '0.5rem',
+                  border: 'none',
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  cursor: generatingOutline ? 'not-allowed' : 'pointer'
+                }}
+                onMouseEnter={(e) => {
+                  if (!generatingOutline) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                  }
+                }}
+                onMouseLeave={(e) => {
+                  if (!generatingOutline) {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
+                  }
+                }}
+              >
+                {generatingOutline ? 'Generating Outline...' : 'Generate Paper Outline'}
+              </button>
+            </div>
+          )}
+
+          {/* Display Generated Outline */}
+          {outline && (
+            <div style={{
+              backgroundColor: 'white',
+              border: '2px solid #10b981',
+              borderRadius: '0.5rem',
+              padding: '2rem',
+              marginBottom: '2rem'
+            }}>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                marginBottom: '1.5rem'
+              }}>
+                <h2 style={{
+                  fontSize: '1.5rem',
+                  fontWeight: '600',
+                  color: '#047857'
+                }}>
+                  📋 Your Paper Outline
+                </h2>
+                <button
+                  onClick={handleGenerateOutline}
+                  disabled={generatingOutline}
+                  style={{
+                    backgroundColor: 'transparent',
+                    border: '1px solid #10b981',
+                    color: '#047857',
+                    padding: '0.5rem 1rem',
+                    borderRadius: '0.375rem',
+                    fontSize: '0.875rem',
+                    fontWeight: '500',
+                    cursor: 'pointer'
+                  }}
+                >
+                  {generatingOutline ? 'Regenerating...' : 'Regenerate'}
+                </button>
+              </div>
+
+              {/* Research Question */}
+              {outline.researchQuestion && (
+                <div style={{
+                  backgroundColor: '#f0fdf4',
+                  padding: '1rem',
+                  borderRadius: '0.375rem',
+                  marginBottom: '1.5rem'
+                }}>
+                  <p style={{
+                    fontSize: '0.875rem',
+                    fontWeight: '600',
+                    color: '#047857',
+                    marginBottom: '0.5rem'
+                  }}>
+                    Research Question:
+                  </p>
+                  <p style={{
+                    fontSize: '0.875rem',
+                    color: '#065f46',
+                    lineHeight: '1.5',
+                    margin: 0
+                  }}>
+                    {outline.researchQuestion}
+                  </p>
+                </div>
+              )}
+
+              {/* Outline Sections */}
+              {outline.sections && outline.sections.map((section: any, index: number) => (
+                <div key={index} style={{
+                  marginBottom: '1.5rem',
+                  paddingBottom: '1.5rem',
+                  borderBottom: index < outline.sections.length - 1 ? '1px solid #e5e7eb' : 'none'
+                }}>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'baseline',
+                    gap: '0.5rem',
+                    marginBottom: '0.75rem'
+                  }}>
+                    <h3 style={{
+                      fontSize: '1.125rem',
+                      fontWeight: '600',
+                      color: '#111827',
+                      margin: 0
+                    }}>
+                      {section.title}
+                    </h3>
+                    <span style={{
+                      fontSize: '0.875rem',
+                      color: '#6b7280',
+                      fontStyle: 'italic'
+                    }}>
+                      ({section.wordTarget} words target)
+                    </span>
+                  </div>
+                  <ul style={{
+                    margin: 0,
+                    paddingLeft: '1.5rem',
+                    listStyleType: 'disc'
+                  }}>
+                    {section.keyPoints && section.keyPoints.map((point: string, pointIndex: number) => (
+                      <li key={pointIndex} style={{
+                        fontSize: '0.875rem',
+                        color: '#374151',
+                        lineHeight: '1.6',
+                        marginBottom: '0.5rem'
+                      }}>
+                        {point}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ))}
+
+              {/* Start Writing Button */}
+              <div style={{
+                marginTop: '2rem',
+                textAlign: 'center'
+              }}>
+                <button
+                  style={{
+                    backgroundColor: '#10b981',
+                    color: 'white',
+                    padding: '0.75rem 2rem',
+                    borderRadius: '0.5rem',
+                    border: 'none',
+                    fontSize: '1rem',
+                    fontWeight: '600',
+                    cursor: 'pointer'
+                  }}
+                  onMouseEnter={(e) => {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#059669';
+                  }}
+                  onMouseLeave={(e) => {
+                    (e.target as HTMLButtonElement).style.backgroundColor = '#10b981';
+                  }}
+                >
+                  Start Writing
+                </button>
+              </div>
+            </div>
+          )}
 
           {/* Writing Content */}
           <div style={{
