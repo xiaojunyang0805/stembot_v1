@@ -613,13 +613,23 @@ Claude Process:
    # Expected: ✅ SUCCESS: Email authentication is properly configured!
    ```
 
-### **⚡ Automated SQL Migration Execution**
+### **⚡ SQL Migration Execution**
 
-#### **🚨 CRITICAL LIMITATION DISCOVERED (Oct 2025)**
-**Issue:** Supabase security model prevents automated DDL execution via client libraries
-- `@supabase/supabase-js` doesn't support raw SQL execution
-- `public.exec()` RPC function doesn't exist (by design, prevents SQL injection)
-- Direct PostgreSQL connection requires exact connection string from dashboard
+#### **🚨 CONFIRMED: No Automated API Method Available (Tested Oct 7, 2025)**
+**Conclusion After Testing All Methods:** Manual SQL Editor is the ONLY reliable way to execute migrations.
+
+**What We Tested:**
+1. ❌ **PostgREST /rpc endpoint** - Error: `PGRST202` (no `exec_sql` function)
+2. ❌ **pg-meta API** - Error: `404` (path doesn't exist)
+3. ❌ **Supabase Management API** - Error: `401` (requires personal access token, not service_role_key)
+4. ❌ **Supabase Client Library** - Error: `exec_sql` not found (by design)
+5. ❌ **service_role_key via REST** - No raw SQL execution endpoints available
+
+**Why Automation Doesn't Work:**
+- Supabase intentionally blocks raw SQL execution via API (prevents SQL injection)
+- `service_role_key` only bypasses RLS policies, doesn't grant SQL execution rights
+- Management API is for project configuration, not SQL execution
+- Custom RPC functions would need to be created first (chicken-egg problem)
 
 #### **✅ RECOMMENDED APPROACH: Manual Migration via Dashboard**
 **Fastest and Most Reliable (5-10 minutes for all migrations):**
@@ -645,6 +655,8 @@ Claude Process:
    20250929105340_add_conversations_table.sql
    20250929140000_add_project_documents_table.sql
    20251003_create_project_methodology.sql
+   20251007191629_paper_outlines_table.sql
+   20251007200000_create_paper_sections.sql ⬅️ PENDING (WP5-2)
    ```
 
 4. **Verification Query:**
@@ -670,42 +682,27 @@ npx supabase db push --db-url "..." --dry-run
 
 **Supabase CLI Version:** 2.48.3 ✅ (Installed)
 
-#### **⚠️ DEPRECATED: API Endpoint Method**
-**Note:** The following method exists but has limitations due to Supabase security:
+#### **⚠️ REMOVED: API/Automated Methods**
+**After comprehensive testing (Oct 7, 2025), all automated methods have been confirmed non-functional.**
 
-**Available Tools:**
-- `scripts/execute-migration.js` - Node.js script (requires dev server)
-- `scripts/run-all-migrations.js` - Batch executor (blocks on missing RPC)
-- API: `/api/admin/execute-sql` (POST) - Requires `public.exec()` RPC (doesn't exist)
-- API: `/api/admin/test-migration` (GET) - Connection testing
+**Deprecated Scripts (kept for reference only):**
+- `scripts/test-supabase-sql-api.js` - Tests all API methods (all fail)
+- `scripts/apply-migration-direct.js` - Attempts direct execution (fails)
+- `scripts/execute-migration.js` - Requires non-existent RPC functions
+- `scripts/run-all-migrations.js` - Same limitation
+- API: `/api/admin/execute-sql` - Requires `public.exec()` RPC (doesn't exist)
 
-**Why It Doesn't Work Automatically:**
-```javascript
-// This approach fails because Supabase doesn't provide exec() RPC
-const { error } = await supabase.rpc('exec', { query: statement })
-// Error: Could not find the function public.exec(query) in the schema cache
-```
+**Test Results:** See `scripts/test-supabase-sql-api.js` for comprehensive failure documentation.
 
-**If You Still Want to Try (requires dev server):**
-```bash
-# 1. Start dev server
-npm run dev
-
-# 2. Execute single migration
-node scripts/execute-migration.js supabase/migrations/[filename].sql
-
-# 3. Dry-run test
-node scripts/execute-migration.js --dry-run supabase/migrations/[filename].sql
-
-# 4. Verify
-curl http://localhost:3000/api/admin/test-migration
-```
+**Conclusion:** Use Manual SQL Editor (Method 1) - it's actually faster than debugging API methods!
 
 ### **📊 Migration Status Tracking**
 
 **Current Database Tables:**
 - ✅ `projects` - Core project management
 - ✅ `project_methodology` - Methodology storage (WP4)
+- ✅ `paper_outlines` - Paper outline generator (WP5-1)
+- ⏳ `paper_sections` - Section-by-section writing (WP5-2) - **PENDING MIGRATION**
 - ✅ `conversations` - AI chat history
 - ✅ `project_documents` - Document uploads
 - ⚠️ Research tables (gap_analyses, source_organizations, etc.) - **Check if applied**
@@ -780,15 +777,16 @@ if (!ALLOWED_IPS.includes(ip)) {
 npx vercel --prod --force    # FIRST ACTION - Force deployment
 
 # 🗄️ SUPABASE MIGRATIONS
-# Method 1: Manual (Recommended - Always Works)
+# Method 1: Manual SQL Editor (✅ ONLY WORKING METHOD)
 # Go to: https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
 # Copy/paste migration SQL and run
+# ⚠️ Note: All API-based automation methods have been tested and confirmed non-functional
 
-# Method 2: CLI (if you have connection string)
+# Method 2: CLI (if you have direct database connection string)
 npx supabase db push --db-url "postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres"
 
-# Method 3: API endpoint (deprecated - requires dev server + RPC doesn't exist)
-node scripts/execute-migration.js supabase/migrations/[file].sql
+# ❌ REMOVED: API/Automated methods (all tested and failed Oct 7, 2025)
+# See WORKING_PROTOCOL.md § "REMOVED: API/Automated Methods" for details
 
 # Verify Supabase tables exist
 # Run in SQL Editor: SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
