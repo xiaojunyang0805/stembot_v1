@@ -83,6 +83,31 @@ git push origin main --force
 - `npm run storybook` - Start Storybook development server
 - `npm run build-storybook` - Build Storybook for production
 
+## 📝 Documentation Protocol
+
+### **Development Notes - ALWAYS ADD TO END OF FILE**
+**CRITICAL**: When documenting completed work in `Development_02.md`:
+
+❌ **NEVER add notes to the top of the file**
+✅ **ALWAYS add new development notes to the END of the file**
+
+**Format for New Entries:**
+```markdown
+---
+
+## Quick Summary - [Feature Name]
+
+**WP#-#: [Task Name] (Day ## [Morning/Afternoon])** ✅
+- Brief bullet points of what was implemented
+- Key files created/modified
+- Notable technical decisions
+- Dependencies added (if any)
+
+---
+```
+
+**Reason**: The user maintains chronological order with latest work at the bottom. This preserves the development timeline and makes it easy to see progression.
+
 ## Project Architecture
 
 ### Framework & Stack
