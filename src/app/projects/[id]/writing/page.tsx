@@ -6,6 +6,7 @@ import { useAuth } from '../../../../providers/AuthProvider';
 import { getProject } from '../../../../lib/database/projects';
 import { trackProjectActivity } from '../../../../lib/database/activity';
 import type { Project } from '../../../../types/database';
+import ExportDialog from '../../../../components/ui/ExportDialog';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -41,6 +42,7 @@ export default function WritingPage({ params }: { params: { id: string } }) {
   const [showHelp, setShowHelp] = useState(false);
   const [helpSuggestions, setHelpSuggestions] = useState<string[]>([]);
   const [loadingSuggestions, setLoadingSuggestions] = useState(false);
+  const [showExportDialog, setShowExportDialog] = useState(false);
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   // Fetch project data and sections
@@ -274,6 +276,30 @@ export default function WritingPage({ params }: { params: { id: string } }) {
               {project.title} - Writing
             </h1>
           </div>
+          <button
+            onClick={() => setShowExportDialog(true)}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              padding: '0.5rem 1rem',
+              backgroundColor: '#3b82f6',
+              border: 'none',
+              borderRadius: '0.375rem',
+              color: 'white',
+              fontSize: '0.875rem',
+              fontWeight: '500',
+              cursor: 'pointer'
+            }}
+            onMouseEnter={(e) => {
+              (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+            }}
+            onMouseLeave={(e) => {
+              (e.target as HTMLButtonElement).style.backgroundColor = '#3b82f6';
+            }}
+          >
+            📄 Export Paper
+          </button>
         </div>
       </header>
 
@@ -542,6 +568,14 @@ export default function WritingPage({ params }: { params: { id: string } }) {
           </div>
         </div>
       </div>
+
+      {/* Export Dialog */}
+      <ExportDialog
+        isOpen={showExportDialog}
+        onClose={() => setShowExportDialog(false)}
+        projectId={params.id}
+        projectTitle={project.title}
+      />
     </div>
   );
 }
