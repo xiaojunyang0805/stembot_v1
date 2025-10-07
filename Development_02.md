@@ -1011,3 +1011,109 @@ I can help you write this up in academic format. Want to start?"
 - Auto-deployed to Vercel ✅
 
 ---
+
+
+## Quick Summary - WP5-7 Simple Progress Nudges
+
+**WP5-7: Gentle Progress Reminders (Day 44 Morning)** ✅
+- Added gentle, helpful nudges in 2 locations (never aggressive or stressful)
+- Smart trigger detection based on writing inactivity and section progress
+- Always dismissible with X button - never blocks interface
+
+**Nudge Locations:**
+
+**1. Workspace Memory Panel** - Yellow "Writing Tip" box
+- Shows current writing progress
+- Example: "You're 15% done with your paper. Your Introduction is 50% complete (150/800 words)."
+- [Continue Writing →] button
+- Appears when student has writing in progress
+
+**2. Progress Page** - Light blue dismissible banner
+- Shows only for inactivity (>7 days since last writing)
+- Example: "It's been 8 days since you worked on your paper. Your Introduction is waiting at 150/800 words."
+- [Continue Introduction] button + [×] dismiss button
+- Banner disappears when dismissed
+
+**Nudge Triggers (Very Gentle):**
+1. **Inactivity** - Shows after 7+ days without writing activity
+2. **Almost Done** - Section >80% complete (e.g., "Just 80 more words!")
+3. **Low Progress** - <20% overall + section stalled for 3+ days
+
+**Nudge Rules:**
+✅ Maximum 1 nudge at a time
+✅ Always dismissible
+✅ Never blocks interface
+✅ Never sends email/push notifications
+✅ Always positive tone ("Great progress!")
+✅ Includes specific data (word counts, section names)
+✅ Only shows when actually helpful
+
+**Example Nudge Messages:**
+
+**After 7 days inactive:**
+"It's been a week since you worked on your paper. Your Introduction is waiting at 150/800 words."
+
+**Section almost done:**
+"Great progress! Your Introduction is 720/800 words. Just 80 more words to complete this section."
+
+**Low progress but section started:**
+"You're 15% done with your paper. Your Introduction is in progress (150/800 words)."
+
+**Technical Implementation:**
+- Files created: `src/lib/ai/nudgeDetector.ts`
+- Files modified: 
+  - `src/components/workspace/ProjectMemoryPanel.tsx` - Added yellow Writing Tip nudge
+  - `src/app/projects/[id]/progress/page.tsx` - Added blue inactivity banner
+- Uses existing `WritingStatus` from `writingContext.ts`
+- Calculates days since last activity from `updated_at` timestamp
+- Smart detection: Only inactivity nudges on Progress page, all types in Workspace
+
+**Key Features:**
+- ✅ Non-intrusive design - fits naturally into existing UI
+- ✅ Context-aware messaging - references actual section names and word counts
+- ✅ Time-aware triggers - calculates days/hours since last activity
+- ✅ Positive psychology - "Great progress!" instead of "You're behind"
+- ✅ Actionable buttons - Direct link to writing page
+- ✅ Dismissible state management - Users can hide nudges temporarily
+
+**Nudge Detection Logic:**
+```typescript
+// Trigger 1: Inactivity (7+ days)
+if (daysInactive >= 7) {
+  return "It's been X days since you worked on your paper..."
+}
+
+// Trigger 2: Almost done (>80% complete)
+if (sectionWords >= targetWords * 0.8) {
+  return "Great progress! Just X more words to complete..."
+}
+
+// Trigger 3: Low progress (<20% + 3 days stalled)
+if (overallProgress < 20 && daysInactive >= 3) {
+  return "You're X% done with your paper. Ready to continue?"
+}
+```
+
+**NO Complex Features (Intentionally Simple):**
+- ❌ No milestone celebrations
+- ❌ No achievement tracking system
+- ❌ No aggressive deadline warnings
+- ❌ No stress-inducing language
+- ❌ No email notifications
+- ❌ No push notifications
+- ✅ Just: Gentle, helpful, informative nudges
+
+**Design Philosophy:**
+- Helpful, not annoying
+- Informative, not pushy
+- Encouraging, not stressful
+- Optional, not mandatory
+- Context-aware, not generic
+
+**Deployment:**
+- Commit: `0d2a58b`
+- Build: Successful ✅
+- Type Check: Passed ✅
+- Auto-deployed to Vercel ✅
+
+---
