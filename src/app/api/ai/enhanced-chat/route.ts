@@ -5,6 +5,7 @@ import {
   QuestionMemoryHelpers
 } from '../../../../lib/memory/questionMemory';
 import { getLiteratureContextForChat, isLiteratureQuery } from '../../../../lib/chat/literatureContext';
+import { getWritingContextForChat, isWritingQuery } from '../../../../lib/ai/writingContext';
 
 // Inline GPT-5 nano client to avoid import issues
 interface ChatMessage {
@@ -209,6 +210,16 @@ async function createDynamicSystemPrompt(projectContext?: any, userMessage?: str
       }
     } catch (error) {
       console.warn('Error retrieving literature context:', error);
+    }
+
+    // Add writing context if available (NEW: WP5-6 integration)
+    try {
+      const writingContext = await getWritingContextForChat(projectContext.projectId, userMessage);
+      if (writingContext.hasWriting && writingContext.contextPrompt) {
+        basePrompt += writingContext.contextPrompt;
+      }
+    } catch (error) {
+      console.warn('Error retrieving writing context:', error);
     }
   }
 
