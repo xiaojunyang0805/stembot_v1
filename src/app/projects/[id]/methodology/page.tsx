@@ -806,10 +806,17 @@ Provide feedback on:
                 participants,
                 procedure
               }}
+              methodologyType={recommendation?.title.toLowerCase().replace(' ', '_') || ''}
+              methodologyName={recommendation?.title || ''}
+              reasoning={recommendation?.rationale}
               onSaveVariables={handleSaveVariables}
               onSaveParticipants={handleSaveParticipants}
               onSaveProcedure={handleSaveProcedure}
               onRequestProcedureFeedback={handleRequestProcedureFeedback}
+              onContinueAfterCheck={() => {
+                console.log('✅ Methodology complete - ready to continue');
+                // Could navigate to next step here
+              }}
             />
           )}
         </div>
