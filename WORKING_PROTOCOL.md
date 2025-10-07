@@ -615,86 +615,38 @@ Claude Process:
 
 ### **⚡ SQL Migration Execution**
 
-#### **🚨 CONFIRMED: No Automated API Method Available (Tested Oct 7, 2025)**
-**Conclusion After Testing All Methods:** Manual SQL Editor is the ONLY reliable way to execute migrations.
+#### **✅ ONLY WORKING METHOD: Manual SQL Editor**
 
-**What We Tested:**
-1. ❌ **PostgREST /rpc endpoint** - Error: `PGRST202` (no `exec_sql` function)
-2. ❌ **pg-meta API** - Error: `404` (path doesn't exist)
-3. ❌ **Supabase Management API** - Error: `401` (requires personal access token, not service_role_key)
-4. ❌ **Supabase Client Library** - Error: `exec_sql` not found (by design)
-5. ❌ **service_role_key via REST** - No raw SQL execution endpoints available
+**Tested 5 Automated Methods with service_role_key (Oct 7, 2025) - All Failed:**
+1. ❌ PostgREST /rpc endpoint - `PGRST202` (no `exec_sql` function)
+2. ❌ pg-meta API - `404` (path doesn't exist)
+3. ❌ Supabase Management API - `401` (requires personal access token)
+4. ❌ Supabase Client Library - No raw SQL execution support
+5. ❌ service_role_key via REST - No SQL execution endpoints
 
-**Why Automation Doesn't Work:**
-- Supabase intentionally blocks raw SQL execution via API (prevents SQL injection)
-- `service_role_key` only bypasses RLS policies, doesn't grant SQL execution rights
-- Management API is for project configuration, not SQL execution
-- Custom RPC functions would need to be created first (chicken-egg problem)
+**Why Automation Fails:**
+- Supabase blocks raw SQL via API by design (prevents SQL injection)
+- `service_role_key` only bypasses RLS, doesn't grant SQL execution
+- Would need custom RPC functions first (chicken-egg problem)
 
-#### **✅ RECOMMENDED APPROACH: Manual Migration via Dashboard**
-**Fastest and Most Reliable (5-10 minutes for all migrations):**
+---
 
-1. **Go to Supabase SQL Editor:**
-   - URL: https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
+**Manual SQL Editor (5 minutes):**
 
-2. **Execute Migrations in Order:**
-   - Copy contents from `supabase/migrations/[filename].sql`
-   - Paste into SQL Editor
-   - Click "Run" button
-   - **Ignore "already exists" errors** (these are safe)
-   - Only worry about other error types
+1. **Open:** https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
+2. **Copy** migration from `supabase/migrations/[filename].sql`
+3. **Paste** into SQL Editor
+4. **Click** "Run" button
+5. **Ignore** "already exists" errors (these are safe)
 
-3. **Migration Files to Execute:**
-   ```
-   001_create_research_database.sql
-   002-009_fix_user_registration.sql (auth fixes - may be obsolete)
-   20250101_create_credibility_assessments.sql
-   20250101130000_create_gap_analyses.sql
-   20250101140000_create_source_organizations.sql
-   20250101150000_create_cross_phase_tables.sql
-   20250929105340_add_conversations_table.sql
-   20250929140000_add_project_documents_table.sql
-   20251003_create_project_methodology.sql
-   20251007191629_paper_outlines_table.sql
-   20251007200000_create_paper_sections.sql ⬅️ PENDING (WP5-2)
-   ```
+**Pending Migrations:**
+- `20251007200000_create_paper_sections.sql` ⬅️ WP5-2
 
-4. **Verification Query:**
-   ```sql
-   SELECT table_name
-   FROM information_schema.tables
-   WHERE table_schema = 'public'
-   ORDER BY table_name;
-   ```
-
-#### **🔧 ALTERNATIVE: Supabase CLI Method**
-**If you have direct database connection string:**
-
-```bash
-# Get connection string from: Settings → Database → Connection String (Direct)
-# Format: postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres
-
-npx supabase db push --db-url "YOUR_DIRECT_CONNECTION_STRING"
-
-# Or dry-run first:
-npx supabase db push --db-url "..." --dry-run
+**Verification:**
+```sql
+SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public' ORDER BY table_name;
 ```
-
-**Supabase CLI Version:** 2.48.3 ✅ (Installed)
-
-#### **⚠️ REMOVED: API/Automated Methods**
-**After comprehensive testing (Oct 7, 2025), all automated methods have been confirmed non-functional.**
-
-**Deprecated Scripts (kept for reference only):**
-- `scripts/test-supabase-sql-api.js` - Tests all API methods (all fail)
-- `scripts/apply-migration-direct.js` - Attempts direct execution (fails)
-- `scripts/execute-migration.js` - Requires non-existent RPC functions
-- `scripts/run-all-migrations.js` - Same limitation
-- API: `/api/admin/execute-sql` - Requires `public.exec()` RPC (doesn't exist)
-
-**Test Results:** See `scripts/test-supabase-sql-api.js` for comprehensive failure documentation.
-
-**Conclusion:** Use Manual SQL Editor (Method 1) - it's actually faster than debugging API methods!
 
 ### **📊 Migration Status Tracking**
 
@@ -736,38 +688,6 @@ SUPABASE_SERVICE_ROLE_KEY=[service_role_key_from_dashboard]
 - ✅ Grants full database access (bypass RLS)
 - ⚠️ Rotate if compromised
 
-**Production Security for API Endpoints:**
-```typescript
-// Add to /api/admin/* routes before deployment
-const ALLOWED_IPS = ['YOUR_IP_ADDRESS']
-const API_KEY = process.env.ADMIN_API_KEY
-
-// IP whitelist check
-const ip = request.headers.get('x-forwarded-for')
-if (!ALLOWED_IPS.includes(ip)) {
-  return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
-}
-```
-
-### **🚨 Troubleshooting Migration Issues**
-
-**Error: "Table already exists"**
-- ✅ This is OK! Use `CREATE TABLE IF NOT EXISTS` in migrations
-- ✅ Safe to re-run migrations with this error
-
-**Error: "Permission denied"**
-- Check RLS policies aren't blocking service role
-- Use service role key, not anon key for migrations
-
-**Error: "Cannot connect to API"**
-- Ensure dev server is running: `npm run dev`
-- Check `.env.local` has `SUPABASE_SERVICE_ROLE_KEY`
-
-**Error: "Migration causes screen jumping / 404s"**
-- Table doesn't exist yet, apply migration ASAP
-- Example: `project_methodology` table required for methodology page
-- Graceful error handling in code helps but migration is the fix
-
 ---
 
 ## ⚡ **QUICK REFERENCE COMMANDS**
@@ -776,19 +696,13 @@ if (!ALLOWED_IPS.includes(ip)) {
 # 🚨 DEPLOYMENT CRISIS (Multiple consecutive failures)
 npx vercel --prod --force    # FIRST ACTION - Force deployment
 
-# 🗄️ SUPABASE MIGRATIONS
-# Method 1: Manual SQL Editor (✅ ONLY WORKING METHOD)
-# Go to: https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
-# Copy/paste migration SQL and run
-# ⚠️ Note: All API-based automation methods have been tested and confirmed non-functional
+# 🗄️ SUPABASE MIGRATIONS (Manual SQL Editor Only)
+# Open: https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
+# Copy migration from supabase/migrations/[filename].sql
+# Paste and click "Run"
+# Ignore "already exists" errors
 
-# Method 2: CLI (if you have direct database connection string)
-npx supabase db push --db-url "postgresql://postgres:[PASSWORD]@db.[PROJECT_REF].supabase.co:5432/postgres"
-
-# ❌ REMOVED: API/Automated methods (all tested and failed Oct 7, 2025)
-# See WORKING_PROTOCOL.md § "REMOVED: API/Automated Methods" for details
-
-# Verify Supabase tables exist
+# Verify tables exist
 # Run in SQL Editor: SELECT table_name FROM information_schema.tables WHERE table_schema = 'public';
 
 # Test Supabase authentication
