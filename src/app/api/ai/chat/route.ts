@@ -11,6 +11,8 @@ interface ChatMessage {
 interface ChatRequest {
   messages: ChatMessage[];
   model?: string;
+  projectId?: string;
+  contextData?: string; // Pre-formatted context from client
 }
 
 // Enhanced system prompt for STEM research mentoring
@@ -32,12 +34,14 @@ If students upload documents or data, help them analyze methodology, identify pa
 
 export async function POST(request: NextRequest) {
   try {
-    const { messages, model = 'llama3.2:3b' }: ChatRequest = await request.json();
+    const { messages, model = 'llama3.2:3b', projectId, contextData }: ChatRequest = await request.json();
 
     console.log('AI Chat Request:', {
       messageCount: messages.length,
       model,
-      ollamaUrl: OLLAMA_BASE_URL
+      ollamaUrl: OLLAMA_BASE_URL,
+      hasContext: !!contextData,
+      projectId
     });
 
     // Validate messages
@@ -48,9 +52,16 @@ export async function POST(request: NextRequest) {
       );
     }
 
+    // Build system prompt with context
+    let systemPrompt = SYSTEM_PROMPT;
+
+    if (contextData && contextData.trim()) {
+      systemPrompt += '\n\n--- Student\'s Current Work ---\n' + contextData;
+    }
+
     // Prepare messages with system prompt
     const ollamaMessages = [
-      { role: 'system', content: SYSTEM_PROMPT },
+      { role: 'system', content: systemPrompt },
       ...messages
     ];
 
