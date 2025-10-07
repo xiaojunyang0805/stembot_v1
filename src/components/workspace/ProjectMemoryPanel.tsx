@@ -20,12 +20,20 @@ interface QuestionVersion {
   improvements: string[];
 }
 
+interface MethodologyState {
+  methodType?: string;
+  status?: 'ready' | 'in-progress' | 'needs-attention';
+  completedSections?: number;
+  totalSections?: number;
+}
+
 interface ProjectMemoryPanelProps {
   currentQuestion?: string;
   questionStage?: keyof typeof QUESTION_STAGES;
   questionHistory?: QuestionVersion[];
   projectId?: string;
   literatureState?: ProjectLiteratureState | null;
+  methodologyState?: MethodologyState | null;
   className?: string;
 }
 
@@ -50,6 +58,7 @@ export function ProjectMemoryPanel({
   ],
   projectId,
   literatureState,
+  methodologyState,
   className = ""
 }: ProjectMemoryPanelProps) {
   const [showHistory, setShowHistory] = useState(false);
@@ -423,6 +432,174 @@ export function ProjectMemoryPanel({
               }}
             >
               View Literature Review →
+            </Link>
+          )}
+        </div>
+      )}
+
+      {/* Methodology Section */}
+      {methodologyState && (
+        <div style={{
+          backgroundColor: '#f0fdf4',
+          padding: '1rem',
+          borderRadius: '0.375rem',
+          marginBottom: '1rem',
+          border: '1px solid #bbf7d0'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            marginBottom: '0.75rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ fontSize: '1rem' }}>🔬</span>
+              <span style={{
+                fontSize: '0.875rem',
+                fontWeight: '600',
+                color: '#15803d'
+              }}>
+                Methodology
+              </span>
+            </div>
+            {methodologyState.status === 'ready' && (
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                color: '#15803d',
+                backgroundColor: '#dcfce7',
+                padding: '0.125rem 0.5rem',
+                borderRadius: '0.25rem',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.25rem'
+              }}>
+                ✅ Ready
+              </span>
+            )}
+            {methodologyState.status === 'in-progress' && (
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                color: '#f59e0b',
+                backgroundColor: '#fef3c7',
+                padding: '0.125rem 0.5rem',
+                borderRadius: '0.25rem'
+              }}>
+                In Progress
+              </span>
+            )}
+            {methodologyState.status === 'needs-attention' && (
+              <span style={{
+                fontSize: '0.75rem',
+                fontWeight: '600',
+                color: '#dc2626',
+                backgroundColor: '#fee2e2',
+                padding: '0.125rem 0.5rem',
+                borderRadius: '0.25rem'
+              }}>
+                Needs Attention
+              </span>
+            )}
+          </div>
+
+          <div style={{
+            backgroundColor: 'white',
+            padding: '0.75rem',
+            borderRadius: '0.25rem',
+            marginBottom: '0.75rem',
+            border: '1px solid #dcfce7'
+          }}>
+            <div style={{
+              fontSize: '0.625rem',
+              color: '#6b7280',
+              marginBottom: '0.25rem',
+              textTransform: 'uppercase',
+              letterSpacing: '0.05em'
+            }}>
+              Method
+            </div>
+            <div style={{
+              fontSize: '0.875rem',
+              color: '#111827',
+              fontWeight: '600'
+            }}>
+              {methodologyState.methodType || 'Experimental Design'}
+            </div>
+          </div>
+
+          {methodologyState.completedSections !== undefined && methodologyState.totalSections !== undefined && (
+            <div style={{
+              backgroundColor: 'white',
+              padding: '0.75rem',
+              borderRadius: '0.25rem',
+              marginBottom: '0.75rem',
+              border: '1px solid #dcfce7'
+            }}>
+              <div style={{
+                fontSize: '0.625rem',
+                color: '#6b7280',
+                marginBottom: '0.5rem',
+                textTransform: 'uppercase',
+                letterSpacing: '0.05em'
+              }}>
+                Progress
+              </div>
+              <div style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.5rem'
+              }}>
+                <div style={{
+                  flex: 1,
+                  height: '0.5rem',
+                  backgroundColor: '#f3f4f6',
+                  borderRadius: '0.25rem',
+                  overflow: 'hidden'
+                }}>
+                  <div style={{
+                    width: `${(methodologyState.completedSections / methodologyState.totalSections) * 100}%`,
+                    height: '100%',
+                    backgroundColor: '#22c55e',
+                    borderRadius: '0.25rem',
+                    transition: 'width 0.3s ease'
+                  }} />
+                </div>
+                <span style={{
+                  fontSize: '0.75rem',
+                  fontWeight: '600',
+                  color: '#15803d',
+                  whiteSpace: 'nowrap'
+                }}>
+                  {methodologyState.completedSections}/{methodologyState.totalSections}
+                </span>
+              </div>
+            </div>
+          )}
+
+          {projectId && (
+            <Link
+              href={`/projects/${projectId}/methodology`}
+              style={{
+                display: 'block',
+                textAlign: 'center',
+                padding: '0.5rem',
+                backgroundColor: '#15803d',
+                color: 'white',
+                borderRadius: '0.25rem',
+                fontSize: '0.75rem',
+                fontWeight: '500',
+                textDecoration: 'none',
+                transition: 'background-color 0.2s ease'
+              }}
+              onMouseEnter={(e) => {
+                (e.target as HTMLAnchorElement).style.backgroundColor = '#166534';
+              }}
+              onMouseLeave={(e) => {
+                (e.target as HTMLAnchorElement).style.backgroundColor = '#15803d';
+              }}
+            >
+              View Details →
             </Link>
           )}
         </div>
