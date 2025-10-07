@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { getSampleSizeGuidance, getSampleSizeFeedback } from '@/lib/research/sampleSizeGuidance';
 
 interface ParticipantsData {
   targetPopulation: string;
@@ -11,12 +12,28 @@ interface ParticipantsData {
 interface ParticipantsPlanningProps {
   data: ParticipantsData;
   onSave: (data: ParticipantsData) => Promise<void>;
+  methodologyType?: string;
+  methodologyName?: string;
 }
 
-export function ParticipantsPlanning({ data: initialData, onSave }: ParticipantsPlanningProps) {
+export function ParticipantsPlanning({
+  data: initialData,
+  onSave,
+  methodologyType = '',
+  methodologyName = ''
+}: ParticipantsPlanningProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   const [data, setData] = useState<ParticipantsData>(initialData);
+
+  // Get sample size guidance for this methodology type
+  const sampleSizeGuidance = getSampleSizeGuidance(methodologyType, methodologyName);
+
+  // Get feedback if sample size is entered
+  const sampleSizeFeedback =
+    data.sampleSize && parseInt(data.sampleSize)
+      ? getSampleSizeFeedback(parseInt(data.sampleSize), methodologyType)
+      : null;
 
   const handleSave = async () => {
     setIsSaving(true);
@@ -222,12 +239,47 @@ export function ParticipantsPlanning({ data: initialData, onSave }: Participants
                 How many participants?
               </span>
             </div>
+
+            {/* Sample Size Guidance Box */}
+            {isEditing && methodologyType && (
+              <div
+                style={{
+                  backgroundColor: '#eff6ff',
+                  border: '1px solid #bfdbfe',
+                  borderRadius: '0.5rem',
+                  padding: '1rem',
+                  marginBottom: '1rem'
+                }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '1.25rem' }}>💡</span>
+                  <h5 style={{ fontSize: '0.875rem', fontWeight: '600', color: '#1e40af', margin: 0 }}>
+                    Sample Size Guidance
+                  </h5>
+                </div>
+                <p style={{ fontSize: '0.875rem', color: '#1e40af', fontWeight: '600', margin: '0.5rem 0' }}>
+                  {sampleSizeGuidance.guideline}
+                </p>
+                {sampleSizeGuidance.example && (
+                  <p style={{ fontSize: '0.8125rem', color: '#3b82f6', margin: '0.5rem 0', fontStyle: 'italic' }}>
+                    {sampleSizeGuidance.example}
+                  </p>
+                )}
+                <p style={{ fontSize: '0.75rem', color: '#60a5fa', margin: '0.5rem 0 0 0', lineHeight: '1.5' }}>
+                  {sampleSizeGuidance.explanation}
+                </p>
+                <p style={{ fontSize: '0.75rem', color: '#9ca3af', margin: '0.75rem 0 0 0', fontStyle: 'italic' }}>
+                  This is a rule of thumb. Consult your advisor for your specific study.
+                </p>
+              </div>
+            )}
+
             {isEditing ? (
               <input
                 type="text"
                 value={data.sampleSize}
                 onChange={(e) => setData({ ...data, sampleSize: e.target.value })}
-                placeholder="e.g., '50 participants' or 'To be calculated based on power analysis'"
+                placeholder="e.g., '50' or 'To be calculated based on power analysis'"
                 style={{
                   width: '100%',
                   padding: '0.75rem',
@@ -242,19 +294,21 @@ export function ParticipantsPlanning({ data: initialData, onSave }: Participants
                 {data.sampleSize || <em style={{ color: '#9ca3af' }}>Not specified</em>}
               </p>
             )}
-            {isEditing && (
+
+            {/* Sample Size Feedback */}
+            {isEditing && sampleSizeFeedback && (
               <div
                 style={{
-                  marginTop: '0.5rem',
-                  fontSize: '0.75rem',
-                  color: '#6b7280',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.25rem'
+                  marginTop: '0.75rem',
+                  fontSize: '0.8125rem',
+                  color: '#b45309',
+                  backgroundColor: '#fef3c7',
+                  padding: '0.5rem 0.75rem',
+                  borderRadius: '0.375rem',
+                  border: '1px solid #fde047'
                 }}
               >
-                <span>💡</span>
-                <span>AI can help calculate appropriate sample size based on your study design</span>
+                {sampleSizeFeedback}
               </div>
             )}
           </div>

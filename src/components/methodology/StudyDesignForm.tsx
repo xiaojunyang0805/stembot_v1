@@ -1,8 +1,12 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { VariablesInput } from './VariablesInput';
 import { ParticipantsPlanning } from './ParticipantsPlanning';
 import { ProcedureDraft } from './ProcedureDraft';
+import { CriticalCheckResults } from './CriticalCheckResults';
+import { checkCriticalIssues, type CriticalCheckResult } from '@/lib/research/criticalChecker';
+import { type MethodologyData } from '@/lib/supabase/methodology';
 
 interface Variable {
   id: string;
@@ -26,6 +30,9 @@ interface StudyDesignData {
 
 interface StudyDesignFormProps {
   data: StudyDesignData;
+  methodologyType?: string;
+  methodologyName?: string;
+  reasoning?: string;
   onSaveVariables: (data: {
     independentVars: Variable[];
     dependentVars: Variable[];
@@ -34,15 +41,74 @@ interface StudyDesignFormProps {
   onSaveParticipants: (data: ParticipantsData) => Promise<void>;
   onSaveProcedure: (procedure: string) => Promise<void>;
   onRequestProcedureFeedback: (procedure: string) => Promise<string>;
+  onContinueAfterCheck?: () => void;
 }
 
 export function StudyDesignForm({
   data,
+  methodologyType = '',
+  methodologyName = '',
+  reasoning = '',
   onSaveVariables,
   onSaveParticipants,
   onSaveProcedure,
-  onRequestProcedureFeedback
+  onRequestProcedureFeedback,
+  onContinueAfterCheck
 }: StudyDesignFormProps) {
+  const [criticalCheckResult, setCriticalCheckResult] = useState<CriticalCheckResult | null>(null);
+  const [isCheckingCritical, setIsCheckingCritical] = useState(false);
+
+  // Auto-check critical issues when all required fields are filled
+  useEffect(() => {
+    // Only check if we have the minimum required data
+    if (data.procedure && data.participants.sampleSize) {
+      performCriticalCheck();
+    }
+  }, [data.procedure, data.participants.sampleSize, data.participants.targetPopulation]);
+
+  const performCriticalCheck = () => {
+    setIsCheckingCritical(true);
+
+    // Build MethodologyData from current form state
+    const methodologyData: MethodologyData = {
+      projectId: 'current', // Placeholder - not used in validation
+      methodType: methodologyType,
+      methodName: methodologyName,
+      reasoning: reasoning,
+      independentVariables: data.independentVars.map(v => ({
+        name: v.name,
+        description: v.description
+      })),
+      dependentVariables: data.dependentVars.map(v => ({
+        name: v.name,
+        description: v.description
+      })),
+      controlVariables: data.controlVars.map(v => ({
+        name: v.name,
+        description: v.description
+      })),
+      participantCriteria: data.participants.targetPopulation,
+      estimatedSampleSize: parseInt(data.participants.sampleSize) || undefined,
+      recruitmentStrategy: data.participants.recruitmentStrategy,
+      procedureDraft: data.procedure
+    };
+
+    // Run critical check
+    const result = checkCriticalIssues(methodologyData);
+    setCriticalCheckResult(result);
+    setIsCheckingCritical(false);
+  };
+
+  const handleCheckAgain = () => {
+    performCriticalCheck();
+  };
+
+  const handleSaveAndContinue = () => {
+    if (onContinueAfterCheck) {
+      onContinueAfterCheck();
+    }
+  };
+
   return (
     <div style={{ marginTop: '2rem' }}>
       <div
@@ -78,6 +144,8 @@ export function StudyDesignForm({
       <ParticipantsPlanning
         data={data.participants}
         onSave={onSaveParticipants}
+        methodologyType={methodologyType}
+        methodologyName={methodologyName}
       />
 
       {/* Procedure Section */}
@@ -86,6 +154,17 @@ export function StudyDesignForm({
         onSave={onSaveProcedure}
         onRequestFeedback={onRequestProcedureFeedback}
       />
+
+      {/* Critical Check Results - Shows after procedure is filled */}
+      {data.procedure && data.participants.sampleSize && (
+        <CriticalCheckResults
+          result={criticalCheckResult}
+          loading={isCheckingCritical}
+          onCheckAgain={handleCheckAgain}
+          onSaveAnyway={handleSaveAndContinue}
+          onSaveAndContinue={handleSaveAndContinue}
+        />
+      )}
 
       {/* Helpful Tips */}
       <div
