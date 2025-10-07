@@ -243,9 +243,9 @@ export default function WritingPage({ params }: { params: { id: string } }) {
           alignItems: 'center',
           justifyContent: 'space-between'
         }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             <button
-              onClick={() => router.push('/dashboard')}
+              onClick={() => router.push(`/projects/${params.id}`)}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -265,7 +265,7 @@ export default function WritingPage({ params }: { params: { id: string } }) {
                 (e.target as HTMLButtonElement).style.backgroundColor = '#f3f4f6';
               }}
             >
-              ← Dashboard
+              ← Back to Project
             </button>
             <h1 style={{
               fontSize: '1.25rem',
