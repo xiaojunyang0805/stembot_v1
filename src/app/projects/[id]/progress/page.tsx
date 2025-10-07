@@ -7,6 +7,9 @@ import { getProject } from '../../../../lib/database/projects';
 import { getProjectDocuments, type DocumentMetadata } from '../../../../lib/database/documents';
 import { trackProjectActivity } from '../../../../lib/database/activity';
 import type { Project } from '../../../../types/database';
+import ProjectTimeline from '../../../../components/ui/ProjectTimeline';
+import WritingProgressDetail from '../../../../components/ui/WritingProgressDetail';
+import RecentActivity from '../../../../components/ui/RecentActivity';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -20,6 +23,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [progressData, setProgressData] = useState<any>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -47,6 +51,13 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
           console.warn('Error loading documents:', docsError);
         } else if (documentsData) {
           setDocuments(documentsData);
+        }
+
+        // Fetch enhanced progress data
+        const progressResponse = await fetch(`/api/projects/${params.id}/progress`);
+        if (progressResponse.ok) {
+          const progressData = await progressResponse.json();
+          setProgressData(progressData);
         }
 
       } catch (err) {
@@ -327,6 +338,16 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
             </button>
           </div>
 
+          {/* Project Timeline */}
+          {progressData && (
+            <ProjectTimeline
+              phases={progressData.phases}
+              currentPhase={progressData.currentPhase}
+              nextMilestone={progressData.nextMilestone}
+              estimatedCompletion={progressData.estimatedCompletion}
+            />
+          )}
+
           {/* Overall Progress */}
           <div style={{
             backgroundColor: '#f8fafc',
@@ -378,7 +399,7 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
             gridTemplateColumns: '1fr 1fr',
             gap: '1.5rem'
           }}>
-            {Object.entries(progressMetrics).map(([key, metric]) => (
+            {Object.entries(progressMetrics).filter(([key]) => key !== 'writing').map(([key, metric]) => (
               <div key={key} style={{
                 backgroundColor: 'white',
                 border: '2px solid #e5e7eb',
@@ -465,7 +486,21 @@ export default function ProgressPage({ params }: { params: { id: string } }) {
                 </ul>
               </div>
             ))}
+
+            {/* Enhanced Writing Progress */}
+            {progressData && (
+              <WritingProgressDetail
+                sections={progressData.writingSections}
+                overallProgress={progressData.writingProgress}
+                projectId={params.id}
+              />
+            )}
           </div>
+
+          {/* Recent Activity */}
+          {progressData && progressData.recentActivities && progressData.recentActivities.length > 0 && (
+            <RecentActivity activities={progressData.recentActivities} />
+          )}
 
           {/* Action Items */}
           <div style={{
