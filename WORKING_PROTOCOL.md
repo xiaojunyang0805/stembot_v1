@@ -639,8 +639,8 @@ Claude Process:
 4. **Click** "Run" button
 5. **Ignore** "already exists" errors (these are safe)
 
-**Pending Migrations:**
-- `20251007200000_create_paper_sections.sql` ⬅️ WP5-2
+**Recent Migrations:**
+- ✅ `20251007200000_create_paper_sections.sql` - Applied Oct 7, 2025 (WP5-2)
 
 **Verification:**
 ```sql
@@ -654,7 +654,7 @@ WHERE table_schema = 'public' ORDER BY table_name;
 - ✅ `projects` - Core project management
 - ✅ `project_methodology` - Methodology storage (WP4)
 - ✅ `paper_outlines` - Paper outline generator (WP5-1)
-- ⏳ `paper_sections` - Section-by-section writing (WP5-2) - **PENDING MIGRATION**
+- ✅ `paper_sections` - Section-by-section writing (WP5-2) ⬅️ **APPLIED Oct 7, 2025**
 - ✅ `conversations` - AI chat history
 - ✅ `project_documents` - Document uploads
 - ⚠️ Research tables (gap_analyses, source_organizations, etc.) - **Check if applied**
