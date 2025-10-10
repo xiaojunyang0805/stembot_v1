@@ -1,0 +1,41 @@
+
+StemBot Stripe Products - Created 2025-10-10T20:40:57.824Z
+Mode: LIVE
+════════════════════════════════════════════════════════════
+
+PRODUCT 1: StemBot Student Pro
+─────────────────────────────────
+Product ID: prod_TDDYdGLq0G8Fu6
+Price ID:   price_1SGn7U2Q25JDcEYXCRBYhiIs
+Amount:     €10.00/month
+Description: Unlimited AI tutoring, up to 10 active research projects, priority support
+
+PRODUCT 2: StemBot Researcher
+─────────────────────────────────
+Product ID: prod_TDDYvu24LR4tXh
+Price ID:   price_1SGn7V2Q25JDcEYXjBfDJnXB
+Amount:     €25.00/month
+Description: Everything in Student Pro plus unlimited projects, advanced research tools, collaboration features
+
+════════════════════════════════════════════════════════════
+ENVIRONMENT VARIABLES TO ADD:
+════════════════════════════════════════════════════════════
+
+Add to .env.local:
+STRIPE_STUDENT_PRO_PRICE_ID=price_1SGn7U2Q25JDcEYXCRBYhiIs
+STRIPE_RESEARCHER_PRICE_ID=price_1SGn7V2Q25JDcEYXjBfDJnXB
+
+Add to Vercel Dashboard → Settings → Environment Variables:
+STRIPE_STUDENT_PRO_PRICE_ID=price_1SGn7U2Q25JDcEYXCRBYhiIs
+STRIPE_RESEARCHER_PRICE_ID=price_1SGn7V2Q25JDcEYXjBfDJnXB
+
+════════════════════════════════════════════════════════════
+NEXT STEPS:
+════════════════════════════════════════════════════════════
+
+1. Add Price IDs to .env.local and Vercel
+2. Configure webhook endpoint (see STRIPE_SETUP.md Step 2)
+3. Apply Supabase migration: npx supabase db push
+4. Test checkout flow in development
+
+View products: https://dashboard.stripe.com/products

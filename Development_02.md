@@ -1427,3 +1427,171 @@ NEXT_PUBLIC_APP_URL=https://stembotv1.vercel.app
 - Awaiting Stripe Dashboard configuration by user
 
 ---
+
+## Quick Summary - WP6-2 Stripe Helper Libraries
+
+**WP6-2: Stripe Integration Libraries (Day 45 Afternoon)** ✅
+- Created complete Stripe helper library infrastructure for subscription management
+- All TypeScript types with comprehensive error handling
+- Server-side and client-side Stripe initialization complete
+- Usage limit checking functions ready for integration
+- **READY FOR CHECKOUT FLOW IMPLEMENTATION**
+
+**Files Created:**
+
+**1. src/lib/stripe/server.ts** (231 lines)
+- Stripe server-side SDK initialization with API version 2025-09-30.clover
+- Environment variable validation for STRIPE_SECRET_KEY
+- Tier limit configuration: TIER_LIMITS constant
+  - Free: 1 project, 30 AI interactions/month, 7 days memory
+  - Student Pro (€10): 10 projects, unlimited AI, unlimited memory
+  - Researcher (€25): Unlimited everything
+- Price ID mapping for Stripe products
+- Helper functions: getTierLimits(), isUnlimited(), getPriceId(), isValidTier()
+- Automatic logging in TEST/LIVE mode with warnings
+
+**2. src/lib/stripe/client.ts** (147 lines)
+- Client-side Stripe.js loader with loadStripe()
+- getStripe() function with promise caching
+- Environment validation for NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+- Stripe Elements appearance configuration matching StemBot design system
+- Utility functions: isStripeConfigured(), getStripeMode()
+- Safe for use in React components and client-side code
+
+**3. src/types/billing.ts** (Updated - added 78 lines)
+- Updated Subscription interface to match database schema
+- UsageData interface for usage_tracking table
+- PaymentHistory interface for payment_history table
+- SubscriptionWithStatus with computed fields (isActive, isTrialing, willCancel, daysRemaining)
+- UsageWithLimits with percentage calculations and limit checking
+- LimitCheckResult for usage validation responses
+- UserBillingStatus combining subscription + usage + payments
+
+**4. src/lib/stripe/subscriptionHelpers.ts** (572 lines)
+- Complete subscription management helper functions
+- Supabase client initialization with service role key
+
+**Core Functions Implemented:**
+
+**Subscription Management:**
+- `getUserSubscription(userId)` - Fetch user subscription, returns free tier as default
+- `getUserSubscriptionWithStatus(userId)` - Subscription with computed status fields
+- `createDefaultFreeSubscription(userId)` - Fallback free tier object
+
+**Usage Tracking:**
+- `getCurrentUsage(userId)` - Get current month's usage data
+- `getCurrentUsageWithLimits(userId)` - Usage with tier limits and percentages
+- `incrementAIUsage(userId)` - Atomic AI interaction counter increment
+- `updateProjectCount(userId, count)` - Update active project count
+
+**Limit Checking:**
+- `canUserCreateProject(userId)` - Check project limit compliance
+  - Returns: allowed status, current count, limit, exceeded flag, suggestion
+  - Provides tier-specific upgrade suggestions
+- `canUserUseAI(userId)` - Check AI interaction limit compliance
+  - Same detailed response structure
+  - Free tier: 30/month limit, Student Pro/Researcher: unlimited
+
+**Admin Functions:**
+- `resetUsage(userId, month)` - Reset monthly usage (admin only)
+- `getUserUsageHistory(userId, limit)` - Get usage history (admin only)
+
+**Utility Functions:**
+- `getCurrentMonth()` - Returns 'YYYY-MM' format
+- `createUsageRecord(userId, month)` - Initialize usage tracking
+- `createEmptyUsageData(userId)` - Fallback for errors
+
+**Key Features:**
+
+**Error Handling:**
+- Graceful fallbacks to free tier on subscription fetch errors
+- Empty usage data returned on database failures
+- Comprehensive try-catch blocks with logging
+- Safe defaults prevent blocking user access
+
+**Performance:**
+- Parallel database queries where possible
+- Atomic increment via Postgres function
+- Proper indexing on user_id and month fields
+- Efficient upsert operations
+
+**Type Safety:**
+- Full TypeScript coverage with strict types
+- Type guards for subscription status checking
+- Explicit return types on all functions
+- Interface inheritance for extended types
+
+**Tier Limit Configuration:**
+```typescript
+TIER_LIMITS = {
+  free: {
+    projects: 1,
+    aiInteractions: 30,
+    memoryRetention: 7,  // days
+    priceEur: 0
+  },
+  student_pro: {
+    projects: 10,
+    aiInteractions: null,  // unlimited
+    memoryRetention: null,  // unlimited
+    priceEur: 10
+  },
+  researcher: {
+    projects: null,  // unlimited
+    aiInteractions: null,  // unlimited
+    memoryRetention: null,  // unlimited
+    priceEur: 25
+  }
+}
+```
+
+**Usage Example:**
+```typescript
+// Check if user can create project
+const check = await canUserCreateProject(userId);
+if (!check.allowed) {
+  console.log(check.suggestion);
+  // "Upgrade to Student Pro for up to 10 active projects"
+}
+
+// Increment AI usage
+const newCount = await incrementAIUsage(userId);
+console.log(`User has made ${newCount} AI interactions this month`);
+
+// Get subscription with status
+const sub = await getUserSubscriptionWithStatus(userId);
+if (sub.isActive && !sub.willCancel) {
+  console.log(`${sub.daysRemaining} days remaining in billing period`);
+}
+```
+
+**Success Criteria Met:**
+- ✅ All 4 files created with proper TypeScript types
+- ✅ Helper functions tested with database integration
+- ✅ Error handling covers missing environment variables
+- ✅ Usage limit checks working correctly
+- ✅ Type check passed (`npm run type-check` ✓)
+- ✅ Build successful (`npm run build` ✓)
+
+**Integration Points:**
+- Server-side API routes can import subscription helpers
+- Client components can use getStripe() for checkout
+- Middleware can check limits before API calls
+- Dashboard can display usage percentages
+- Upgrade prompts can show tier-specific suggestions
+
+**Next Steps (WP6.3):**
+1. Create checkout session API route
+2. Build subscription management UI
+3. Implement webhook handler for Stripe events
+4. Add usage middleware to API routes
+5. Create billing/settings page
+
+**Security Notes:**
+- ✅ Server-side code uses SUPABASE_SERVICE_ROLE_KEY for elevated permissions
+- ✅ Client-side code uses public NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY
+- ✅ RLS policies enforce user data privacy
+- ✅ SECURITY DEFINER functions protect direct database access
+- ✅ Environment variables properly segregated by use case
+
+---
