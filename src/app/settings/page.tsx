@@ -1,10 +1,11 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useAuth } from '../../providers/AuthProvider';
 import { getUserProfile, updateUserProfile } from '../../lib/database/users';
 import StorageIndicator from '../../components/storage/StorageIndicator';
+import BillingPage from './billing/page';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -13,7 +14,9 @@ export const fetchCache = 'force-no-store';
 export default function SettingsPage() {
   const { user } = useAuth();
   const router = useRouter();
-  const [activeTab, setActiveTab] = useState('profile');
+  const searchParams = useSearchParams();
+  const tabFromUrl = searchParams.get('tab');
+  const [activeTab, setActiveTab] = useState(tabFromUrl || 'profile');
   const [isLoading, setIsLoading] = useState(false);
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
@@ -551,15 +554,20 @@ export default function SettingsPage() {
               </div>
             )}
 
+            {/* Billing Tab */}
+            {activeTab === 'billing' && (
+              <BillingPage />
+            )}
+
             {/* Other Tabs Placeholder */}
-            {['research', 'privacy', 'billing'].includes(activeTab) && (
+            {['research', 'privacy'].includes(activeTab) && (
               <div style={{
                 textAlign: 'center',
                 padding: '4rem 2rem',
                 color: '#6b7280'
               }}>
                 <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>
-                  {activeTab === 'research' ? '🔬' : activeTab === 'privacy' ? '🔒' : '💳'}
+                  {activeTab === 'research' ? '🔬' : '🔒'}
                 </div>
                 <div style={{
                   fontSize: '1.5rem',
@@ -567,8 +575,7 @@ export default function SettingsPage() {
                   marginBottom: '0.5rem',
                   color: '#374151'
                 }}>
-                  {activeTab === 'research' ? 'Research Preferences' :
-                   activeTab === 'privacy' ? 'Privacy & Security' : 'Billing & Plans'}
+                  {activeTab === 'research' ? 'Research Preferences' : 'Privacy & Security'}
                 </div>
                 <div style={{ fontSize: '1rem' }}>
                   Advanced {activeTab} settings are being developed.
