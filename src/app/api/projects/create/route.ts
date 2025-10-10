@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
+import { enforceProjectLimit } from '@/middleware/usageEnforcement';
+import { updateProjectCount } from '@/lib/stripe/subscriptionHelpers';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
@@ -37,6 +39,12 @@ export async function POST(request: NextRequest) {
         { error: 'Invalid authentication token' },
         { status: 401 }
       );
+    }
+
+    // ===== ENFORCE PROJECT LIMIT (WP6.5) =====
+    const limitCheck = await enforceProjectLimit(request);
+    if (limitCheck) {
+      return limitCheck; // Return 402 Payment Required if limit exceeded
     }
 
     // Create Supabase client with service role to bypass RLS
@@ -105,6 +113,23 @@ export async function POST(request: NextRequest) {
     }
 
     console.log('✅ Project created successfully:', data.id);
+
+    // Update project count for usage tracking (WP6.5)
+    try {
+      // Count active projects for this user
+      const { count } = await supabaseAdmin
+        .from('projects')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', userId)
+        .eq('status', 'active');
+
+      if (count !== null) {
+        await updateProjectCount(userId, count);
+      }
+    } catch (error) {
+      console.warn('Failed to update project count:', error);
+      // Don't fail the request if usage update fails
+    }
 
     return NextResponse.json({
       success: true,

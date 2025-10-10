@@ -6,6 +6,10 @@ import {
 } from '../../../../lib/memory/questionMemory';
 import { getLiteratureContextForChat, isLiteratureQuery } from '../../../../lib/chat/literatureContext';
 import { getWritingContextForChat, isWritingQuery } from '../../../../lib/ai/writingContext';
+import {
+  enforceAIUsageLimit,
+  incrementAIUsageForRequest,
+} from '@/middleware/usageEnforcement';
 
 // Inline GPT-5 nano client to avoid import issues
 interface ChatMessage {
@@ -708,6 +712,12 @@ If students upload documents or data, help them analyze methodology, identify pa
 
 export async function POST(request: NextRequest) {
   try {
+    // ===== ENFORCE AI USAGE LIMIT (WP6.5) =====
+    const limitCheck = await enforceAIUsageLimit(request);
+    if (limitCheck) {
+      return limitCheck; // Return 402 Payment Required if limit exceeded
+    }
+
     const { messages, model = 'llama3.2:3b', useEnhanced = true, projectContext }: ChatRequest = await request.json();
 
     console.log('Enhanced AI Chat Request:', {
@@ -735,6 +745,10 @@ export async function POST(request: NextRequest) {
 
       if (gptResult.success && gptResult.response) {
         console.log('GPT-5 nano response successful');
+
+        // Increment AI usage after successful response (WP6.5)
+        await incrementAIUsageForRequest(request);
+
         return NextResponse.json({
           message: {
             role: 'assistant',
@@ -806,6 +820,9 @@ export async function POST(request: NextRequest) {
 
     // Extract the assistant's response
     const assistantMessage = data.message?.content || 'I apologize, but I couldn\'t generate a response. Please try again.';
+
+    // Increment AI usage after successful response (WP6.5)
+    await incrementAIUsageForRequest(request);
 
     return NextResponse.json({
       message: {
