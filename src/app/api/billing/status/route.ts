@@ -7,11 +7,14 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken';
 import {
   getUserSubscriptionWithStatus,
   getCurrentUsageWithLimits,
 } from '@/lib/stripe/subscriptionHelpers';
 import { TIER_LIMITS, stripe } from '@/lib/stripe/server';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 /**
  * Get comprehensive billing status
@@ -31,7 +34,7 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    // Get auth token from header and verify with Supabase
+    // Get auth token from header
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
@@ -41,16 +44,29 @@ export async function GET(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
 
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Invalid authentication token' },
-        { status: 401 }
-      );
+    // Try both authentication methods (Custom JWT and Supabase)
+    let userId: string;
+
+    // Try Custom JWT first
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      userId = decoded.userId;
+      console.log('📊 Using custom JWT auth for user:', userId);
+    } catch (jwtError) {
+      // If custom JWT fails, try Supabase auth
+      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+      if (authError || !user) {
+        return NextResponse.json(
+          { error: 'Invalid authentication token' },
+          { status: 401 }
+        );
+      }
+
+      userId = user.id;
+      console.log('📊 Using Supabase auth for user:', userId);
     }
-
-    const userId = user.id;
 
     console.log('📊 Fetching billing status for user:', userId);
 
