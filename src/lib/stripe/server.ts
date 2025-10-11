@@ -143,10 +143,11 @@ export const TIER_LIMITS: Record<SubscriptionTier, TierLimits> = {
 /**
  * Stripe Price IDs for subscription products
  * These are created in the Stripe Dashboard
+ * .trim() removes any accidental newlines or whitespace from environment variables
  */
 export const STRIPE_PRICE_IDS: Record<Exclude<SubscriptionTier, 'free'>, string> = {
-  student_pro: process.env.STRIPE_STUDENT_PRO_PRICE_ID || '',
-  researcher: process.env.STRIPE_RESEARCHER_PRICE_ID || '',
+  student_pro: (process.env.STRIPE_STUDENT_PRO_PRICE_ID || '').trim(),
+  researcher: (process.env.STRIPE_RESEARCHER_PRICE_ID || '').trim(),
 };
 
 // Validate that Price IDs are configured
