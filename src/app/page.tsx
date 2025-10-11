@@ -251,7 +251,7 @@ AI Research Mentor That<br />
             </p>
           </div>
 
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px'}}>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px', maxWidth: '1400px', margin: '0 auto'}}>
             {/* Memory-Driven Mentoring */}
             <div style={{
               backgroundColor: '#f8fafc',
@@ -332,7 +332,7 @@ AI Research Mentor That<br />
             </p>
           </div>
 
-          <div style={{display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '32px'}}>
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: '24px', maxWidth: '1400px', margin: '0 auto'}}>
             {/* Question Formation */}
             <div style={{
               textAlign: 'center',
@@ -342,11 +342,11 @@ AI Research Mentor That<br />
               border: '1px solid #93c5fd'
             }}>
               <div style={{fontSize: '64px', marginBottom: '16px'}}>❓</div>
-              <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#1e40af', marginBottom: '12px'}}>Question Formation</h3>
-              <p style={{color: '#3730a3', marginBottom: '16px'}}>
+              <h3 style={{fontSize: '20px', fontWeight: 'bold', color: '#1e40af', marginBottom: '12px'}}>Question Formation</h3>
+              <p style={{color: '#3730a3', marginBottom: '16px', fontSize: '14px'}}>
                 Define compelling research questions that are feasible, significant, and answerable.
               </p>
-              <div style={{fontSize: '14px', color: '#2563eb', textAlign: 'left'}}>
+              <div style={{fontSize: '13px', color: '#2563eb', textAlign: 'left'}}>
                 <div>Research gap identification</div>
                 <div>Question refinement</div>
                 <div>Scope definition</div>
@@ -363,11 +363,11 @@ AI Research Mentor That<br />
               border: '1px solid #86efac'
             }}>
               <div style={{fontSize: '64px', marginBottom: '16px'}}>📚</div>
-              <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#166534', marginBottom: '12px'}}>Literature Review</h3>
-              <p style={{color: '#15803d', marginBottom: '16px'}}>
+              <h3 style={{fontSize: '20px', fontWeight: 'bold', color: '#166534', marginBottom: '12px'}}>Literature Review</h3>
+              <p style={{color: '#15803d', marginBottom: '16px', fontSize: '14px'}}>
                 Comprehensive analysis of existing research with AI-powered search and synthesis.
               </p>
-              <div style={{fontSize: '14px', color: '#16a34a', textAlign: 'left'}}>
+              <div style={{fontSize: '13px', color: '#16a34a', textAlign: 'left'}}>
                 <div>Source discovery</div>
                 <div>Critical analysis</div>
                 <div>Synthesis & themes</div>
@@ -384,11 +384,11 @@ AI Research Mentor That<br />
               border: '1px solid #c084fc'
             }}>
               <div style={{fontSize: '64px', marginBottom: '16px'}}>🔬</div>
-              <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#6b21a8', marginBottom: '12px'}}>Methodology Design</h3>
-              <p style={{color: '#7c3aed', marginBottom: '16px'}}>
+              <h3 style={{fontSize: '20px', fontWeight: 'bold', color: '#6b21a8', marginBottom: '12px'}}>Methodology Design</h3>
+              <p style={{color: '#7c3aed', marginBottom: '16px', fontSize: '14px'}}>
                 Design robust research methodologies tailored to your research questions and constraints.
               </p>
-              <div style={{fontSize: '14px', color: '#8b5cf6', textAlign: 'left'}}>
+              <div style={{fontSize: '13px', color: '#8b5cf6', textAlign: 'left'}}>
                 <div>Research design selection</div>
                 <div>Data collection planning</div>
                 <div>Analysis strategy</div>
@@ -405,16 +405,165 @@ AI Research Mentor That<br />
               border: '1px solid #fcd34d'
             }}>
               <div style={{fontSize: '64px', marginBottom: '16px'}}>✍️</div>
-              <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#b45309', marginBottom: '12px'}}>Writing & Publication</h3>
-              <p style={{color: '#d97706', marginBottom: '16px'}}>
+              <h3 style={{fontSize: '20px', fontWeight: 'bold', color: '#b45309', marginBottom: '12px'}}>Writing & Publication</h3>
+              <p style={{color: '#d97706', marginBottom: '16px', fontSize: '14px'}}>
                 Craft compelling academic papers with proper structure, citations, and publication readiness.
               </p>
-              <div style={{fontSize: '14px', color: '#f59e0b', textAlign: 'left'}}>
+              <div style={{fontSize: '13px', color: '#f59e0b', textAlign: 'left'}}>
                 <div>Academic writing support</div>
                 <div>Citation management</div>
                 <div>Publication guidance</div>
                 <div>Peer review prep</div>
               </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Pricing Section */}
+      <section style={{padding: '80px 24px', backgroundColor: 'white'}}>
+        <div style={{maxWidth: '1200px', margin: '0 auto'}}>
+          <div style={{textAlign: 'center', marginBottom: '64px'}}>
+            <h2 style={{
+              fontSize: '32px',
+              fontWeight: 'bold',
+              color: '#111827',
+              marginBottom: '16px'
+            }}>
+              Simple, Transparent Pricing
+            </h2>
+            <p style={{fontSize: '18px', color: '#6b7280'}}>
+              Choose the plan that fits your research needs
+            </p>
+          </div>
+
+          <div style={{display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '32px', maxWidth: '1200px', margin: '0 auto'}}>
+            {/* Free Plan */}
+            <div style={{
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              padding: '32px',
+              backgroundColor: '#f9fafb',
+              textAlign: 'center'
+            }}>
+              <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#111827', marginBottom: '8px'}}>Free</h3>
+              <div style={{fontSize: '48px', fontWeight: 'bold', color: '#2563eb', marginBottom: '8px'}}>€0</div>
+              <p style={{color: '#6b7280', fontSize: '14px', marginBottom: '24px'}}>Perfect for getting started</p>
+
+              <div style={{textAlign: 'left', marginBottom: '24px', fontSize: '14px'}}>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ 1 active project</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ 30 AI interactions/month</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Basic research tools</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Community support</div>
+              </div>
+
+              <a href="/auth/register" style={{
+                display: 'block',
+                backgroundColor: 'white',
+                color: '#2563eb',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: '600',
+                border: '2px solid #2563eb'
+              }}>
+                Get Started Free
+              </a>
+            </div>
+
+            {/* Student Pro Plan */}
+            <div style={{
+              border: '2px solid #2563eb',
+              borderRadius: '12px',
+              padding: '32px',
+              backgroundColor: '#eff6ff',
+              textAlign: 'center',
+              position: 'relative' as const,
+              transform: 'scale(1.05)',
+              boxShadow: '0 10px 25px rgba(37, 99, 235, 0.1)'
+            }}>
+              <div style={{
+                position: 'absolute' as const,
+                top: '-15px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                backgroundColor: '#2563eb',
+                color: 'white',
+                padding: '6px 16px',
+                borderRadius: '20px',
+                fontSize: '12px',
+                fontWeight: '600'
+              }}>
+                POPULAR
+              </div>
+
+              <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#111827', marginBottom: '8px'}}>Student Pro</h3>
+              <div style={{fontSize: '48px', fontWeight: 'bold', color: '#2563eb', marginBottom: '8px'}}>
+                €10
+                <span style={{fontSize: '18px', color: '#6b7280', fontWeight: 'normal'}}>/month</span>
+              </div>
+              <p style={{color: '#6b7280', fontSize: '14px', marginBottom: '24px'}}>For serious researchers</p>
+
+              <div style={{textAlign: 'left', marginBottom: '24px', fontSize: '14px'}}>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Up to 10 active projects</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Unlimited AI interactions</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Unlimited memory retention</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Priority support</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Advanced research tools</div>
+              </div>
+
+              <a href="/auth/register" style={{
+                display: 'block',
+                backgroundColor: '#2563eb',
+                color: 'white',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: '600',
+                border: 'none'
+              }}>
+                Upgrade Now
+              </a>
+            </div>
+
+            {/* Researcher Plan */}
+            <div style={{
+              border: '1px solid #e5e7eb',
+              borderRadius: '12px',
+              padding: '32px',
+              backgroundColor: '#f9fafb',
+              textAlign: 'center'
+            }}>
+              <h3 style={{fontSize: '24px', fontWeight: 'bold', color: '#111827', marginBottom: '8px'}}>Researcher</h3>
+              <div style={{fontSize: '48px', fontWeight: 'bold', color: '#2563eb', marginBottom: '8px'}}>
+                €25
+                <span style={{fontSize: '18px', color: '#6b7280', fontWeight: 'normal'}}>/month</span>
+              </div>
+              <p style={{color: '#6b7280', fontSize: '14px', marginBottom: '24px'}}>For professional researchers</p>
+
+              <div style={{textAlign: 'left', marginBottom: '24px', fontSize: '14px'}}>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Unlimited active projects</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Unlimited AI interactions</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Unlimited memory retention</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Priority support</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Advanced research tools</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Collaboration features</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ Export to multiple formats</div>
+                <div style={{marginBottom: '12px', color: '#374151'}}>✓ API access</div>
+              </div>
+
+              <a href="/auth/register" style={{
+                display: 'block',
+                backgroundColor: 'white',
+                color: '#2563eb',
+                padding: '12px 24px',
+                borderRadius: '8px',
+                textDecoration: 'none',
+                fontWeight: '600',
+                border: '2px solid #2563eb'
+              }}>
+                Upgrade Now
+              </a>
             </div>
           </div>
         </div>
