@@ -1,6 +1,7 @@
 /**
  * Usage Enforcement Middleware
  * WP6.5: Usage Enforcement Middleware
+ * WP6.9: Added dual authentication support (custom JWT + Supabase OAuth)
  *
  * Middleware functions to enforce tier-based usage limits
  * on AI interactions and project creation
@@ -8,6 +9,7 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken';
 import {
   checkAIUsageLimit,
   checkProjectLimit,
@@ -20,8 +22,11 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY!;
 const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+
 /**
  * Extract user ID from authorization header
+ * Supports both custom JWT and Supabase OAuth authentication
  *
  * @param request - Next.js request object
  * @returns User ID or null if not authenticated
@@ -36,6 +41,19 @@ async function getUserIdFromRequest(
     }
 
     const token = authHeader.substring(7);
+
+    // Try custom JWT first
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      if (decoded.userId) {
+        console.log('🔒 Enforcement: Using custom JWT auth for user:', decoded.userId);
+        return decoded.userId;
+      }
+    } catch (jwtError) {
+      // JWT verification failed, try Supabase auth
+    }
+
+    // Fallback to Supabase OAuth
     const {
       data: { user },
       error,
@@ -45,6 +63,7 @@ async function getUserIdFromRequest(
       return null;
     }
 
+    console.log('🔒 Enforcement: Using Supabase auth for user:', user.id);
     return user.id;
   } catch (error) {
     console.error('Error extracting user ID from request:', error);
