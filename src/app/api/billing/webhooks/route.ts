@@ -137,17 +137,31 @@ async function handleCheckoutCompleted(event: any) {
   // Fetch full subscription details
   const subscription = await fetchSubscription(subscriptionId);
 
+  console.log('📊 Subscription data:', {
+    status: subscription.status,
+    current_period_start: subscription.current_period_start,
+    current_period_end: subscription.current_period_end,
+  });
+
+  // Safely convert timestamps
+  const periodStart = subscription.current_period_start
+    ? new Date(subscription.current_period_start * 1000).toISOString()
+    : new Date().toISOString();
+  const periodEnd = subscription.current_period_end
+    ? new Date(subscription.current_period_end * 1000).toISOString()
+    : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(); // +30 days default
+
   // Update subscription in database
   const { error } = await supabaseAdmin
     .from('subscriptions')
     .upsert({
       user_id: userId,
       tier: tier,
-      status: subscription.status,
+      status: subscription.status || 'active',
       stripe_customer_id: customerId,
       stripe_subscription_id: subscriptionId,
-      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
-      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      current_period_start: periodStart,
+      current_period_end: periodEnd,
       cancel_at_period_end: subscription.cancel_at_period_end || false,
       updated_at: new Date().toISOString(),
     }, {
