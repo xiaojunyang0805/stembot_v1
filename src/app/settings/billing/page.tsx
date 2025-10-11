@@ -100,16 +100,23 @@ export default function BillingPage() {
         setIsLoading(true);
         setError(null);
 
-        // Get Supabase session token
-        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        // Try to get auth token from localStorage first (custom JWT auth)
+        let authToken = localStorage.getItem('authToken');
 
-        if (sessionError || !session?.access_token) {
-          throw new Error('Not authenticated');
+        // If no custom token, try Supabase session (OAuth auth)
+        if (!authToken) {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+          if (sessionError || !session?.access_token) {
+            throw new Error('Not authenticated');
+          }
+
+          authToken = session.access_token;
         }
 
         const response = await fetch('/api/billing/status', {
           headers: {
-            Authorization: `Bearer ${session.access_token}`,
+            Authorization: `Bearer ${authToken}`,
           },
         });
 
@@ -138,18 +145,25 @@ export default function BillingPage() {
       setIsUpgrading(true);
       setUpgradeMessage(null);
 
-      // Get Supabase session token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Try to get auth token from localStorage first (custom JWT auth)
+      let authToken = localStorage.getItem('authToken');
 
-      if (sessionError || !session?.access_token) {
-        throw new Error('Not authenticated');
+      // If no custom token, try Supabase session (OAuth auth)
+      if (!authToken) {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session?.access_token) {
+          throw new Error('Not authenticated');
+        }
+
+        authToken = session.access_token;
       }
 
       const response = await fetch('/api/billing/create-checkout', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           tier,
@@ -183,18 +197,25 @@ export default function BillingPage() {
     try {
       setIsUpgrading(true);
 
-      // Get Supabase session token
-      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+      // Try to get auth token from localStorage first (custom JWT auth)
+      let authToken = localStorage.getItem('authToken');
 
-      if (sessionError || !session?.access_token) {
-        throw new Error('Not authenticated');
+      // If no custom token, try Supabase session (OAuth auth)
+      if (!authToken) {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session?.access_token) {
+          throw new Error('Not authenticated');
+        }
+
+        authToken = session.access_token;
       }
 
       const response = await fetch('/api/billing/portal', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${session.access_token}`,
+          Authorization: `Bearer ${authToken}`,
         },
         body: JSON.stringify({
           returnUrl: `${window.location.origin}/settings?tab=billing`,
