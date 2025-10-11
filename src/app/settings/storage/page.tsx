@@ -30,6 +30,9 @@ export default function StorageSettingsPage() {
   const [saveMessage, setSaveMessage] = useState<string | null>(null);
   const [saveError, setSaveError] = useState<string | null>(null);
 
+  // Create single Supabase client instance to avoid multiple GoTrueClient warnings
+  const [supabase] = useState(() => createClientComponentClient());
+
   // Load storage data
   useEffect(() => {
     const loadStorageData = async () => {
@@ -52,7 +55,6 @@ export default function StorageSettingsPage() {
         if (projectsError) {
           console.error('Error loading projects:', projectsError);
         } else if (projects && projects.length > 0) {
-          const supabase = createClientComponentClient();
           // Calculate storage per project
           const projectsWithStorage = await Promise.all(
             projects.map(async (project: any) => {
@@ -109,8 +111,6 @@ export default function StorageSettingsPage() {
     setSaveError(null);
 
     try {
-      const supabase = createClientComponentClient();
-
       // Fetch all user data
       const { data: projects, error: projectsError } = await getUserProjects();
 
@@ -167,7 +167,6 @@ export default function StorageSettingsPage() {
     setSaveError(null);
 
     try {
-      const supabase = createClientComponentClient();
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
