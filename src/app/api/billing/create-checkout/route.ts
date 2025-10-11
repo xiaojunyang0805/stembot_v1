@@ -1,6 +1,7 @@
 /**
  * Create Stripe Checkout Session API Route
  * WP6.6: Create checkout sessions for subscription upgrades
+ * WP6.9: Added dual authentication support (custom JWT + Supabase OAuth)
  *
  * Handles creating Stripe Checkout sessions for users upgrading
  * from Free to Student Pro or Researcher tiers.
@@ -8,8 +9,11 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
+import jwt from 'jsonwebtoken';
 import { getUserSubscriptionWithStatus } from '@/lib/stripe/subscriptionHelpers';
 import { stripe, STRIPE_PRICE_IDS, SubscriptionTier } from '@/lib/stripe/server';
+
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 /**
  * Create a Stripe Checkout session
@@ -40,7 +44,7 @@ export async function POST(request: NextRequest) {
       }
     );
 
-    // Get auth token from header and verify with Supabase
+    // Get auth token from header and verify (supports both custom JWT and Supabase OAuth)
     const authHeader = request.headers.get('authorization');
     if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
@@ -50,17 +54,34 @@ export async function POST(request: NextRequest) {
     }
 
     const token = authHeader.substring(7);
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+    let userId: string;
+    let userEmail: string;
 
-    if (authError || !user) {
-      return NextResponse.json(
-        { error: 'Invalid authentication token' },
-        { status: 401 }
-      );
+    // Try custom JWT first
+    try {
+      const decoded = jwt.verify(token, JWT_SECRET) as any;
+      if (decoded.userId && decoded.email) {
+        userId = decoded.userId;
+        userEmail = decoded.email;
+        console.log('🔒 Checkout: Using custom JWT auth for user:', userId);
+      } else {
+        throw new Error('Invalid JWT payload');
+      }
+    } catch (jwtError) {
+      // JWT verification failed, try Supabase auth
+      const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+      if (authError || !user) {
+        return NextResponse.json(
+          { error: 'Invalid authentication token' },
+          { status: 401 }
+        );
+      }
+
+      userId = user.id;
+      userEmail = user.email || '';
+      console.log('🔒 Checkout: Using Supabase auth for user:', userId);
     }
-
-    const userId = user.id;
-    const userEmail = user.email || '';
 
     console.log('🛒 Creating checkout session for:', { userId, tier });
 
