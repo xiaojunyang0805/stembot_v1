@@ -483,6 +483,23 @@ export async function POST(request: NextRequest) {
 }
 
 /**
+ * GET handler for health checks and browser visits
+ * Returns webhook status information
+ */
+export async function GET() {
+  return NextResponse.json(
+    {
+      service: 'StemBot Stripe Webhook Handler',
+      status: 'active',
+      acceptedMethods: ['POST'],
+      message: 'This endpoint only accepts POST requests with valid Stripe webhook signatures',
+      webhookSecret: webhookSecret ? 'configured' : 'missing',
+    },
+    { status: 200 }
+  );
+}
+
+/**
  * OPTIONS handler for CORS preflight requests
  */
 export async function OPTIONS() {
