@@ -93,7 +93,7 @@ export default function PrivacySettingsPage() {
 
       // Fetch all user data (GDPR compliance)
       const [projects, documents, conversations, profile, preferences] = await Promise.all([
-        supabase.from('research_projects').select('*').eq('user_id', user.id),
+        supabase.from('projects').select('*').eq('user_id', user.id),
         supabase.from('project_documents').select('*'),
         supabase.from('conversations').select('*').eq('user_id', user.id),
         supabase.from('users').select('*').eq('id', user.id).single(),
@@ -142,7 +142,7 @@ export default function PrivacySettingsPage() {
 
       // Delete all user data
       await Promise.all([
-        supabase.from('research_projects').delete().eq('user_id', user.id),
+        supabase.from('projects').delete().eq('user_id', user.id),
         supabase.from('conversations').delete().eq('user_id', user.id),
         supabase.from('user_preferences').delete().eq('user_id', user.id),
         supabase.from('users').delete().eq('id', user.id)

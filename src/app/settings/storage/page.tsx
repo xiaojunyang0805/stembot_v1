@@ -47,8 +47,8 @@ export default function StorageSettingsPage() {
 
         // Load per-project storage breakdown
         const supabase = createClientComponentClient();
-        const { data: projects, error: projectsError } = await supabase
-          .from('research_projects')
+        const { data: projects, error: projectsError} = await supabase
+          .from('projects')
           .select('id, title, created_at')
           .eq('user_id', user.id)
           .order('created_at', { ascending: false });
@@ -116,7 +116,7 @@ export default function StorageSettingsPage() {
 
       // Fetch all user data
       const { data: projects, error: projectsError } = await supabase
-        .from('research_projects')
+        .from('projects')
         .select('*')
         .eq('user_id', user.id);
 
@@ -180,7 +180,7 @@ export default function StorageSettingsPage() {
 
       // Find old projects
       const { data: oldProjects, error: fetchError } = await supabase
-        .from('research_projects')
+        .from('projects')
         .select('id')
         .eq('user_id', user.id)
         .lt('created_at', sixMonthsAgo.toISOString());
@@ -196,7 +196,7 @@ export default function StorageSettingsPage() {
 
       // Delete old projects (cascade will delete related data)
       const { error: deleteError } = await supabase
-        .from('research_projects')
+        .from('projects')
         .delete()
         .in('id', oldProjects.map((p: any) => p.id));
 
