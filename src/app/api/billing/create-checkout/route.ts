@@ -2,6 +2,7 @@
  * Create Stripe Checkout Session API Route
  * WP6.6: Create checkout sessions for subscription upgrades
  * WP6.9: Added dual authentication support (custom JWT + Supabase OAuth)
+ * WP6.9: Replaced Stripe SDK with direct API calls to fix Vercel connection issues
  *
  * Handles creating Stripe Checkout sessions for users upgrading
  * from Free to Student Pro or Researcher tiers.
@@ -11,9 +12,50 @@ import { NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@supabase/supabase-js';
 import jwt from 'jsonwebtoken';
 import { getUserSubscriptionWithStatus } from '@/lib/stripe/subscriptionHelpers';
-import { stripe, STRIPE_PRICE_IDS, SubscriptionTier } from '@/lib/stripe/server';
+import { STRIPE_PRICE_IDS, SubscriptionTier } from '@/lib/stripe/server';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
+
+/**
+ * Helper function to make direct Stripe API calls
+ * Bypasses SDK connection issues in Vercel serverless environment
+ */
+async function stripeApiCall(endpoint: string, method: string = 'POST', data?: Record<string, any>) {
+  const url = `https://api.stripe.com/v1/${endpoint}`;
+  const auth = Buffer.from(`${STRIPE_SECRET_KEY}:`).toString('base64');
+
+  const body = data
+    ? new URLSearchParams(
+        Object.entries(data).flatMap(([key, value]) => {
+          if (typeof value === 'object' && !Array.isArray(value)) {
+            // Handle nested objects (e.g., metadata)
+            return Object.entries(value).map(([subKey, subValue]) =>
+              [`${key}[${subKey}]`, String(subValue)]
+            );
+          }
+          return [[key, String(value)]];
+        })
+      ).toString()
+    : undefined;
+
+  const response = await fetch(url, {
+    method,
+    headers: {
+      'Authorization': `Basic ${auth}`,
+      'Content-Type': 'application/x-www-form-urlencoded',
+    },
+    body,
+  });
+
+  const result = await response.json();
+
+  if (!response.ok) {
+    throw new Error(`Stripe API error: ${result.error?.message || 'Unknown error'}`);
+  }
+
+  return result;
+}
 
 /**
  * Create a Stripe Checkout session
@@ -92,12 +134,10 @@ export async function POST(request: NextRequest) {
     let customerId = subscription.stripe_customer_id;
 
     if (!customerId) {
-      // Create new Stripe customer
-      const customer = await stripe.customers.create({
+      // Create new Stripe customer using direct API call
+      const customer = await stripeApiCall('customers', 'POST', {
         email: userEmail,
-        metadata: {
-          supabase_user_id: userId,
-        },
+        'metadata[supabase_user_id]': userId,
       });
       customerId = customer.id;
 
@@ -120,30 +160,19 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create Stripe Checkout session
-    const session = await stripe.checkout.sessions.create({
+    // Create Stripe Checkout session using direct API call
+    const session = await stripeApiCall('checkout/sessions', 'POST', {
       customer: customerId,
       mode: 'subscription',
-      payment_method_types: ['card'],
-      line_items: [
-        {
-          price: priceId,
-          quantity: 1,
-        },
-      ],
+      'payment_method_types[0]': 'card',
+      'line_items[0][price]': priceId,
+      'line_items[0][quantity]': 1,
       success_url: successUrl || `${process.env.NEXT_PUBLIC_APP_URL}/settings?upgrade=success`,
       cancel_url: cancelUrl || `${process.env.NEXT_PUBLIC_APP_URL}/settings?upgrade=cancelled`,
-      metadata: {
-        user_id: userId,
-        tier: tier,
-      },
-      subscription_data: {
-        metadata: {
-          user_id: userId,
-          tier: tier,
-        },
-      },
-      // Allow promotion codes
+      'metadata[user_id]': userId,
+      'metadata[tier]': tier,
+      'subscription_data[metadata][user_id]': userId,
+      'subscription_data[metadata][tier]': tier,
       allow_promotion_codes: true,
     });
 
