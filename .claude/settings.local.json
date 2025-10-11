@@ -50,7 +50,8 @@
       "mcp__chrome-devtools__get_network_request",
       "mcp__chrome-devtools__list_network_requests",
       "Bash(for file in 20251003_create_project_methodology.sql 20251007191629_paper_outlines_table.sql 20251007200000_create_paper_sections.sql)",
-      "Bash(do echo \"=== $file ===\")"
+      "Bash(do echo \"=== $file ===\")",
+      "Bash(git log:*)"
     ],
     "deny": [],
     "ask": []
