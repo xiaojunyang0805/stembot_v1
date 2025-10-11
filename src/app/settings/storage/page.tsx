@@ -50,7 +50,6 @@ export default function StorageSettingsPage() {
         const { data: projects, error: projectsError} = await supabase
           .from('projects')
           .select('id, title, created_at')
-          .eq('user_id', user.id)
           .order('created_at', { ascending: false });
 
         if (projectsError) {
@@ -117,8 +116,7 @@ export default function StorageSettingsPage() {
       // Fetch all user data
       const { data: projects, error: projectsError } = await supabase
         .from('projects')
-        .select('*')
-        .eq('user_id', user.id);
+        .select('*');
 
       if (projectsError) throw projectsError;
 
@@ -131,8 +129,7 @@ export default function StorageSettingsPage() {
 
       const { data: conversations, error: convsError } = await supabase
         .from('conversations')
-        .select('*')
-        .eq('user_id', user.id);
+        .select('*');
 
       if (convsError) throw convsError;
 
@@ -182,7 +179,6 @@ export default function StorageSettingsPage() {
       const { data: oldProjects, error: fetchError } = await supabase
         .from('projects')
         .select('id')
-        .eq('user_id', user.id)
         .lt('created_at', sixMonthsAgo.toISOString());
 
       if (fetchError) throw fetchError;
