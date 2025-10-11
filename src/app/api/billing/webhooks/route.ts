@@ -243,6 +243,8 @@ export async function POST(request: NextRequest) {
     const body = await request.text();
 
     console.log('🔔 Stripe webhook received');
+    console.log('🔍 Secret prefix:', STRIPE_WEBHOOK_SECRET?.substring(0, 12));
+    console.log('🔍 Signature header:', signature?.substring(0, 50));
 
     // Verify webhook signature
     if (!signature) {
@@ -265,6 +267,7 @@ export async function POST(request: NextRequest) {
 
     if (!isValid) {
       console.error('❌ Invalid webhook signature');
+      console.error('🔍 Expected secret starts with:', STRIPE_WEBHOOK_SECRET.substring(0, 15));
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 400 }
