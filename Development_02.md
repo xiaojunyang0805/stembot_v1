@@ -1750,13 +1750,41 @@ All WP5 Writing Phase components are:
 - Includes verification checklist
 - Lists prevention measures
 
-**Status:**
+**Status:** ✅ **FULLY RESOLVED**
+
+**Remediation Complete:**
+- ✅ Webhook secret rotated in Stripe Dashboard (11:20, 11/10, 2025)
+- ✅ Vercel environment variables updated with new secret
+- ✅ Application redeployed successfully to production
+- ✅ 405 errors fixed with GET handler implementation
+- ✅ Webhook tested successfully via Stripe CLI (`stripe trigger checkout.session.completed`)
+- ✅ Webhook receiving and processing events correctly
+- ✅ No more 405 errors in Vercel logs
 - ✅ .gitignore updated to prevent future commits
-- ✅ Security documentation created
-- ⏳ **Webhook secret rotation pending** (requires user action)
-- ⏳ **Environment variable update pending** (requires user action)
+- ✅ Security documentation created and marked as resolved
+
+**Verification Results:**
+- ✅ GET endpoint returns 200 OK with status information
+- ✅ POST endpoint accepts properly signed webhook events
+- ✅ Stripe Dashboard shows webhook status: Active
+- ✅ Test event sent successfully: "Trigger succeeded!"
+- ✅ Old secret is now INVALID and cannot be used
+- 🔒 New secret secured in Vercel environment variables only
+
+**Code Changes:**
+- Added GET handler to `/api/webhooks/stripe` (commit `7ef59fc`)
+- Updated `.gitignore` to block security files (commit `459e3d9`)
+- Build successful, type checks passed
+- Deployed to production
 
 **Commits:**
 - `459e3d9` - security: Add SECURITY_INCIDENT_*.md to .gitignore
+- `7ef59fc` - fix: Add GET handler to webhook endpoint to prevent 405 errors
+
+**Security Status:** 🔒 **SECURE**
+- Exposed secret is now INVALID
+- New secret protected by Vercel environment variables
+- Webhook fully functional and secure
+- Git history cleanup NOT required (old secret invalid)
 
 ---
