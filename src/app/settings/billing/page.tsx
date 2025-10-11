@@ -15,6 +15,7 @@
 import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/providers/AuthProvider';
+import { supabase } from '@/lib/supabase';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
@@ -99,15 +100,16 @@ export default function BillingPage() {
         setIsLoading(true);
         setError(null);
 
-        // Get auth token
-        const token = localStorage.getItem('auth_token');
-        if (!token) {
+        // Get Supabase session token
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+        if (sessionError || !session?.access_token) {
           throw new Error('Not authenticated');
         }
 
         const response = await fetch('/api/billing/status', {
           headers: {
-            Authorization: `Bearer ${token}`,
+            Authorization: `Bearer ${session.access_token}`,
           },
         });
 
@@ -136,8 +138,10 @@ export default function BillingPage() {
       setIsUpgrading(true);
       setUpgradeMessage(null);
 
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
+      // Get Supabase session token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
         throw new Error('Not authenticated');
       }
 
@@ -145,7 +149,7 @@ export default function BillingPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           tier,
@@ -179,8 +183,10 @@ export default function BillingPage() {
     try {
       setIsUpgrading(true);
 
-      const token = localStorage.getItem('auth_token');
-      if (!token) {
+      // Get Supabase session token
+      const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+
+      if (sessionError || !session?.access_token) {
         throw new Error('Not authenticated');
       }
 
@@ -188,7 +194,7 @@ export default function BillingPage() {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
+          Authorization: `Bearer ${session.access_token}`,
         },
         body: JSON.stringify({
           returnUrl: `${window.location.origin}/settings?tab=billing`,

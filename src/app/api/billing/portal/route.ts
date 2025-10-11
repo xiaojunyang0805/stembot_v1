@@ -7,11 +7,9 @@
  */
 
 import { NextRequest, NextResponse } from 'next/server';
-import jwt from 'jsonwebtoken';
+import { createClient } from '@supabase/supabase-js';
 import { getUserSubscriptionWithStatus } from '@/lib/stripe/subscriptionHelpers';
 import { stripe } from '@/lib/stripe/server';
-
-const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key-change-in-production';
 
 /**
  * Create a Stripe Customer Portal session
@@ -21,28 +19,38 @@ export async function POST(request: NextRequest) {
   try {
     const { returnUrl } = await request.json();
 
-    // Get auth token from header
-    const authHeader = request.headers.get('authorization');
-    const token = authHeader?.replace('Bearer ', '');
+    // Create Supabase client with service role
+    const supabaseAdmin = createClient(
+      process.env.NEXT_PUBLIC_SUPABASE_URL!,
+      process.env.SUPABASE_SERVICE_ROLE_KEY!,
+      {
+        auth: {
+          autoRefreshToken: false,
+          persistSession: false,
+        },
+      }
+    );
 
-    if (!token) {
+    // Get auth token from header and verify with Supabase
+    const authHeader = request.headers.get('authorization');
+    if (!authHeader?.startsWith('Bearer ')) {
       return NextResponse.json(
         { error: 'Authentication required' },
         { status: 401 }
       );
     }
 
-    // Verify JWT token
-    let userId: string;
-    try {
-      const decoded = jwt.verify(token, JWT_SECRET) as any;
-      userId = decoded.userId;
-    } catch (error) {
+    const token = authHeader.substring(7);
+    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
+
+    if (authError || !user) {
       return NextResponse.json(
         { error: 'Invalid authentication token' },
         { status: 401 }
       );
     }
+
+    const userId = user.id;
 
     console.log('🔐 Creating customer portal session for user:', userId);
 
