@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides comprehensive guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## 🚨 CRITICAL STYLING REQUIREMENTS
 
@@ -15,12 +15,12 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 **This applies to ALL UI components, pages, and styling tasks regardless of what the user requests.**
 
+---
+
 ## 🛡️ WORKING STATE PROTECTION PROTOCOL
 
 ### **MANDATORY BEFORE ANY CHANGES:**
 **⚠️ CRITICAL: Protect days of work from being destroyed in minutes**
-
-**See `WORKING_PROTOCOL.md` for full protocol**
 
 #### **Pre-Change Checklist:**
 1. **Document Working State**: Test `https://stembotv1.vercel.app` - record what works NOW
@@ -35,22 +35,91 @@ git push origin main --force
 ```
 
 #### **Current Protected Baseline:**
-- **Working Commit:** `4ee78499e8e0c4c707bd41fafc014e748512f051`
-- **Protected Features:** Homepage, Auth Flow, Dashboard, Inline Styles, Successful Builds
-- **Date Protected:** 2025-01-27
+- **Working Commit:** `9a1792c` (Storage & Usage fixed)
+- **Protected Features:** Homepage, Auth Flow, Dashboard, Settings Pages, Inline Styles, Successful Builds
+- **Date Protected:** 2025-01-11
 
-#### **🚨 CRITICAL DEPLOYMENT LESSON (Sep 27, 2025):**
-**Branch Mismatch Issue:** Main domain served different content because Vercel deployed from `master` branch while development was on `main` branch.
+#### **🚨 CRITICAL DEPLOYMENT LESSONS:**
 
-**Prevention Protocol:**
-1. **ALWAYS verify which branch Vercel deploys from** (Settings → Git → Production Branch)
-2. **Keep main and master branches synchronized** or switch development to production branch
-3. **Test MAIN DOMAIN, not just working domain** URLs after deployment
-4. **Add deployment debug indicators** to visually confirm which code is running
+**1. Branch Mismatch Issue (Sep 27, 2025):**
+- **Problem:** Main domain served different content because Vercel deployed from `master` branch while development was on `main` branch
+- **Prevention:**
+  - ALWAYS verify which branch Vercel deploys from (Settings → Git → Production Branch)
+  - Keep main and master branches synchronized
+  - Test MAIN DOMAIN, not just working domain URLs after deployment
 
-**Quick Check:** If main domain shows different content, check if you're developing on wrong branch!
+**2. Vercel Deployment Pipeline Failure (Oct 1, 2025):**
+- **Problem:** 12+ consecutive deployment failures despite successful local builds
+- **Root Cause:** Vercel deployment pipeline became stuck/corrupted
+- **Solution:** `npx vercel --prod --force` to bypass cache
+- **Lesson:** Local build success ≠ Vercel deployment success
 
 **🚨 NEVER BREAK WORKING FUNCTIONALITY FOR "IMPROVEMENTS" - ADDITIVE CHANGES ONLY!**
+
+---
+
+## 🔍 DEBUGGING METHODOLOGY
+
+### **Case Study: Storage Page Flashing Issue (Jan 11, 2025)**
+
+**Initial Symptom:** Storage & Usage page showing infinite loading spinner ("flashing") for Supabase auth users
+
+**Debugging Process:**
+1. **Tested with Custom JWT Auth Account** (601404242@qq.com)
+   - Initially worked, masked the real issue
+   - Revealed dual authentication system complexity
+
+2. **User Corrected Assumption:**
+   - User reported issue persisted with Google/Supabase auth
+   - Found 290+ "Multiple GoTrueClient instances" warnings in console
+
+3. **Root Cause Analysis:**
+   - **First Issue:** Direct Supabase queries with manual `.eq('user_id', user.id)` conflicted with RLS
+   - **Second Issue:** Multiple `createClientComponentClient()` calls creating 290+ client instances
+   - This caused authentication state race conditions
+
+4. **Solution Implemented:**
+   - **Phase 1:** Replaced direct queries with `getUserProjects()` API (works for both auth types)
+   - **Phase 2:** Created singleton Supabase client at component level using `useState(() => createClientComponentClient())`
+
+**Key Lessons:**
+- ✅ **Test with actual user account** - Test accounts may use different auth paths
+- ✅ **Check browser console** - 290+ warnings revealed the real issue
+- ✅ **Understand dual auth systems** - Custom JWT vs Supabase auth need different approaches
+- ✅ **Create singletons for client instances** - Prevent multiple auth client creation
+- ✅ **Monitor network requests** - Reveals which code path is actually executing
+- ❌ **Don't assume initial fix solves all cases** - Verify with both auth types
+
+**Chrome DevTools MCP Tools Used:**
+```bash
+# Console error detection
+"Check console logs for https://stembotv1.vercel.app"
+
+# Network request monitoring
+"Monitor network requests for https://stembotv1.vercel.app"
+
+# Visual verification
+"Take screenshot of https://stembotv1.vercel.app/settings/storage"
+```
+
+---
+
+## 🔑 TEST ACCOUNT CREDENTIALS
+
+### **Production Testing Account**
+- **Email:** 601404242@qq.com
+- **Password:** Woerner6163418=
+- **Auth Type:** Custom JWT (uses API routes)
+- **Usage:** For automated testing and custom auth path verification
+
+### **User's Personal Account**
+- **Email:** xiaojunyang0805@gmail.com
+- **Auth Type:** Google/Supabase OAuth
+- **Usage:** Real-world testing with Supabase auth
+
+**IMPORTANT:** Always test with BOTH accounts when working on authentication-related features!
+
+---
 
 ## Development Commands
 
@@ -83,6 +152,8 @@ git push origin main --force
 - `npm run storybook` - Start Storybook development server
 - `npm run build-storybook` - Build Storybook for production
 
+---
+
 ## 📝 Documentation Protocol
 
 ### **Development Notes - ALWAYS ADD TO END OF FILE**
@@ -108,12 +179,14 @@ git push origin main --force
 
 **Reason**: The user maintains chronological order with latest work at the bottom. This preserves the development timeline and makes it easy to see progression.
 
+---
+
 ## Project Architecture
 
 ### Framework & Stack
 - **Next.js 14** with App Router for full-stack React application
 - **TypeScript** with strict type checking enabled
-- **Tailwind CSS** with custom design system for STEM education themes
+- **Tailwind CSS** with custom design system (use inline styles as fallback)
 - **Supabase** for database, authentication, and real-time features
 - **Radix UI** as the foundation for accessible component primitives
 
@@ -123,41 +196,42 @@ src/
 ├── app/                    # Next.js App Router pages and layouts
 │   ├── auth/              # Authentication pages (login, register)
 │   ├── dashboard/         # Student dashboard and project management
-│   ├── educator/          # Educator-specific features and analytics
+│   ├── settings/          # User settings pages (profile, notifications, storage, etc.)
+│   ├── projects/          # Project management pages
 │   └── billing/           # Subscription and payment pages
 ├── components/
-│   └── ui/                # Reusable UI components based on Radix UI
+│   ├── ui/                # Reusable UI components based on Radix UI
+│   └── settings/          # Settings-specific components
 ├── lib/
+│   ├── database/          # Database query functions
+│   ├── storage/           # Storage monitoring utilities
 │   ├── utils/             # Utility functions and helpers
-│   └── utils.ts           # Core utilities (cn, debounce, etc.)
+│   └── supabase.ts        # Supabase client configuration
 └── types/                 # TypeScript type definitions
 ```
 
 ### Key Architecture Patterns
 
-**Component Architecture**: Uses Radix UI primitives with custom styling via Tailwind CSS. Components follow shadcn/ui patterns with variants using class-variance-authority.
+**Dual Authentication System:**
+- **Custom JWT Auth:** Uses API routes with service role credentials (test account)
+- **Supabase Auth:** Standard OAuth/email auth with RLS (user accounts)
+- **Pattern:** Use `getUserProjects()` and similar API wrappers that handle both auth types
 
-**Styling System**: Comprehensive Tailwind config with STEM-specific color palettes:
-- Math subjects: Blue variants (`math-*` classes)
-- Science subjects: Green variants (`science-*` classes)
-- Coding subjects: Purple variants (`coding-*` classes)
-- Custom animations for gamification features
+**Supabase Client Management:**
+- ✅ **Create singleton instances:** `const [supabase] = useState(() => createClientComponentClient())`
+- ❌ **Avoid multiple instances:** Don't call `createClientComponentClient()` in every function
+- **Why:** Prevents "Multiple GoTrueClient instances" warnings and auth state race conditions
+
+**Component Architecture:** Uses Radix UI primitives with custom styling via inline styles. Components follow shadcn/ui patterns with variants using class-variance-authority.
 
 **Path Aliases**: Configured in tsconfig.json:
 - `@/*` maps to `src/*`
 - `@/components/*` maps to `src/components/*`
 - `@/lib/*` maps to `src/lib/*`
-- `@/utils/*` maps to `src/lib/utils/*`
-
-**AI Integration**: Built for local AI processing with Ollama integration. API routes proxy to local Ollama instance for privacy-first AI tutoring.
 
 **Authentication**: Supabase Auth with Next.js App Router integration. Route groups organize authenticated vs public pages.
 
-**Testing Strategy**:
-- Unit tests with Jest and React Testing Library
-- E2E tests with Playwright across multiple browsers
-- Component testing with Storybook
-- Separate test environments for unit vs integration tests
+---
 
 ## Development Guidelines
 
@@ -178,16 +252,13 @@ src/
 - Follow Radix UI + Tailwind patterns from existing UI components
 - Use `forwardRef` for components that need DOM access
 - Implement proper accessibility with ARIA attributes
+- **Create singleton Supabase clients** to avoid multiple instances
 
 ### Database Integration
 - Supabase types are generated via `npm run db:generate`
 - Use proper TypeScript interfaces for database models
-- Real-time subscriptions available for collaborative features
-
-### AI Features
-- Local processing via Ollama for privacy compliance
-- API routes handle AI model interactions
-- Structured for personalized learning path generation
+- **Use API wrappers** (`getUserProjects()`, etc.) instead of direct Supabase queries for dual auth compatibility
+- **Avoid manual user_id filtering** - RLS policies handle this automatically
 
 ### Performance Considerations
 - Next.js Image optimization configured for educational content
@@ -195,13 +266,34 @@ src/
 - Lazy loading and code splitting implemented
 - SVG handling via @svgr/webpack
 
+---
+
 ## Error Handling & Debugging
 
-When encountering build errors:
+### Common Issues & Solutions
+
+**1. "Multiple GoTrueClient instances" Warning**
+- **Cause:** Creating multiple Supabase client instances
+- **Solution:** Create singleton client: `const [supabase] = useState(() => createClientComponentClient())`
+- **File:** Any component using Supabase
+
+**2. Empty Data Despite Successful Queries**
+- **Cause:** Manual `.eq('user_id', user.id)` conflicts with RLS or wrong auth type
+- **Solution:** Use API wrappers like `getUserProjects()` or rely solely on RLS
+- **File:** Settings pages, dashboard components
+
+**3. 404 Errors on Table Queries**
+- **Cause:** Wrong table name (e.g., `research_projects` vs `projects`)
+- **Solution:** Check database schema: `001_create_research_database.sql`
+- **Verification:** Check Supabase dashboard table list
+
+**4. Build Errors**
 1. Run `npm run type-check` to identify TypeScript issues
 2. Check `npm run lint` for code quality problems
 3. Verify path aliases match tsconfig.json configuration
 4. For Supabase errors, ensure environment variables are configured
+
+---
 
 ## Chrome DevTools MCP Integration
 
@@ -248,9 +340,126 @@ npm run type-check && npm run build
 git add . && git commit -m "..." && git push origin main
 ```
 
-To completely solve the persistant login issue, I will replace all old supabaseUr to new "https://kutpbtpdgptcmrlabekq.supabase.co".
-- Going through git add/commit/push process in serial without my permission unless error occurs.
-- In future don't run local test, we only do vercel deployment for web test.
-- After debugging, do git add/commit/push in serial, then trigger vercel build.
-- In future, after debugging, do git add/commit/push in serial without asking permission, go automatically.
-- **NEW**: Use Chrome DevTools MCP for automated UI inspection instead of manual DevTools checking.
+---
+
+## 🚨 VERCEL DEPLOYMENT PROTOCOLS
+
+### **Deployment Crisis Response**
+When deployment failures detected, follow this sequence:
+
+```bash
+# STEP 1: Check deployment status (30 seconds)
+curl -s "https://stembotv1.vercel.app/api/version"
+
+# STEP 2: If multiple consecutive failures → FORCE DEPLOY FIRST
+npx vercel --prod --force
+# DON'T debug code when pipeline is stuck!
+
+# STEP 3: Monitor resolution (2-3 minutes)
+curl -s "https://stembotv1.vercel.app/api/version"
+
+# STEP 4: Only if force deploy fails → Debug code issues
+npm run type-check && npm run build
+```
+
+### **Quick Deployment Verification**
+```bash
+# 1. Basic availability check
+curl -s -I "https://stembotv1.vercel.app" | head -1
+
+# 2. API health check
+curl -s "https://stembotv1.vercel.app/api/version"
+
+# 3. Automated UI inspection (Chrome DevTools MCP)
+"Check console errors and performance for https://stembotv1.vercel.app"
+```
+
+---
+
+## 🗄️ SUPABASE CONFIGURATION
+
+### **Manual SQL Migration (ONLY Working Method)**
+
+**All automated methods failed - Use SQL Editor:**
+
+1. **Open:** https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
+2. **Copy** migration from `supabase/migrations/[filename].sql`
+3. **Paste** into SQL Editor
+4. **Click** "Run" button
+5. **Ignore** "already exists" errors (safe)
+
+**Verification:**
+```sql
+SELECT table_name FROM information_schema.tables
+WHERE table_schema = 'public' ORDER BY table_name;
+```
+
+### **Environment Variables Required:**
+```bash
+NEXT_PUBLIC_SUPABASE_URL=https://kutpbtpdgptcmrlabekq.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=[anon_key_from_dashboard]
+SUPABASE_SERVICE_ROLE_KEY=[service_role_key_from_dashboard]
+```
+
+---
+
+## ⚡ QUICK REFERENCE COMMANDS
+
+```bash
+# 🚨 DEPLOYMENT CRISIS (Multiple consecutive failures)
+npx vercel --prod --force    # FIRST ACTION - Force deployment
+
+# 🗄️ SUPABASE MIGRATIONS (Manual SQL Editor Only)
+# Open: https://supabase.com/dashboard/project/kutpbtpdgptcmrlabekq/sql/new
+# Copy migration → Paste → Run → Ignore "already exists" errors
+
+# Test before deploy
+npm run type-check && npm run build
+
+# Check console warnings (use Chrome DevTools MCP)
+"Check console logs for https://stembotv1.vercel.app"
+
+# Verify deployment success
+curl -s "https://stembotv1.vercel.app/api/version"
+
+# Emergency rollback
+git reset --hard [WORKING_COMMIT]
+git push origin main --force
+
+# Document working state
+git rev-parse HEAD > .working-commit
+```
+
+---
+
+## 🎯 DEVELOPMENT WORKFLOW
+
+### Standard Workflow:
+```bash
+# 1. Make changes
+# 2. Test locally (optional)
+npm run dev
+
+# 3. Validate code
+npm run type-check && npm run build
+
+# 4. Deploy
+git add . && git commit -m "..." && git push origin main
+
+# 5. Wait 2-3 minutes for Vercel deployment
+
+# 6. Verify with Chrome DevTools MCP
+"Check console logs and performance for https://stembotv1.vercel.app"
+"Take screenshot to verify visual changes"
+```
+
+### When Things Go Wrong:
+1. Check console for warnings/errors using Chrome DevTools MCP
+2. Verify network requests aren't failing
+3. Test with both auth accounts (JWT and Supabase)
+4. Force deployment if Vercel is stuck
+5. Rollback if necessary
+
+---
+
+**🔒 This guidance is mandatory for all development work. Protecting working functionality is more important than adding new features.**
