@@ -156,8 +156,16 @@ export async function POST(request: NextRequest) {
     });
   } catch (error: any) {
     console.error('❌ Failed to create checkout session:', error);
+    console.error('Error stack:', error.stack);
+    console.error('Error type:', error.constructor?.name);
+
+    // Return detailed error for debugging
     return NextResponse.json(
-      { error: error.message || 'Failed to create checkout session' },
+      {
+        error: error.message || 'Failed to create checkout session',
+        type: error.constructor?.name || 'Error',
+        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+      },
       { status: 500 }
     );
   }
