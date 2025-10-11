@@ -162,13 +162,31 @@ git push origin main --force
 ❌ **NEVER add notes to the top of the file**
 ✅ **ALWAYS add new development notes to the END of the file**
 
+**Timestamp Format - MANDATORY:**
+- ✅ **Format:** `HH:MM, DD/MM, YYYY` (24-hour time, European date)
+- ✅ **Extract from git log:** Use `git log --pretty=format:"%H|%ai|%s"` to get actual commit timestamps
+- ✅ **Example:** `00:31, 11/10, 2025` (from commit timestamp `2025-10-11 00:31:02 +0200`)
+- ✅ **ALWAYS use real git commit time** - NEVER use pseudo timestamps or "Day ##"
+- ❌ **WRONG:** "Day 11 Morning" or "10:00 AM" or "Oct 11"
+- ✅ **RIGHT:** "00:31, 11/10, 2025" (from actual git commit)
+
+**How to Extract Timestamps:**
+```bash
+# Get commit timestamp for specific work
+git log --pretty=format:"%ai|%s" --grep="WP6.6\|billing" | head -5
+
+# Example output:
+# 2025-10-11 00:31:02 +0200|feat: Complete WP6.6 Billing & Plans Settings Page
+# Convert to format: 00:31, 11/10, 2025
+```
+
 **Format for New Entries:**
 ```markdown
 ---
 
 ## Quick Summary - [Feature Name]
 
-**WP#-#: [Task Name] (Day ## [Morning/Afternoon])** ✅
+**WP#-#: [Task Name] (HH:MM, DD/MM, YYYY)** ✅
 - Brief bullet points of what was implemented
 - Key files created/modified
 - Notable technical decisions
@@ -177,7 +195,7 @@ git push origin main --force
 ---
 ```
 
-**Reason**: The user maintains chronological order with latest work at the bottom. This preserves the development timeline and makes it easy to see progression.
+**Reason**: The user maintains chronological order with latest work at the bottom. This preserves the development timeline and makes it easy to see progression. **Real git timestamps provide accurate historical record.**
 
 ---
 
