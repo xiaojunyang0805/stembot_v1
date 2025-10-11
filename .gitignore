@@ -109,6 +109,10 @@ design-system-demo.html
 LOGIN_IMPLEMENTATION_SUMMARY.md
 FEATURE_CHECKLIST.md
 
+# Security incident reports (contain sensitive information)
+SECURITY_INCIDENT_*.md
+WEBHOOK_SETUP_INSTRUCTIONS.md
+
 # Supabase temp files
 supabase/.temp/
 supabase.exe
