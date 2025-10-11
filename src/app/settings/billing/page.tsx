@@ -172,11 +172,15 @@ export default function BillingPage() {
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to create checkout session');
-      }
-
       const result = await response.json();
+
+      if (!response.ok) {
+        // Show detailed error from API
+        const errorMsg = result.error || 'Failed to create checkout session';
+        const errorDetails = result.stack || result.type || result.code || '';
+        console.error('API Error Details:', result);
+        throw new Error(`${errorMsg}${errorDetails ? '\n\nDetails: ' + errorDetails : ''}`);
+      }
 
       // Redirect to Stripe Checkout
       if (result.url) {
