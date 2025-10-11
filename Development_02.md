@@ -2313,3 +2313,56 @@ Executed comprehensive billing system testing using Chrome DevTools MCP automati
 - Data sync bug requires urgent attention within 24 hours
 
 ---
+
+## Quick Summary - Billing Upgrade Button Fix
+
+**WP6.9: Billing Checkout API 500 Error (21:17, 11/10, 2025)** ✅
+
+**Issue:**
+- "Upgrade to Pro" button returned 500 Internal Server Error
+- Stripe rejected price ID: `No such price: 'price_1SGn7U2Q25JDcEYXCRBYhiIs\n'`
+- Root cause: Trailing newline character in Vercel environment variable
+
+**Debugging Process:**
+1. Added CORS OPTIONS handlers (initially suspected 405 error)
+2. Enhanced error logging to return detailed error responses
+3. Modified billing page to parse and display API error details
+4. Used curl testing with test account to isolate the issue
+5. Discovered `\n` character in price ID via detailed error response
+
+**Solution:**
+- Added `.trim()` to `STRIPE_PRICE_IDS` in `src/lib/stripe/server.ts:149-150`
+- Strips whitespace/newlines from environment variables before use
+- No need to manually edit Vercel environment variables
+
+**Files Modified:**
+- `src/app/api/billing/create-checkout/route.ts` - Added OPTIONS handler, enhanced error logging
+- `src/app/api/billing/portal/route.ts` - Added OPTIONS handler
+- `src/app/settings/billing/page.tsx` - Parse error details before throwing
+- `src/lib/stripe/server.ts` - Added `.trim()` to price ID loading
+
+**Commits:**
+- `fcf97de` - fix(billing): Add CORS OPTIONS handlers to billing API routes
+- `efdfdbe` - fix(billing): Add detailed error logging to create-checkout API
+- `039f364` - debug(billing): Return detailed error info in API response
+- `b4ee077` - fix(billing): Display detailed API error in browser console
+- `3c41ad9` - fix(billing): Trim whitespace from Stripe price IDs ✅ **FINAL FIX**
+
+**Result:**
+- ✅ Upgrade button now successfully redirects to Stripe Checkout
+- ✅ Checkout session creates correctly with `cs_live_...` session ID
+- ✅ User can proceed with payment for Student Pro (€10/month)
+- ✅ API returns `{"success":true,"sessionId":"...","url":"https://checkout.stripe.com/..."}`
+
+**Key Lessons:**
+- Environment variable whitespace issues can be silently introduced during copy-paste
+- Always `.trim()` environment variables before using in API calls
+- Enhanced error logging (including stack trace) crucial for debugging production issues
+- Test with actual API calls (curl) to bypass browser caching/UI issues
+
+**Technical Notes:**
+- Vercel UI shows orange arrow indicator for trailing whitespace in env vars
+- The `\n` character was invisible in the environment variable value
+- `.trim()` is a defensive programming practice for all string env vars
+
+---
