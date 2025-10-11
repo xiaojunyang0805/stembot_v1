@@ -1,24 +1,70 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '../../../providers/AuthProvider';
 import { createProject } from '../../../lib/database/projects';
+import { LimitReached } from '../../../components/upgrade';
+import { supabase } from '../../../lib/supabase';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
 
+interface BillingData {
+  subscription: {
+    tier: string;
+  };
+  usage: {
+    activeProjects: {
+      current: number;
+      limit: number | null;
+      percentage: number;
+      unlimited: boolean;
+    };
+  };
+}
+
 export default function CreateProjectPage() {
   const { user } = useAuth();
   const router = useRouter();
   const [isCreating, setIsCreating] = useState(false);
+  const [billingData, setBillingData] = useState<BillingData | null>(null);
+  const [isLoadingLimits, setIsLoadingLimits] = useState(true);
   const [formData, setFormData] = useState({
     title: '',
     researchQuestion: '',
     field: 'psychology',
     timeline: '3-6 months'
   });
+
+  // Fetch project limits
+  useEffect(() => {
+    const fetchBillingData = async () => {
+      if (!user) return;
+
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          const billingResponse = await fetch('/api/billing/status', {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+          if (billingResponse.ok) {
+            const result = await billingResponse.json();
+            setBillingData(result.data);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to fetch billing data:', error);
+      } finally {
+        setIsLoadingLimits(false);
+      }
+    };
+
+    fetchBillingData();
+  }, [user]);
 
   const researchFields = [
     { value: 'psychology', label: 'Psychology & Cognitive Science' },
@@ -131,6 +177,102 @@ export default function CreateProjectPage() {
   };
 
   const isFormValid = formData.title.trim() && formData.researchQuestion.trim();
+
+  // Check if user has hit project limit
+  const projectsData = billingData?.usage.activeProjects;
+  const hasHitLimit = projectsData && !projectsData.unlimited &&
+                      projectsData.current >= (projectsData.limit || 0);
+  const isApproachingLimit = projectsData && !projectsData.unlimited &&
+                             projectsData.percentage >= 80;
+
+  // Show loading state while checking limits
+  if (isLoadingLimits) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <div style={{ textAlign: 'center' }}>
+          <div style={{
+            width: '3rem',
+            height: '3rem',
+            border: '4px solid #e5e7eb',
+            borderTopColor: '#2563eb',
+            borderRadius: '50%',
+            animation: 'spin 1s linear infinite',
+            margin: '0 auto 1rem'
+          }} />
+          <style jsx>{`
+            @keyframes spin {
+              0% { transform: rotate(0deg); }
+              100% { transform: rotate(360deg); }
+            }
+          `}</style>
+          <div style={{ color: '#6b7280' }}>Loading...</div>
+        </div>
+      </div>
+    );
+  }
+
+  // Show limit reached screen if user has hit project limit
+  if (hasHitLimit) {
+    return (
+      <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
+        {/* Header */}
+        <header style={{
+          backgroundColor: 'white',
+          borderBottom: '1px solid #e5e7eb',
+          padding: '1rem 2rem',
+          boxShadow: '0 1px 2px 0 rgba(0, 0, 0, 0.05)'
+        }}>
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            maxWidth: '1400px',
+            margin: '0 auto'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <button
+                onClick={() => router.push('/dashboard')}
+                style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '0.5rem',
+                  backgroundColor: 'transparent',
+                  border: 'none',
+                  color: '#6b7280',
+                  fontSize: '0.875rem',
+                  cursor: 'pointer',
+                  padding: '0.5rem'
+                }}
+                onMouseEnter={(e) => { (e.target as HTMLElement).style.color = '#2563eb'; }}
+                onMouseLeave={(e) => { (e.target as HTMLElement).style.color = '#6b7280'; }}
+              >
+                ← Back to Dashboard
+              </button>
+              <div style={{
+                fontSize: '1.5rem',
+                fontWeight: 'bold',
+                color: '#2563eb'
+              }}>
+                🧠 StemBot
+              </div>
+            </div>
+          </div>
+        </header>
+
+        {/* Limit Reached Content */}
+        <main style={{
+          maxWidth: '800px',
+          margin: '3rem auto',
+          padding: '2rem'
+        }}>
+          <LimitReached
+            feature="projects"
+            onUpgradeClick={() => router.push('/settings?tab=billing')}
+          />
+        </main>
+      </div>
+    );
+  }
 
   return (
     <div style={{ minHeight: '100vh', backgroundColor: '#f8fafc' }}>
@@ -249,6 +391,67 @@ export default function CreateProjectPage() {
             to get started - you can add more details as your research evolves.
           </p>
         </div>
+
+        {/* Approaching Limit Warning */}
+        {isApproachingLimit && projectsData && (
+          <div style={{
+            backgroundColor: '#fef3c7',
+            border: '2px solid #fde047',
+            borderRadius: '0.75rem',
+            padding: '1.25rem',
+            marginBottom: '2rem',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            gap: '1rem'
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
+              <div style={{ fontSize: '2rem' }}>⚠️</div>
+              <div>
+                <div style={{
+                  fontSize: '1rem',
+                  fontWeight: '600',
+                  color: '#92400e',
+                  marginBottom: '0.25rem'
+                }}>
+                  Approaching Project Limit
+                </div>
+                <div style={{
+                  fontSize: '0.875rem',
+                  color: '#78350f',
+                  lineHeight: '1.4'
+                }}>
+                  You have {projectsData.limit! - projectsData.current} project slot{projectsData.limit! - projectsData.current !== 1 ? 's' : ''} remaining on the {billingData.subscription.tier === 'free' ? 'Free' : 'Student Pro'} tier.
+                  {projectsData.limit! - projectsData.current === 0 && ' This will be your last project.'}
+                </div>
+              </div>
+            </div>
+            {billingData.subscription.tier === 'free' && (
+              <button
+                onClick={() => router.push('/settings?tab=billing')}
+                style={{
+                  padding: '0.75rem 1.5rem',
+                  backgroundColor: '#2563eb',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '0.5rem',
+                  fontSize: '0.875rem',
+                  fontWeight: '600',
+                  cursor: 'pointer',
+                  whiteSpace: 'nowrap'
+                }}
+                onMouseEnter={(e) => {
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
+                }}
+                onMouseLeave={(e) => {
+                  (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                }}
+              >
+                View Plans
+              </button>
+            )}
+          </div>
+        )}
 
         {/* Project Creation Form */}
         <div style={{

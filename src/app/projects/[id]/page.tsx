@@ -15,6 +15,7 @@ import { trackProjectActivity } from '../../../lib/database/activity';
 import { DuplicateDialog, type DuplicateChoice, type DuplicateMatch } from '../../../components/ui/duplicate-dialog';
 import { ProjectMemoryPanel } from '../../../components/workspace/ProjectMemoryPanel';
 import { analyzeQuestionProgressCached as analyzeQuestionProgress, evaluateProjectProgressCached as evaluateProjectProgress } from '../../../lib/research/cachedQuestionAnalyzer';
+import { UpgradePrompt, LimitReached } from '../../../components/upgrade';
 import { supabase } from '../../../lib/supabase';
 import type { Project } from '../../../types/database';
 
@@ -28,6 +29,20 @@ interface Message {
   content: string;
   timestamp: string;
   conversationId?: string; // For tracking database conversations
+}
+
+interface BillingData {
+  subscription: {
+    tier: string;
+  };
+  usage: {
+    aiInteractions: {
+      current: number;
+      limit: number | null;
+      percentage: number;
+      unlimited: boolean;
+    };
+  };
 }
 
 export default function ProjectWorkspace({ params }: { params: { id: string } }) {
@@ -58,6 +73,7 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
   const [researchMode, setResearchMode] = useState(false);
   const [isEditingQuestion, setIsEditingQuestion] = useState(false);
   const [editedQuestion, setEditedQuestion] = useState('');
+  const [billingData, setBillingData] = useState<BillingData | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   // Handle research question editing
@@ -348,6 +364,24 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
           } else if (projectDocuments) {
             setDocuments(projectDocuments);
             console.log(`Loaded ${projectDocuments.length} documents`);
+          }
+
+          // Fetch billing data for upgrade prompts
+          try {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session?.access_token) {
+              const billingResponse = await fetch('/api/billing/status', {
+                headers: {
+                  Authorization: `Bearer ${session.access_token}`,
+                },
+              });
+              if (billingResponse.ok) {
+                const result = await billingResponse.json();
+                setBillingData(result.data);
+              }
+            }
+          } catch (billingError) {
+            console.warn('Failed to fetch billing data:', billingError);
           }
 
         } else {
@@ -1174,6 +1208,13 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
     return null;
   }
 
+  // Check if user has hit AI interaction limit
+  const aiInteractionsData = billingData?.usage.aiInteractions;
+  const hasHitAILimit = aiInteractionsData && !aiInteractionsData.unlimited &&
+                        aiInteractionsData.current >= (aiInteractionsData.limit || 0);
+  const isApproachingAILimit = aiInteractionsData && !aiInteractionsData.unlimited &&
+                               aiInteractionsData.percentage >= 80;
+
   // Basic JavaScript test
   console.log('🚀 COMPONENT RENDER: Project page is rendering');
   console.log('🔧 COMPONENT STATE:', {
@@ -1632,16 +1673,33 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
             </button>
           </div>
 
-          {/* Chat Messages */}
-          <div style={{
-            flex: 1,
-            padding: '0 1.5rem 1.5rem 1.5rem',
-            overflowY: 'auto',
-            display: 'flex',
-            flexDirection: 'column',
-            gap: '1rem'
-          }}>
-            {messages.map((msg) => (
+          {/* Chat Messages OR Limit Reached */}
+          {hasHitAILimit && aiInteractionsData ? (
+            <div style={{
+              flex: 1,
+              padding: '2rem',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <LimitReached
+                feature="ai_chat"
+                resetDate={new Date(new Date().getFullYear(), new Date().getMonth() + 1, 1)}
+                onUpgradeClick={() => router.push('/settings?tab=billing')}
+              />
+            </div>
+          ) : (
+            <>
+              {/* Chat Messages */}
+              <div style={{
+                flex: 1,
+                padding: '0 1.5rem 1.5rem 1.5rem',
+                overflowY: 'auto',
+                display: 'flex',
+                flexDirection: 'column',
+                gap: '1rem'
+              }}>
+                {messages.map((msg) => (
               <div key={msg.id} style={{
                 display: 'flex',
                 flexDirection: 'column',
@@ -1797,6 +1855,20 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               }
             `}</style>
           </div>
+
+          {/* Warning Banner for Approaching Limit */}
+          {isApproachingAILimit && !hasHitAILimit && aiInteractionsData && (
+            <div style={{ padding: '0 1.5rem 1rem 1.5rem' }}>
+              <UpgradePrompt
+                variant="banner"
+                location="chat_interface"
+                message={`You've used ${aiInteractionsData.current} of ${aiInteractionsData.limit} AI interactions (${Math.round(aiInteractionsData.percentage)}%). Upgrade to Pro for 500 monthly interactions.`}
+                ctaText="Upgrade Now"
+                onCTAClick={() => router.push('/settings?tab=billing')}
+                dismissible={true}
+              />
+            </div>
+          )}
 
           {/* Message Input */}
           <div style={{
@@ -1972,6 +2044,8 @@ export default function ProjectWorkspace({ params }: { params: { id: string } })
               </div>
             </div>
           </div>
+            </>
+          )}
         </div>
       </div>
 

@@ -1,7 +1,9 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '../../providers/AuthProvider';
+import { supabase } from '../../lib/supabase';
 
 export default function SettingsLayout({
   children,
@@ -11,8 +13,35 @@ export default function SettingsLayout({
   const { user } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [userTier, setUserTier] = useState<string>('free');
 
   const userName = user?.email?.split('@')[0] || 'Research User';
+
+  // Fetch user tier
+  useEffect(() => {
+    const fetchUserTier = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          const billingResponse = await fetch('/api/billing/status', {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+          if (billingResponse.ok) {
+            const result = await billingResponse.json();
+            setUserTier(result.data.subscription.tier);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to fetch user tier:', error);
+      }
+    };
+
+    if (user) {
+      fetchUserTier();
+    }
+  }, [user]);
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: '👤', path: '/settings/profile' },
@@ -150,6 +179,7 @@ export default function SettingsLayout({
                 style={{
                   display: 'flex',
                   alignItems: 'center',
+                  justifyContent: 'space-between',
                   gap: '0.75rem',
                   width: '100%',
                   padding: '0.75rem',
@@ -174,8 +204,42 @@ export default function SettingsLayout({
                   }
                 }}
               >
-                <span style={{ fontSize: '1rem' }}>{tab.icon}</span>
-                {tab.label}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <span style={{ fontSize: '1rem' }}>{tab.icon}</span>
+                  {tab.label}
+                </div>
+
+                {/* Tier Badge for Billing & Plans */}
+                {tab.id === 'billing' && (
+                  <span style={{
+                    fontSize: '0.625rem',
+                    fontWeight: '700',
+                    padding: '0.125rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.05em',
+                    backgroundColor: userTier === 'free' ? '#fef3c7' : userTier === 'student_pro' ? '#dbeafe' : '#dcfce7',
+                    color: userTier === 'free' ? '#92400e' : userTier === 'student_pro' ? '#1e40af' : '#166534'
+                  }}>
+                    {userTier === 'free' ? 'Free' : userTier === 'student_pro' ? 'Pro' : 'Researcher'}
+                  </span>
+                )}
+
+                {/* Upgrade Badge for Free Users */}
+                {tab.id === 'billing' && userTier === 'free' && (
+                  <span style={{
+                    fontSize: '0.625rem',
+                    fontWeight: '700',
+                    padding: '0.125rem 0.5rem',
+                    borderRadius: '0.25rem',
+                    backgroundColor: '#2563eb',
+                    color: 'white',
+                    animation: 'pulse 2s ease-in-out infinite',
+                    marginLeft: '0.25rem'
+                  }}>
+                    ⬆️
+                  </span>
+                )}
               </button>
             ))}
           </nav>

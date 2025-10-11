@@ -16,11 +16,27 @@ import { SourceOrganizationView } from '../../../../components/literature/Source
 import { createSampleSources } from '../../../../lib/services/credibilityAssessment';
 import { ProjectMemoryPanel } from '../../../../components/workspace/ProjectMemoryPanel';
 import { analyzeQuestionProgressCached as analyzeQuestionProgress } from '../../../../lib/research/cachedQuestionAnalyzer';
+import { UpgradePrompt } from '../../../../components/upgrade';
+import { supabase } from '../../../../lib/supabase';
 import type { Project } from '../../../../types/database';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
+
+interface BillingData {
+  subscription: {
+    tier: string;
+  };
+  usage: {
+    sources: {
+      current: number;
+      limit: number | null;
+      percentage: number;
+      unlimited: boolean;
+    };
+  };
+}
 
 export default function LiteratureReviewPage({ params }: { params: { id: string } }) {
   const { user } = useAuth();
@@ -39,6 +55,7 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
   const [sourcesDisplayLimit, setSourcesDisplayLimit] = useState(5);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isExpandedMode, setIsExpandedMode] = useState(false);
+  const [billingData, setBillingData] = useState<BillingData | null>(null);
 
   // Helper function to format message content with bold text
   const formatMessageContent = (content: string): string => {
@@ -84,7 +101,7 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
           console.warn('Failed to track project activity:', err);
         });
 
-        // Fetch documents and external sources in parallel
+        // Fetch documents, external sources, and billing data in parallel
         const [documentsResult, sourcesResult] = await Promise.all([
           getProjectDocuments(params.id),
           getProjectSources(params.id)
@@ -114,6 +131,24 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
         }
 
         setExternalSources(externalSourcesData);
+
+        // Fetch billing data for upgrade prompts
+        try {
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            const billingResponse = await fetch('/api/billing/status', {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            });
+            if (billingResponse.ok) {
+              const result = await billingResponse.json();
+              setBillingData(result.data);
+            }
+          }
+        } catch (billingError) {
+          console.warn('Failed to fetch billing data:', billingError);
+        }
 
       } catch (err) {
         console.error('Error fetching data:', err);
@@ -907,6 +942,30 @@ export default function LiteratureReviewPage({ params }: { params: { id: string 
                 researchQuestion={project.research_question || project.title}
                 projectId={params.id}
               />
+            )}
+
+            {/* Upgrade Prompt for Advanced Gap Analysis Features */}
+            {billingData && billingData.subscription.tier === 'free' && allSources.length > 3 && (
+              <div style={{ marginTop: '2rem', marginBottom: '2rem' }}>
+                <UpgradePrompt
+                  variant="card"
+                  location="literature_review_gap_analysis"
+                  title="Unlock Advanced Gap Analysis"
+                  message="Get deeper insights with AI-powered gap analysis for 5+ sources, including cross-source synthesis, methodological recommendations, and priority-ranked research opportunities."
+                  features={[
+                    'Advanced gap analysis for unlimited sources',
+                    'Cross-source synthesis and pattern detection',
+                    'Methodological recommendations for your research',
+                    'Priority-ranked research opportunities',
+                    'Export detailed gap analysis reports'
+                  ]}
+                  ctaText="Upgrade to Pro"
+                  ctaLink="/settings?tab=billing"
+                  onCTAClick={() => router.push('/settings?tab=billing')}
+                  dismissible={true}
+                  showOnce={true}
+                />
+              </div>
             )}
 
             {/* Source Organization Section */}

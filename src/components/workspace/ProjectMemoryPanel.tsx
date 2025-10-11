@@ -5,6 +5,23 @@ import { LiteratureProgress, ProjectLiteratureState } from '@/lib/research/cross
 import Link from 'next/link';
 import { getWritingStatus, WritingStatus } from '@/lib/ai/writingContext';
 import { getMemoryPanelNudge } from '@/lib/ai/nudgeDetector';
+import UsageWarning from '@/components/upgrade/UsageWarning';
+import { supabase } from '@/lib/supabase';
+
+interface BillingUsageData {
+  subscription: {
+    tier: string;
+  };
+  usage: {
+    aiInteractions: {
+      current: number;
+      limit: number | null;
+      percentage: number;
+      color: string;
+      unlimited: boolean;
+    };
+  };
+}
 
 // Question stages with colors and descriptions
 const QUESTION_STAGES = {
@@ -67,8 +84,9 @@ export function ProjectMemoryPanel({
   const [showLiterature, setShowLiterature] = useState(false);
   const [writingStatus, setWritingStatus] = useState<WritingStatus | null>(null);
   const [writingNudge, setWritingNudge] = useState<{ message: string; actionUrl: string } | null>(null);
+  const [billingData, setBillingData] = useState<BillingUsageData | null>(null);
 
-  // Fetch writing status when component mounts
+  // Fetch writing status and billing data when component mounts
   useEffect(() => {
     if (projectId) {
       getWritingStatus(projectId).then(status => {
@@ -81,6 +99,28 @@ export function ProjectMemoryPanel({
         console.warn('Failed to fetch writing status for memory panel:', err);
       });
     }
+
+    // Fetch billing data for usage warnings
+    const fetchBillingData = async () => {
+      try {
+        const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+        if (session?.access_token) {
+          const billingResponse = await fetch('/api/billing/status', {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          });
+          if (billingResponse.ok) {
+            const result = await billingResponse.json();
+            setBillingData(result.data);
+          }
+        }
+      } catch (error) {
+        console.warn('Failed to fetch billing data for memory panel:', error);
+      }
+    };
+
+    fetchBillingData();
   }, [projectId]);
 
   const currentStage = QUESTION_STAGES[questionStage];
@@ -681,6 +721,20 @@ export function ProjectMemoryPanel({
           >
             Continue Writing →
           </Link>
+        </div>
+      )}
+
+      {/* Usage Warning for Free Users */}
+      {billingData && billingData.subscription.tier === 'free' && (
+        <div style={{ marginBottom: '1rem' }}>
+          <UsageWarning
+            current={billingData.usage.aiInteractions.current}
+            limit={billingData.usage.aiInteractions.limit}
+            tier="free"
+            feature="ai_chat"
+            compact={true}
+            showUpgradeButton={true}
+          />
         </div>
       )}
 

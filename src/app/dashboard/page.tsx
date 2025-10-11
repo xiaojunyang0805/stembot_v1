@@ -8,11 +8,32 @@ import { getMostRecentlyActiveProject } from '../../lib/database/activity';
 import { getRecentContext } from '../../lib/database/conversations';
 import { getUserProfile } from '../../lib/database/users';
 import StorageIndicator from '../../components/storage/StorageIndicator';
+import UsageWarning from '../../components/upgrade/UsageWarning';
 import type { Project } from '../../types/database';
+import { supabase } from '../../lib/supabase';
 
 // Disable Next.js caching for this route
 export const dynamic = 'force-dynamic';
 export const fetchCache = 'force-no-store';
+
+interface BillingData {
+  subscription: {
+    tier: string;
+  };
+  usage: {
+    aiInteractions: {
+      current: number;
+      limit: number | null;
+      percentage: number;
+      color: string;
+      unlimited: boolean;
+    };
+    period: {
+      start: string;
+      end: string;
+    };
+  };
+}
 
 export default function DashboardPage() {
   const { user, loading } = useAuth();
@@ -24,6 +45,7 @@ export default function DashboardPage() {
   const [recentContext, setRecentContext] = useState<any>(null);
   const [userInstitution, setUserInstitution] = useState<string>('');
   const [isLoading, setIsLoading] = useState(true);
+  const [billingData, setBillingData] = useState<BillingData | null>(null);
 
   // Fetch user projects and most recent activity from Supabase
   useEffect(() => {
@@ -71,6 +93,24 @@ export default function DashboardPage() {
           } else {
             setRecentContext(contextData);
           }
+        }
+
+        // Fetch billing data for usage warnings
+        try {
+          const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            const billingResponse = await fetch('/api/billing/status', {
+              headers: {
+                Authorization: `Bearer ${session.access_token}`,
+              },
+            });
+            if (billingResponse.ok) {
+              const result = await billingResponse.json();
+              setBillingData(result.data);
+            }
+          }
+        } catch (error) {
+          console.warn('Failed to fetch billing data:', error);
         }
 
       } catch (error) {
@@ -381,8 +421,8 @@ export default function DashboardPage() {
           marginBottom: '2rem',
           border: '1px solid #bfdbfe'
         }}>
-          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between'}}>
-            <div>
+          <div style={{display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem'}}>
+            <div style={{ flex: '1 1 300px' }}>
               <div style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -410,10 +450,55 @@ export default function DashboardPage() {
                 color: '#1e40af',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.25rem'
+                gap: '0.25rem',
+                marginBottom: '0.5rem'
               }}>
                 ⭐ Next suggested action: {memoryData.suggestedAction}
               </p>
+
+              {/* Usage Summary for Free Users */}
+              {billingData && billingData.subscription.tier === 'free' && billingData.usage.aiInteractions.current > 0 && (
+                <div style={{
+                  marginTop: '0.75rem',
+                  padding: '0.5rem 0.75rem',
+                  backgroundColor: billingData.usage.aiInteractions.percentage >= 80 ? '#fef3c7' : '#e0f2fe',
+                  borderRadius: '0.375rem',
+                  fontSize: '0.75rem',
+                  color: billingData.usage.aiInteractions.percentage >= 80 ? '#92400e' : '#1e40af',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: '0.5rem'
+                }}>
+                  <span style={{ fontWeight: '600' }}>
+                    📊 {billingData.usage.aiInteractions.current}/{billingData.usage.aiInteractions.limit} AI chats used
+                  </span>
+                  {billingData.usage.aiInteractions.percentage >= 80 && (
+                    <button
+                      onClick={() => router.push('/settings?tab=billing')}
+                      style={{
+                        padding: '0.25rem 0.5rem',
+                        backgroundColor: '#2563eb',
+                        color: 'white',
+                        border: 'none',
+                        borderRadius: '0.25rem',
+                        fontSize: '0.7rem',
+                        fontWeight: '600',
+                        cursor: 'pointer',
+                        whiteSpace: 'nowrap'
+                      }}
+                      onMouseEnter={(e) => {
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8';
+                      }}
+                      onMouseLeave={(e) => {
+                        (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb';
+                      }}
+                    >
+                      Upgrade
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
             <button
               onClick={() => {
@@ -434,7 +519,8 @@ export default function DashboardPage() {
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.5rem'
+                gap: '0.5rem',
+                whiteSpace: 'nowrap'
               }}
               onMouseEnter={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#1d4ed8'; }}
               onMouseLeave={(e) => { (e.target as HTMLButtonElement).style.backgroundColor = '#2563eb'; }}

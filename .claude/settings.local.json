@@ -51,7 +51,13 @@
       "mcp__chrome-devtools__list_network_requests",
       "Bash(for file in 20251003_create_project_methodology.sql 20251007191629_paper_outlines_table.sql 20251007200000_create_paper_sections.sql)",
       "Bash(do echo \"=== $file ===\")",
-      "Bash(git log:*)"
+      "Bash(git log:*)",
+      "mcp__chrome-devtools__take_screenshot",
+      "mcp__chrome-devtools__new_page",
+      "Bash(python:*)",
+      "mcp__chrome-devtools__fill_form",
+      "Bash(timeout 180 bash -c 'while true; do curl -s -I \"\"https://stembotv1.vercel.app/api/billing/create-checkout\"\" | head -1 | grep \"\"405\"\" && break || sleep 10; done')",
+      "Bash(cd:*)"
     ],
     "deny": [],
     "ask": []
