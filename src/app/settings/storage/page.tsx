@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { useAuth } from '../../../providers/AuthProvider';
 import { calculateUserStorageUsage, formatStorageSize, type StorageUsage } from '../../../lib/storage/monitoring';
 import { createClientComponentClient } from '../../../lib/supabase';
+import { getUserProjects } from '../../../lib/database/projects';
 import ConfirmationModal from '../../../components/settings/ConfirmationModal';
 
 // Disable Next.js caching
@@ -46,15 +47,12 @@ export default function StorageSettingsPage() {
         }
 
         // Load per-project storage breakdown
-        const supabase = createClientComponentClient();
-        const { data: projects, error: projectsError} = await supabase
-          .from('projects')
-          .select('id, title, created_at')
-          .order('created_at', { ascending: false });
+        const { data: projects, error: projectsError } = await getUserProjects();
 
         if (projectsError) {
           console.error('Error loading projects:', projectsError);
-        } else if (projects) {
+        } else if (projects && projects.length > 0) {
+          const supabase = createClientComponentClient();
           // Calculate storage per project
           const projectsWithStorage = await Promise.all(
             projects.map(async (project: any) => {
@@ -114,9 +112,7 @@ export default function StorageSettingsPage() {
       const supabase = createClientComponentClient();
 
       // Fetch all user data
-      const { data: projects, error: projectsError } = await supabase
-        .from('projects')
-        .select('*');
+      const { data: projects, error: projectsError } = await getUserProjects();
 
       if (projectsError) throw projectsError;
 
@@ -175,13 +171,14 @@ export default function StorageSettingsPage() {
       const sixMonthsAgo = new Date();
       sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
 
-      // Find old projects
-      const { data: oldProjects, error: fetchError } = await supabase
-        .from('projects')
-        .select('id')
-        .lt('created_at', sixMonthsAgo.toISOString());
+      // Find old projects - get all projects first, then filter by date
+      const { data: allProjects, error: fetchError } = await getUserProjects();
 
       if (fetchError) throw fetchError;
+
+      const oldProjects = allProjects?.filter((p: any) =>
+        new Date(p.created_at) < sixMonthsAgo
+      ) || [];
 
       if (!oldProjects || oldProjects.length === 0) {
         setSaveMessage('No old data to clear. All projects are recent.');
