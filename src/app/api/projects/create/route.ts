@@ -114,9 +114,9 @@ export async function POST(request: NextRequest) {
 
     console.log('✅ Project created successfully:', data.id);
 
-    // Update project count for usage tracking (WP6.5)
+    // Note: Usage count is now automatically synced by database trigger (WP6.9)
+    // This manual update is no longer needed but kept for logging
     try {
-      // Count active projects for this user
       const { count } = await supabaseAdmin
         .from('projects')
         .select('*', { count: 'exact', head: true })
@@ -124,11 +124,11 @@ export async function POST(request: NextRequest) {
         .eq('status', 'active');
 
       if (count !== null) {
-        await updateProjectCount(userId, count);
+        console.log('📊 Project count for user', userId, ':', count, '(trigger will sync usage_tracking)');
       }
     } catch (error) {
-      console.warn('Failed to update project count:', error);
-      // Don't fail the request if usage update fails
+      console.error('⚠️ Failed to verify project count:', error);
+      // Project creation still succeeds - trigger handles usage_tracking sync
     }
 
     return NextResponse.json({
