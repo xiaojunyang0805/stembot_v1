@@ -158,13 +158,20 @@ export async function POST(request: NextRequest) {
     console.error('❌ Failed to create checkout session:', error);
     console.error('Error stack:', error.stack);
     console.error('Error type:', error.constructor?.name);
+    console.error('Error name:', error.name);
+    console.error('Full error object:', JSON.stringify(error, Object.getOwnPropertyNames(error)));
 
-    // Return detailed error for debugging
+    // Return detailed error for debugging (always return details for now)
     return NextResponse.json(
       {
         error: error.message || 'Failed to create checkout session',
         type: error.constructor?.name || 'Error',
-        details: process.env.NODE_ENV === 'development' ? error.stack : undefined
+        name: error.name,
+        code: error.code,
+        statusCode: error.statusCode,
+        raw: error.raw?.message,
+        // Always include stack for debugging
+        stack: error.stack?.split('\n').slice(0, 5).join('\n')
       },
       { status: 500 }
     );
