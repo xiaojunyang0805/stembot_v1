@@ -35,20 +35,28 @@ const supabaseAdmin = createClient(
  */
 function verifyWebhookSignature(
   payload: string,
-  signature: string,
+  signatureHeader: string,
   secret: string
 ): boolean {
   try {
-    const signatureHeader = signature.split(',').reduce((acc, part) => {
-      const [key, value] = part.split('=');
-      acc[key.trim()] = value;
-      return acc;
-    }, {} as Record<string, string>);
+    // Parse signature header (format: "t=timestamp,v1=signature")
+    const elements = signatureHeader.split(',');
+    const elementsObj: Record<string, string> = {};
 
-    const timestamp = signatureHeader.t;
-    const signatures = [signatureHeader.v1];
+    for (const element of elements) {
+      const [key, value] = element.split('=');
+      elementsObj[key] = value;
+    }
 
-    // Construct signed payload
+    const timestamp = elementsObj.t;
+    const signature = elementsObj.v1;
+
+    if (!timestamp || !signature) {
+      console.error('❌ Invalid signature header format');
+      return false;
+    }
+
+    // Create signed payload
     const signedPayload = `${timestamp}.${payload}`;
 
     // Compute expected signature
@@ -57,11 +65,18 @@ function verifyWebhookSignature(
       .update(signedPayload, 'utf8')
       .digest('hex');
 
-    // Compare signatures
-    return signatures.some(sig => crypto.timingSafeEqual(
-      Buffer.from(sig),
-      Buffer.from(expectedSignature)
-    ));
+    console.log('🔍 Computed signature:', expectedSignature.substring(0, 20));
+    console.log('🔍 Received signature:', signature.substring(0, 20));
+
+    // Constant-time comparison
+    if (expectedSignature.length !== signature.length) {
+      return false;
+    }
+
+    return crypto.timingSafeEqual(
+      Buffer.from(expectedSignature),
+      Buffer.from(signature)
+    );
   } catch (error) {
     console.error('❌ Signature verification error:', error);
     return false;
