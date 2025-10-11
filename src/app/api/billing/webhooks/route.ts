@@ -1,205 +1,315 @@
-import { NextRequest, NextResponse } from 'next/server'
-import { supabase } from '../../../../lib/supabase'
+/**
+ * Stripe Webhook Handler
+ * WP6.7: Process Stripe webhook events and sync subscription data
+ *
+ * Handles:
+ * - checkout.session.completed: New subscription created
+ * - customer.subscription.updated: Subscription changed
+ * - customer.subscription.deleted: Subscription cancelled
+ * - invoice.payment_succeeded: Payment successful
+ * - invoice.payment_failed: Payment failed
+ */
 
-// Stripe webhook handler for subscription events
+import { NextRequest, NextResponse } from 'next/server';
+import { createClient } from '@supabase/supabase-js';
+import crypto from 'crypto';
+
+const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
+const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
+
+// Create Supabase admin client
+const supabaseAdmin = createClient(
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.SUPABASE_SERVICE_ROLE_KEY!,
+  {
+    auth: {
+      autoRefreshToken: false,
+      persistSession: false,
+    },
+  }
+);
+
+/**
+ * Verify Stripe webhook signature
+ * Manual implementation to avoid Stripe SDK
+ */
+function verifyWebhookSignature(
+  payload: string,
+  signature: string,
+  secret: string
+): boolean {
+  try {
+    const signatureHeader = signature.split(',').reduce((acc, part) => {
+      const [key, value] = part.split('=');
+      acc[key.trim()] = value;
+      return acc;
+    }, {} as Record<string, string>);
+
+    const timestamp = signatureHeader.t;
+    const signatures = [signatureHeader.v1];
+
+    // Construct signed payload
+    const signedPayload = `${timestamp}.${payload}`;
+
+    // Compute expected signature
+    const expectedSignature = crypto
+      .createHmac('sha256', secret)
+      .update(signedPayload, 'utf8')
+      .digest('hex');
+
+    // Compare signatures
+    return signatures.some(sig => crypto.timingSafeEqual(
+      Buffer.from(sig),
+      Buffer.from(expectedSignature)
+    ));
+  } catch (error) {
+    console.error('❌ Signature verification error:', error);
+    return false;
+  }
+}
+
+/**
+ * Map Stripe price ID to subscription tier
+ */
+function getTierFromPriceId(priceId: string): string {
+  const priceToTierMap: Record<string, string> = {
+    [process.env.STRIPE_STUDENT_PRO_PRICE_ID || '']: 'student_pro',
+    [process.env.STRIPE_RESEARCHER_PRICE_ID || '']: 'researcher',
+  };
+
+  return priceToTierMap[priceId] || 'free';
+}
+
+/**
+ * Fetch subscription details from Stripe
+ * Uses direct API call instead of SDK
+ */
+async function fetchSubscription(subscriptionId: string) {
+  const auth = Buffer.from(`${STRIPE_SECRET_KEY}:`).toString('base64');
+
+  const response = await fetch(`https://api.stripe.com/v1/subscriptions/${subscriptionId}`, {
+    headers: {
+      'Authorization': `Basic ${auth}`,
+    },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to fetch subscription: ${response.statusText}`);
+  }
+
+  return await response.json();
+}
+
+/**
+ * Handle checkout.session.completed event
+ * Creates or updates subscription after successful payment
+ */
+async function handleCheckoutCompleted(event: any) {
+  const session = event.data.object;
+  console.log('✅ Checkout completed:', session.id);
+
+  // Extract data from session
+  const customerId = session.customer;
+  const subscriptionId = session.subscription;
+  const userId = session.metadata?.user_id;
+  const tier = session.metadata?.tier;
+
+  if (!userId || !tier || !subscriptionId) {
+    console.warn('⚠️ Missing metadata in session:', { userId, tier, subscriptionId });
+    return;
+  }
+
+  // Fetch full subscription details
+  const subscription = await fetchSubscription(subscriptionId);
+
+  // Update subscription in database
+  const { error } = await supabaseAdmin
+    .from('subscriptions')
+    .upsert({
+      user_id: userId,
+      tier: tier,
+      status: subscription.status,
+      stripe_customer_id: customerId,
+      stripe_subscription_id: subscriptionId,
+      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: subscription.cancel_at_period_end || false,
+      updated_at: new Date().toISOString(),
+    }, {
+      onConflict: 'user_id',
+    });
+
+  if (error) {
+    console.error('❌ Failed to update subscription:', error);
+    throw error;
+  }
+
+  console.log('✅ Subscription synced to database:', { userId, tier, subscriptionId });
+}
+
+/**
+ * Handle customer.subscription.updated event
+ * Updates subscription status, period, cancellation status
+ */
+async function handleSubscriptionUpdated(event: any) {
+  const subscription = event.data.object;
+  console.log('🔄 Subscription updated:', subscription.id);
+
+  const customerId = subscription.customer;
+  const priceId = subscription.items?.data[0]?.price?.id;
+  const tier = getTierFromPriceId(priceId);
+
+  // Find user by customer ID
+  const { data: existingSubscription } = await supabaseAdmin
+    .from('subscriptions')
+    .select('user_id')
+    .eq('stripe_customer_id', customerId)
+    .single();
+
+  if (!existingSubscription) {
+    console.warn('⚠️ No subscription found for customer:', customerId);
+    return;
+  }
+
+  // Update subscription
+  const { error } = await supabaseAdmin
+    .from('subscriptions')
+    .update({
+      tier: tier,
+      status: subscription.status,
+      current_period_start: new Date(subscription.current_period_start * 1000).toISOString(),
+      current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
+      cancel_at_period_end: subscription.cancel_at_period_end || false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', existingSubscription.user_id);
+
+  if (error) {
+    console.error('❌ Failed to update subscription:', error);
+    throw error;
+  }
+
+  console.log('✅ Subscription updated in database:', { tier, status: subscription.status });
+}
+
+/**
+ * Handle customer.subscription.deleted event
+ * Downgrade user to free tier
+ */
+async function handleSubscriptionDeleted(event: any) {
+  const subscription = event.data.object;
+  console.log('❌ Subscription deleted:', subscription.id);
+
+  const customerId = subscription.customer;
+
+  // Find user by customer ID
+  const { data: existingSubscription } = await supabaseAdmin
+    .from('subscriptions')
+    .select('user_id')
+    .eq('stripe_customer_id', customerId)
+    .single();
+
+  if (!existingSubscription) {
+    console.warn('⚠️ No subscription found for customer:', customerId);
+    return;
+  }
+
+  // Downgrade to free tier
+  const { error } = await supabaseAdmin
+    .from('subscriptions')
+    .update({
+      tier: 'free',
+      status: 'canceled',
+      stripe_subscription_id: null,
+      cancel_at_period_end: false,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('user_id', existingSubscription.user_id);
+
+  if (error) {
+    console.error('❌ Failed to downgrade subscription:', error);
+    throw error;
+  }
+
+  console.log('✅ User downgraded to free tier');
+}
+
+/**
+ * Main webhook handler
+ */
 export async function POST(request: NextRequest) {
   try {
-    const signature = request.headers.get('stripe-signature')
-    const body = await request.text()
+    const signature = request.headers.get('stripe-signature');
+    const body = await request.text();
 
-    console.log('🔔 Stripe webhook received:', { signature: !!signature })
+    console.log('🔔 Stripe webhook received');
 
-    // For development/mock mode
-    const useMocks = process.env.NEXT_PUBLIC_USE_MOCKS === 'true' ||
-                    process.env.NEXT_PUBLIC_INTEGRATION_METHOD === 'mock'
-
-    if (useMocks) {
-      console.log('🎭 Mock webhook processing')
-
-      // Parse mock webhook payload
-      const event = JSON.parse(body)
-
-      switch (event.type) {
-        case 'customer.subscription.created':
-        case 'customer.subscription.updated':
-          console.log('📝 Subscription event:', event.type)
-          return NextResponse.json({
-            received: true,
-            mock: true,
-            event: event.type
-          })
-
-        case 'customer.subscription.deleted':
-          console.log('❌ Subscription cancelled:', event.type)
-          return NextResponse.json({
-            received: true,
-            mock: true,
-            event: event.type
-          })
-
-        case 'invoice.payment_succeeded':
-          console.log('💰 Payment succeeded:', event.type)
-          return NextResponse.json({
-            received: true,
-            mock: true,
-            event: event.type
-          })
-
-        case 'invoice.payment_failed':
-          console.log('❌ Payment failed:', event.type)
-          return NextResponse.json({
-            received: true,
-            mock: true,
-            event: event.type
-          })
-
-        default:
-          console.log('🔍 Unhandled event type:', event.type)
-          return NextResponse.json({
-            received: true,
-            mock: true,
-            event: event.type
-          })
-      }
+    // Verify webhook signature
+    if (!signature) {
+      console.error('❌ No signature provided');
+      return NextResponse.json(
+        { error: 'No signature provided' },
+        { status: 400 }
+      );
     }
 
-    // For production, you would:
-    // 1. Verify webhook signature with Stripe
-    // 2. Parse the webhook event
-    // 3. Update subscription status in database
-    // 4. Handle payment failures and dunning
-    // 5. Send notification emails to users
-    // 6. Update usage limits based on plan changes
+    if (!STRIPE_WEBHOOK_SECRET) {
+      console.error('❌ Webhook secret not configured');
+      return NextResponse.json(
+        { error: 'Webhook secret not configured' },
+        { status: 500 }
+      );
+    }
 
-    // Example production webhook handling:
-    /*
-    const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!)
+    const isValid = verifyWebhookSignature(body, signature, STRIPE_WEBHOOK_SECRET);
 
-    let event: Stripe.Event
-
-    try {
-      event = stripe.webhooks.constructEvent(
-        body,
-        signature!,
-        process.env.STRIPE_WEBHOOK_SECRET!
-      )
-    } catch (err) {
-      console.error('Webhook signature verification failed:', err)
+    if (!isValid) {
+      console.error('❌ Invalid webhook signature');
       return NextResponse.json(
         { error: 'Invalid signature' },
         { status: 400 }
-      )
+      );
     }
 
+    // Parse event
+    const event = JSON.parse(body);
+    console.log('📋 Processing event:', event.type);
+
+    // Handle different event types
     switch (event.type) {
-      case 'customer.subscription.created':
+      case 'checkout.session.completed':
+        await handleCheckoutCompleted(event);
+        break;
+
       case 'customer.subscription.updated':
-        const subscription = event.data.object as Stripe.Subscription
-        await updateUserSubscription(subscription)
-        break
+        await handleSubscriptionUpdated(event);
+        break;
 
       case 'customer.subscription.deleted':
-        const deletedSubscription = event.data.object as Stripe.Subscription
-        await cancelUserSubscription(deletedSubscription)
-        break
+        await handleSubscriptionDeleted(event);
+        break;
 
       case 'invoice.payment_succeeded':
-        const invoice = event.data.object as Stripe.Invoice
-        await handleSuccessfulPayment(invoice)
-        break
+        console.log('💰 Payment succeeded:', event.data.object.id);
+        // Could implement usage reset, receipt email, etc.
+        break;
 
       case 'invoice.payment_failed':
-        const failedInvoice = event.data.object as Stripe.Invoice
-        await handleFailedPayment(failedInvoice)
-        break
+        console.log('❌ Payment failed:', event.data.object.id);
+        // Could implement dunning management, notification emails, etc.
+        break;
+
+      default:
+        console.log('🔍 Unhandled event type:', event.type);
     }
-    */
 
-    return NextResponse.json(
-      { error: 'Stripe webhooks not configured for production' },
-      { status: 501 }
-    )
+    return NextResponse.json({ received: true });
 
-  } catch (error) {
-    console.error('❌ Webhook processing failed:', error)
+  } catch (error: any) {
+    console.error('❌ Webhook processing failed:', error);
     return NextResponse.json(
-      { error: 'Webhook processing failed' },
+      { error: 'Webhook processing failed', details: error.message },
       { status: 500 }
-    )
+    );
   }
 }
-
-// Helper functions for production webhook handling
-/*
-async function updateUserSubscription(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string
-
-  // Find user by Stripe customer ID
-  const { data: user } = await supabase
-    .from('users')
-    .select('*')
-    .eq('stripe_customer_id', customerId)
-    .single()
-
-  if (user) {
-    // Update user's subscription status
-    await supabase
-      .from('users')
-      .update({
-        subscription_tier: getSubscriptionTier(subscription),
-        subscription_status: subscription.status,
-        subscription_id: subscription.id,
-        current_period_end: new Date(subscription.current_period_end * 1000),
-        updated_at: new Date()
-      })
-      .eq('id', user.id)
-  }
-}
-
-async function cancelUserSubscription(subscription: Stripe.Subscription) {
-  const customerId = subscription.customer as string
-
-  const { data: user } = await supabase
-    .from('users')
-    .select('*')
-    .eq('stripe_customer_id', customerId)
-    .single()
-
-  if (user) {
-    await supabase
-      .from('users')
-      .update({
-        subscription_tier: 'free',
-        subscription_status: 'cancelled',
-        subscription_id: null,
-        updated_at: new Date()
-      })
-      .eq('id', user.id)
-  }
-}
-
-async function handleSuccessfulPayment(invoice: Stripe.Invoice) {
-  // Update payment status, reset usage counters, etc.
-  console.log('Payment successful for invoice:', invoice.id)
-}
-
-async function handleFailedPayment(invoice: Stripe.Invoice) {
-  // Handle dunning, send notification emails, etc.
-  console.log('Payment failed for invoice:', invoice.id)
-}
-
-function getSubscriptionTier(subscription: Stripe.Subscription): string {
-  const priceId = subscription.items.data[0]?.price.id
-
-  // Map Stripe price IDs to our subscription tiers
-  const priceToTierMap: Record<string, string> = {
-    'price_mock_pro_monthly': 'pro_monthly',
-    'price_mock_pro_annual': 'pro_annual',
-    'price_mock_student_monthly': 'student_monthly',
-    'price_mock_department_license': 'department_license',
-    'price_mock_institution_license': 'institution_license'
-  }
-
-  return priceToTierMap[priceId] || 'free'
-}
-*/
