@@ -152,7 +152,7 @@ export default function HomePage() {
             color: '#2563eb',
             margin: 0
           }}>
-            StemBot v2.1
+            StemBot v1.0
           </h1>
 
 
